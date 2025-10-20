@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bot, Menu, X } from "lucide-react";
+import { Bot, Menu, X , LogOut} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Logout } from "../Redux/AuthSlice";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +7,7 @@ import { useUser } from "../Context/UserContext";
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const {user , logout} = useUser();
+  const { user, logout } = useUser();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -35,13 +35,16 @@ function Header() {
         </nav>
 
         {/* Desktop Buttons */}
-        {user ?(
+        {user ? (
           <div className="hidden md:flex items-center gap-4">
-            <button className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-0.5 transition-all" onClick={() => logout()}>
+            <button
+              className="flex items-center gap-2 p-2 rounded-md hover:bg-red-100 text-red-600 font-medium" onClick={() => logout()}
+            >
+              <LogOut className="w-5 h-5" />
               Logout
             </button>
           </div>
-        ):(
+        ) : (
           <div className="hidden md:flex items-center gap-4">
             <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-0.5 transition-all" onClick={() => navigate('/login/')}>
               Get Started

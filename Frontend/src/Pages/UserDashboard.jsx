@@ -9,6 +9,7 @@ import {
     Bell,
     CreditCard,
     BarChart3,
+    LogOut
 } from "lucide-react";
 import { useUser } from "../Context/UserContext";
 
@@ -18,8 +19,7 @@ export default function UserDashboard() {
         { message: "Weekly habits goal achieved!", time: "2 hours ago", unread: true },
         { message: "New group message from AI Study", time: "1 day ago", unread: false },
     ];
-
-    const {user} = useUser();
+    const { user, logout } = useUser();
 
     const unreadCount = notifications.filter((n) => n.unread).length;
 
@@ -55,15 +55,23 @@ export default function UserDashboard() {
                     </div>
                 </div>
 
-                {/* Notifications */}
-                <div className="relative">
-                    <button className="relative p-2 rounded-lg hover:bg-gray-100 transition">
-                        <Bell className="h-5 w-5" />
-                        {unreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs text-white rounded-full bg-red-500">
-                                {unreadCount}
-                            </span>
-                        )}
+                {/* Notifications and Logout */}
+                <div className="flex items-center gap-4">
+                    {/* Notifications */}
+                    <div className="relative">
+                        <button className="relative p-2 rounded-lg hover:bg-gray-100 transition">
+                            <Bell className="h-5 w-5" />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs text-white rounded-full bg-red-500">
+                                    {unreadCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Logout Button */}
+                    <button className="flex items-center gap-2 p-2 rounded-md hover:bg-red-100 text-red-600 font-medium transition" onClick={()=>logout()}>
+                        <LogOut className="w-5 h-5" />
                     </button>
                 </div>
             </div>

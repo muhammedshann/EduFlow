@@ -1,6 +1,7 @@
 // src/context/UserContext.js
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
+import { useSelector } from "react-redux";
 
 export const UserContext = createContext();
 
@@ -12,7 +13,7 @@ export const UserProvider = ({ children }) => {
     });
 
     const [loading, setLoading] = useState(true);
-
+    const User = useSelector((state) => state.auth.user)
     // Fetch logged-in user info safely from backend
     useEffect(() => {
         const fetchUser = async () => {
@@ -36,7 +37,6 @@ export const UserProvider = ({ children }) => {
                 setLoading(false);
             }
         };
-
         fetchUser();
     }, []);
 

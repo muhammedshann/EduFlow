@@ -3,9 +3,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
-from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer
+from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, ProfileDataSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import TempUser
+from .models import TempUser, UserSubscription
 from django.contrib.auth import get_user_model
 from .utils import sent_otp_email, verify_otp
 import random
@@ -21,6 +21,10 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from django.conf import settings
 from allauth.socialaccount.models import SocialLogin, SocialAccount
+import requests
+from django.core.files.base import ContentFile
+from google.auth.transport import requests as google_requests
+
 
 
 logger = logging.getLogger(__name__)
@@ -33,67 +37,59 @@ class GoogleLoginView(SocialLoginView):
 
     def post(self, request, *args, **kwargs):
         try:
-            # Get the token from request
             token = request.data.get('access_token') or request.data.get('id_token')
-            
             if not token:
-                return Response(
-                    {'error': 'Token is required'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Verify the ID token with Google
+            # Verify Google token
             try:
                 idinfo = id_token.verify_oauth2_token(
                     token,
-                    requests.Request(),
+                    google_requests.Request(),
                     settings.SOCIALACCOUNT_PROVIDERS['google']['APP']['client_id']
                 )
-                
                 logger.info(f"Token verified for email: {idinfo.get('email')}")
             except ValueError as e:
-                logger.error(f"Token verification failed: {str(e)}")
-                return Response(
-                    {'error': f'Invalid token: {str(e)}'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({'error': f'Invalid token: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Get or create user
             email = idinfo.get('email')
             google_id = idinfo.get('sub')
-            
-            if not email:
-                return Response(
-                    {'error': 'Email not provided by Google'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            picture_url = idinfo.get('picture')
 
-            # Try to get existing user by email
-            try:
-                user = User.objects.get(email=email)
-                logger.info(f"Existing user found: {email}")
-            except User.DoesNotExist:
-                # Create new user
-                user = User.objects.create_user(
-                    username=email.split('@')[0],  # Use email prefix as username
-                    email=email,
-                    first_name=idinfo.get('given_name', ''),
-                    last_name=idinfo.get('family_name', ''),
-                )
-                user.set_unusable_password()  # Google users don't need password
+            if not email:
+                return Response({'error': 'Email not provided by Google'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get or create user
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    'username': email.split('@')[0],
+                    'first_name': idinfo.get('given_name', ''),
+                    'last_name': idinfo.get('family_name', ''),
+                }
+            )
+            if created:
+                user.set_unusable_password()
                 user.save()
                 logger.info(f"New user created: {email}")
 
-            # Get or create social account
+            # Save profile picture if not exists
+            if picture_url and not user.profile_pic:
+                try:
+                    response = requests.get(picture_url)
+                    if response.status_code == 200:
+                        file_name = f"{user.username}_google.jpg"
+                        user.profile_pic.save(file_name, ContentFile(response.content), save=True)
+                        logger.info(f"Saved Google profile pic for {user.username}")
+                except Exception as e:
+                    logger.error(f"Error saving Google profile pic: {str(e)}")
+
+            # Create or update social account
             social_account, created = SocialAccount.objects.get_or_create(
                 user=user,
                 provider='google',
-                defaults={
-                    'uid': google_id,
-                    'extra_data': idinfo
-                }
+                defaults={'uid': google_id, 'extra_data': idinfo}
             )
-            
             if not created and social_account.uid != google_id:
                 social_account.uid = google_id
                 social_account.extra_data = idinfo
@@ -104,62 +100,44 @@ class GoogleLoginView(SocialLoginView):
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
 
-            # Create response
+            # Response with user info
             response = Response({
                 'message': "Google login successful",
                 'user': {
                     'id': user.id,
                     'username': user.username,
                     'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
+                    'firstname': user.first_name,
+                    'lastname': user.last_name,
+                    'profilePic': request.build_absolute_uri(user.profile_pic.url) if user.profile_pic else None
                 }
             }, status=status.HTTP_200_OK)
 
-            # Set access token cookie (15 minutes)
-            response.set_cookie(
-                key='access',
-                value=access_token,
-                httponly=True,
-                secure=False,  # Set to True in production with HTTPS
-                samesite='Lax',
-                max_age=15 * 60
-            )
+            # Set JWT cookies
+            response.set_cookie('access', access_token, httponly=True, max_age=15*60, samesite='Lax')
+            response.set_cookie('refresh', refresh_token, httponly=True, max_age=7*24*60*60, samesite='Lax')
 
-            # Set refresh token cookie (7 days)
-            response.set_cookie(
-                key='refresh',
-                value=refresh_token,
-                httponly=True,
-                secure=False,  # Set to True in production with HTTPS
-                samesite='Lax',
-                max_age=7 * 24 * 60 * 60
-            )
-
-            logger.info(f"Google login successful for user: {email}")
             return response
 
         except Exception as e:
             logger.error(f"Google login error: {str(e)}", exc_info=True)
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class MeView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self,request):
+    def get(self, request):
         user = request.user
+        profile_pic_url = request.build_absolute_uri(user.profile_pic.url) if user.profile_pic else None
+
         user_data = {
-            'id':user.id,
-            'username':user.username,
-            'firstname':user.first_name,
-            'lastname':user.last_name,
-            'email':user.email
+            'id': user.id,
+            'username': user.username,
+            'firstname': user.first_name,
+            'lastname': user.last_name,
+            'email': user.email,
+            'profilePic': profile_pic_url
         }
         return Response(user_data)
 
@@ -247,15 +225,17 @@ class VerifyOtp(APIView):
 class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
-        print(request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            profile_pic_url = request.build_absolute_uri(user.profile_pic.url) if user.profile_pic else None
+
             user_data = {
-                "id": user.id,
-                "username": user.username,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email,
+                'id': user.id,
+                'username': user.username,
+                'firstname': user.first_name,
+                'lastname': user.last_name,
+                'email': user.email,
+                'profilePic': profile_pic_url
             }
 
             refresh = RefreshToken.for_user(user)
@@ -265,11 +245,11 @@ class LoginView(APIView):
             response = Response({
                 'message': "User logged in successfully",
                 'user': user_data,
-                'access': accessToken,  # ✅ Add to response body
-                'refresh': refreshToken, # ✅ Add to response body
+                'access': accessToken,
+                'refresh': refreshToken,
             })
-            
-            # Still set cookies for automatic authentication
+
+            # Set cookies
             response.set_cookie(
                 key='access',
                 value=accessToken,
@@ -286,7 +266,7 @@ class LoginView(APIView):
                 max_age=7*24*60*60
             )
             return response
-        print("Serializer errors:", serializer.errors)
+
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
 class ResetPassword(APIView):
@@ -312,3 +292,10 @@ class LogoutView(APIView):
         response.delete_cookie('access')
         response.delete_cookie('refresh')
         return response
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = ProfileDataSerializer(request.user)
+        return Response(serializer.data)

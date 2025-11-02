@@ -46,7 +46,7 @@ function Header() {
           </div>
         ) : (
           <div className="hidden md:flex items-center gap-4">
-            <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-0.5 transition-all" onClick={() => navigate('/login/')}>
+            <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-0.5 transition-all" onClick={() => navigate('/auth/')}>
               Get Started
             </button>
           </div>

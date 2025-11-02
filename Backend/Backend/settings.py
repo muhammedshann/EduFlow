@@ -245,3 +245,8 @@ CSRF_COOKIE_HTTPONLY = False
 
 LOGIN_REDIRECT_URL = 'http://localhost:5173'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'http://localhost:5173'
+
+
+# media
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

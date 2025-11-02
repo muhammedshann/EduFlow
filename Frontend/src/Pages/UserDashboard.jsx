@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
     Mic,
     Upload,
@@ -19,6 +19,7 @@ export default function UserDashboard() {
         { message: "Weekly habits goal achieved!", time: "2 hours ago", unread: true },
         { message: "New group message from AI Study", time: "1 day ago", unread: false },
     ];
+    const navigate = useNavigate();
     const { user, logout } = useUser();
 
     const unreadCount = notifications.filter((n) => n.unread).length;
@@ -43,10 +44,23 @@ export default function UserDashboard() {
             {/* Header with Profile */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
                 <div className="flex items-center space-x-4">
-                    {/* Avatar */}
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white text-lg font-bold">
-                        AJ
+                    <div
+                        className="w-16 h-16 rounded-full overflow-hidden cursor-pointer"
+                        onClick={() => navigate('/settings/')}
+                    >
+                        {user.profilePic ? (
+                            <img
+                                src={user.profilePic}
+                                alt={`${user.firstname} ${user.lastname}`}
+                                className="w-full h-full object-cover rounded-full"
+                            />
+                        ) : (
+                            <div className="bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white text-lg font-bold w-full h-full rounded-full">
+                                {`${user.firstname?.[0] || ""}${user.lastname?.[0] || ""}`.toUpperCase()}
+                            </div>
+                        )}
                     </div>
+
                     <div>
                         <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
                             Welcome back, {user ? user.username : 'Alex'}!
@@ -59,7 +73,7 @@ export default function UserDashboard() {
                 <div className="flex items-center gap-4">
                     {/* Notifications */}
                     <div className="relative">
-                        <button className="relative p-2 rounded-lg hover:bg-gray-100 transition">
+                        <button className="relative p-2 rounded-lg hover:bg-gray-100 transition" onClick={() => navigate('/notification/')}>
                             <Bell className="h-5 w-5" />
                             {unreadCount > 0 && (
                                 <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs text-white rounded-full bg-red-500">
@@ -70,7 +84,7 @@ export default function UserDashboard() {
                     </div>
 
                     {/* Logout Button */}
-                    <button className="flex items-center gap-2 p-2 rounded-md hover:bg-red-100 text-red-600 font-medium transition" onClick={()=>logout()}>
+                    <button className="flex items-center gap-2 p-2 rounded-md hover:bg-red-100 text-red-600 font-medium transition" onClick={() => logout()}>
                         <LogOut className="w-5 h-5" />
                     </button>
                 </div>
@@ -139,7 +153,7 @@ export default function UserDashboard() {
                             </Button>
                         </NavLink>
                         <NavLink to="/app/upload-transcription">
-                            <Button className="w-full justify-start flex items-center h-12">
+                            <Button className="w-full justify-start flex items-center mt-1 h-12">
                                 <Upload className="h-4 w-4 mr-3" />
                                 Upload Audio/Video/PDF
                             </Button>
@@ -160,7 +174,7 @@ export default function UserDashboard() {
                                 Chat with AI
                             </Button>
                         </NavLink>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 mt-3">
                             Ask questions about your transcripts or get study help
                         </p>
                     </div>
@@ -173,14 +187,14 @@ export default function UserDashboard() {
                         Focus & Habits
                     </h2>
                     <div className="space-y-3">
-                        <NavLink to="/pomodoro">
+                        <NavLink to="/promodoro/">
                             <Button className="w-full justify-start flex items-center h-12">
                                 <Timer className="h-4 w-4 mr-3" />
                                 Pomodoro Timer
                             </Button>
                         </NavLink>
                         <NavLink to="/habits">
-                            <Button className="w-full justify-start flex items-center h-12">
+                            <Button className="w-full justify-start flex items-center mt-1 h-12">
                                 <CheckSquare className="h-4 w-4 mr-3" />
                                 Habit Tracker
                             </Button>
@@ -201,7 +215,7 @@ export default function UserDashboard() {
                                 Study Groups
                             </Button>
                         </NavLink>
-                        <p className="text-sm text-gray-500">Join 3 active groups</p>
+                        <p className="text-sm text-gray-500 mt-3">Join 3 active groups</p>
                     </div>
                 </Card>
             </div>

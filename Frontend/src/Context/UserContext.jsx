@@ -13,14 +13,15 @@ export const UserProvider = ({ children }) => {
     });
 
     const [loading, setLoading] = useState(true);
-    const User = useSelector((state) => state.auth.user)
     // Fetch logged-in user info safely from backend
     useEffect(() => {
         const fetchUser = async () => {
             try {
                 localStorage.clear();
-                const res = await api.get("accounts/me/", { withCredentials: true });
+                const res = await api.get("accounts/me/");
                 setUser(res.data);
+                console.log(res);
+                
                 // ✅ Cache non-sensitive data only
                 localStorage.setItem("user", JSON.stringify(res.data));
             } catch (err) {

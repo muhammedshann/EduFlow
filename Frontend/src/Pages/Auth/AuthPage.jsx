@@ -109,7 +109,7 @@ function LoginPage() {
                 const result = await dispatch(Login(loginData)).unwrap();
                 setUser(result.user);
                 console.log("Login success:", result);
-                navigate('/dashboard/');
+                // navigate('/dashboar/d/');
             } else {
                 // SIGNUP
                 const result = await dispatch(SignUp(formData)).unwrap();

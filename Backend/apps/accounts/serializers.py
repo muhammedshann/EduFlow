@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
-from .models import TempUser
+from .models import TempUser, Wallet, Settings, UserSubscription, SubscriptionPlan
 from django.contrib.auth.hashers import make_password
 import random
 from .utils import sent_otp_email
@@ -140,3 +140,28 @@ class ResetPasswordSerializer(serializers.Serializer):
         instance.password = make_password(validated_data['password'])
         instance.save()
         return instance
+
+class WalletSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wallet
+        fields = ['balance']
+
+class SubscriptionPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubscriptionPlan
+        fields = ['name', 'price', 'duration_days', 'credits']
+
+class UserSubscriptionSerializer(serializers.ModelSerializer):
+    plan = SubscriptionPlanSerializer()
+
+    class Meta:
+        model = UserSubscription
+        fields = ['plan', 'start_date', 'end_date', 'status', 'added_credits']
+
+class ProfileDataSerializer(serializers.Serializer):
+    wallet = WalletSerializer(source='wallets.first', read_only=True)
+    subscription = serializers.SerializerMethodField()
+
+    def get_subscription(self, obj):
+        subscription = obj.subscriptions.filter(status='active').first()
+        return UserSubscriptionSerializer(subscription).data if subscription else None

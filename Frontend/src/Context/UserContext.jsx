@@ -1,6 +1,7 @@
 // src/context/UserContext.js
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
+import { useSelector } from "react-redux";
 
 export const UserContext = createContext();
 
@@ -12,14 +13,15 @@ export const UserProvider = ({ children }) => {
     });
 
     const [loading, setLoading] = useState(true);
-
     // Fetch logged-in user info safely from backend
     useEffect(() => {
         const fetchUser = async () => {
             try {
                 localStorage.clear();
-                const res = await api.get("accounts/me/", { withCredentials: true });
+                const res = await api.get("accounts/me/");
                 setUser(res.data);
+                console.log(res);
+                
                 // ✅ Cache non-sensitive data only
                 localStorage.setItem("user", JSON.stringify(res.data));
             } catch (err) {
@@ -36,7 +38,6 @@ export const UserProvider = ({ children }) => {
                 setLoading(false);
             }
         };
-
         fetchUser();
     }, []);
 

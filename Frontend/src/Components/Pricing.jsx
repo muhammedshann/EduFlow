@@ -62,8 +62,8 @@ const Pricing = () => {
             {/* Pro Plan - Featured */}
             <div className="group bg-white rounded-2xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-300 relative overflow-hidden scale-105 border-2 border-purple-200">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-600 to-blue-600"></div>
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-1 rounded-full text-sm font-medium">
+              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white pt-2 px-6 py-1 rounded-full text-sm font-medium">
                   Most Popular
                 </div>
               </div>

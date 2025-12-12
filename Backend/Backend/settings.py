@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework.authtoken',     # required by dj-rest-auth
+    'rest_framework_simplejwt.token_blacklist',
     'dj_rest_auth',
     'django.contrib.sites',        # required by allauth
     'corsheaders',                 # if using django-cors-headers
@@ -62,6 +63,10 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 
     'accounts',
+    'admin_panel',
+    'pomodoro',
+    'habit_tracker',
+    'groups',
 
 ]
 
@@ -76,8 +81,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'allauth.account.middleware.AccountMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
 
 ROOT_URLCONF = 'Backend.urls'
@@ -168,17 +171,13 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5173",  # optional
 ]
 
-
-# If you want to allow all origins during development (not recommended for production)
-CORS_ALLOW_ALL_ORIGINS = True
-
 # Allow credentials if needed
 CORS_ALLOW_CREDENTIALS = True
 
 # settings.py
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'accounts.authentication.CookieJWTAuthentication',
     ],
 }
 
@@ -205,8 +204,20 @@ DEFAULT_FROM_EMAIL = 'EduFlow <app.eduflow@gmail.com>'
 SITE_ID = 1
 
 # Authentication methods
-ACCOUNT_LOGIN_METHODS = {'email', 'username'}
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+
+ACCOUNT_SIGNUP_FIELDS = {
+    'username': {
+        'required': True,  # This replaces 'username*'
+        'unique': True,    # Ensures usernames are unique
+    },
+    'email': {
+        'required': True,  # This replaces 'email*'
+        'unique': True,    # Ensures emails are unique
+        
+        # This line is good to add to match your other setting
+        'verification': 'none', 
+    },
+}
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
 # Social authentication
@@ -238,10 +249,17 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = False
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None  # or 'same-origin-allow-popups'
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
+
+     # True only on HTTPS production
+
+
+
 
 LOGIN_REDIRECT_URL = 'http://localhost:5173'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'http://localhost:5173'

@@ -1,35 +1,9 @@
-// // src/api/axios.js
-// import axios from 'axios';
-
-// const api = axios.create({
-//   baseURL: 'http://localhost:8000/api/',
-//   withCredentials: true, // ✅ Global setting for all requests
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-// });
-
-// // Add response interceptor to handle auth errors
-// api.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     if (error.response?.status === 401) {
-//       // Auto-logout or refresh token logic here
-//       console.log('Authentication failed');
-//     }
-//     return Promise.reject(error);
-//   }
-// );
-
-// export default api;
-
-// src/api/axios.js
 import axios from 'axios';
 
 const api = axios.create({
     baseURL: 'http://localhost:8000/api/',
     withCredentials: true, // cookies are sent automatically
-    headers: { 'Content-Type': 'application/json' },
+    // headers: { 'Content-Type': 'application/json' },
 });
 
 let isRefreshing = false;
@@ -51,8 +25,11 @@ api.interceptors.response.use(
     response => response,
     async (error) => {
         const originalRequest = error.config;
+        console.log('inside of api');
+        
 
         if (error.response?.status === 401 && !originalRequest._retry) {
+            console.log('inside of api');
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });

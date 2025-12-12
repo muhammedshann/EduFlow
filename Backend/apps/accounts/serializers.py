@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
-from .models import TempUser, Wallet, Settings, UserSubscription, SubscriptionPlan
+from .models import TempUser, Wallet, WalletHistory, Settings, UserSubscription, SubscriptionPlan
 from django.contrib.auth.hashers import make_password
 import random
 from .utils import sent_otp_email
@@ -13,6 +13,7 @@ from dj_rest_auth.registration.serializers import SocialLoginSerializer
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from django.conf import settings
+from django.utils import timezone
 
 
 User = get_user_model()
@@ -59,18 +60,54 @@ class GoogleLoginSerializer(SocialLoginSerializer):
             raise serializers.ValidationError(f"Invalid token: {str(e)}")
 
 class TempRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[validate_password]
+    )
 
     class Meta:
         model = TempUser
         fields = ['first_name', 'last_name', 'username', 'email', 'password']
-    
+
+    def validate(self, attrs):
+        email = attrs['email']
+        username = attrs['username']
+
+        # Block only if TRUE user already exists
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError({'email': 'A user with this email already exists.'})
+
+        if User.objects.filter(username=username).exists():
+            raise serializers.ValidationError({'username': 'A user with this username already exists.'})
+
+        return attrs
+
     def create(self, validated_data):
+        email = validated_data['email']
+
+        # Generate OTP
         otp = str(random.randint(100000, 999999))
+        print("Generated OTP:", otp)
+
+        # Hash password
         validated_data['password'] = make_password(validated_data['password'])
-        temp_user = TempUser.objects.create(**validated_data, otp=otp)
+
+        # Create OR update TempUser
+        temp_user, created = TempUser.objects.update_or_create(
+            email=email,
+            defaults={
+                **validated_data,
+                'otp': otp,
+                'otp_created_at': timezone.now()
+            }
+        )
+
+        # Send OTP
         sent_otp_email(temp_user.email, otp)
+
         return temp_user
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
@@ -107,9 +144,47 @@ class GenerateOtpSerializer(serializers.Serializer):
     email = serializers.CharField()
 
     def validate_email(self, value):
-        if not TempUser.objects.filter(email=value).exists():
+        if not User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email not registered")
         return value
+
+class VerifyAccountSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+    register = serializers.BooleanField()
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        otp = attrs.get('otp')
+        register = attrs.get('register')
+
+        try :
+            self.temp_user = TempUser.objects.get(email=email)
+        except TempUser.DoesNotExist:
+            raise serializers.ValidationError('User not found. Please register again.')
+
+        if self.temp_user.is_expired():
+            self.temp_user.delete()
+            raise serializers.ValidationError('OTP has expired. Please register again.')
+        
+        if self.temp_user.otp != otp:
+            raise serializers.ValidationError('Invalid OTP.')
+        if register:
+            if User.objects.filter(email=self.temp_user.email):
+                raise serializers.ValidationError('A user with this email already exists.')
+        
+        return attrs
+    
+    def save(self):
+        user = User.objects.create(
+                first_name=self.temp_user.first_name,
+                last_name=self.temp_user.last_name,
+                username=self.temp_user.username,
+                email=self.temp_user.email,
+                password=self.temp_user.password
+            )
+        self.temp_user.delete()
+        return user 
 
 
 class LoginSerializer(serializers.Serializer):
@@ -120,48 +195,104 @@ class LoginSerializer(serializers.Serializer):
         username = data.get('username')
         password = data.get('password')
 
-        user = authenticate(username=username, password=password)
-        if not user:
-            raise serializers.ValidationError('Invalid username or password!')
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid username or password!")
+
+        # 2. Check if user is active
+        if not user.is_active:
+            raise serializers.ValidationError("Your account is inactive. Please contact support.")
+
+        # 3. Check password manually
+        if not user.check_password(password):
+            raise serializers.ValidationError("Invalid username or password!")
         
         data['user'] = user
         return data
 
 class ResetPasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, validators=[validate_password], required=True)
     email = serializers.CharField()
+    otp = serializers.CharField()
 
-    def validate_email(self,value):
-        if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('No active account founds!')
+    def validate(self, attrs):
+        email = attrs.get('email')
+        otp = attrs.get('otp')
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User with this email does not exist.")
+        
+        try:
+            temp_user = TempUser.objects.get(email=email)
+        except TempUser.DoesNotExist:
+            raise serializers.ValidationError("Invalid request. Please request a new OTP.")
+        
+        if temp_user.otp != otp:
+            raise serializers.ValidationError("Invalid request.")
+        
+        self.user = user
+        temp_user.delete()
+        return attrs
+    
+    def save(self):
+        password = self.validated_data['password']
+        self.user.set_password(password)
+        self.user.save()
+
+        return self.user
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email']
+
+    def validate_email(self, value):
+        user = self.context["request"].user
+        if User.objects.filter(email = value).exclude(id = user.id).exists():
+            raise serializers.ValidationError('email already exists.')
+        return value
+    
+    def validate_username(self, value):
+        user = self.context["request"].user
+        if User.objects.filter(username = value).exclude(id = user.id).exists():
+            raise serializers.ValidationError('username already exists.')
+        return value
+    
+class UpdatePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+    
+    def validate_new_password(self, value):
+        validate_password(value)
         return value
 
-    def update(self,instance,validated_data):
-        instance.password = make_password(validated_data['password'])
-        instance.save()
-        return instance
+class WalletHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WalletHistory
+        fields = ['id', 'transaction_type', 'amount', 'purpose', 'reference_id', 'status', 'created_at']
 
 class WalletSerializer(serializers.ModelSerializer):
+    history = WalletHistorySerializer(many=True, read_only=True)
     class Meta:
         model = Wallet
-        fields = ['balance']
+        fields = ['id','balance','history']
 
-class SubscriptionPlanSerializer(serializers.ModelSerializer):
+class SettingsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SubscriptionPlan
-        fields = ['name', 'price', 'duration_days', 'credits']
+        model = Settings
+        fields = [
+            "email_notification",
+            "pomodoro_alert",
+            "habit_reminder",
+            "group_messages",
+            "dark_mode"
+        ]
 
-class UserSubscriptionSerializer(serializers.ModelSerializer):
-    plan = SubscriptionPlanSerializer()
-
+class UpdateProfileImageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserSubscription
-        fields = ['plan', 'start_date', 'end_date', 'status', 'added_credits']
+        model = User
+        fields = ['profile_pic']
 
-class ProfileDataSerializer(serializers.Serializer):
-    wallet = WalletSerializer(source='wallets.first', read_only=True)
-    subscription = serializers.SerializerMethodField()
-
-    def get_subscription(self, obj):
-        subscription = obj.subscriptions.filter(status='active').first()
-        return UserSubscriptionSerializer(subscription).data if subscription else None

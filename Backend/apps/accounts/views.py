@@ -1,13 +1,12 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
-from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, ProfileDataSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
-from .models import TempUser, UserSubscription
+from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, VerifyAccountSerializer, UpdateProfileSerializer, WalletSerializer,UpdatePasswordSerializer, SettingsSerializer, UpdateProfileImageSerializer
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from .models import TempUser, Wallet, WalletHistory,Settings
 from django.contrib.auth import get_user_model
-from .utils import sent_otp_email, verify_otp
+from .utils import sent_otp_email
 import random
 from django.utils import timezone
 from .authentication import CookieJWTAuthentication
@@ -24,6 +23,11 @@ from allauth.socialaccount.models import SocialLogin, SocialAccount
 import requests
 from django.core.files.base import ContentFile
 from google.auth.transport import requests as google_requests
+from rest_framework.parsers import MultiPartParser, FormParser
+from decimal import Decimal
+from django.contrib.auth import login
+
+
 
 
 
@@ -137,7 +141,9 @@ class MeView(APIView):
             'firstname': user.first_name,
             'lastname': user.last_name,
             'email': user.email,
-            'profilePic': profile_pic_url
+            'profilePic': profile_pic_url,
+            'is_superuser': user.is_superuser,
+            'is_active': user.is_active,
         }
         return Response(user_data)
 
@@ -166,7 +172,7 @@ class RefreshView(TokenRefreshView):
             value=access_token,
             httponly=True,
             secure=False,       # True in production
-            samesite='Strict',
+            samesite='Lax',
             max_age=15 * 60     # 15 min expiry
         )
 
@@ -176,9 +182,15 @@ class RefreshView(TokenRefreshView):
 class RegisterView(APIView):
     def post(self, request):
         serializer = TempRegisterSerializer(data=request.data)
+
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "OTP sent to your email"}, status=status.HTTP_201_CREATED)
+            temp_user = serializer.save()
+
+            return Response({
+                "message": "OTP sent to your email",
+                "created_time": temp_user.otp_created_at
+            }, status=status.HTTP_201_CREATED)
+
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
 class GenerateOtpView(APIView):
@@ -186,47 +198,48 @@ class GenerateOtpView(APIView):
         serializer = GenerateOtpSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
-            temp_user = TempUser.objects.get(email=email)
+            user = User.objects.get(email=email)
             
             # Generate OTP
             otp = str(random.randint(100000, 999999))
-            temp_user.otp = otp
-            temp_user.otp_created_at = timezone.now()
-            temp_user.save()
+            print("generated otp for reset password = ",otp)
+
+            temp_user, created = TempUser.objects.update_or_create(
+                email=email,
+                defaults={
+                    'username': user.username,
+                    'otp': otp,
+                    'otp_created_at': timezone.now()
+                }
+            )
+            print('------------->')
 
             # Send OTP via email (implement your function)
             sent_otp_email(email, otp)
 
-            return Response({"email": email, "message": "OTP sent successfully"}, status=status.HTTP_200_OK)
+            return Response({"email": email, "message": "OTP sent successfully",'created_time':temp_user.otp_created_at}, status=status.HTTP_200_OK)
 
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-
 class VerifyOtp(APIView):
     def post(self, request):
-        print("Request data:", request.data)
-        email = request.data.get('email')
-        otp = request.data.get('otp')
-        register = request.data.get('register')
-        print('verifiy otp',email,otp,register)
-        temp_user = verify_otp(email,otp)
-        if register:
-            user = User.objects.create(
-                first_name=temp_user.first_name,
-                last_name=temp_user.last_name,
-                username=temp_user.username,
-                email=temp_user.email,
-                password=temp_user.password
-            )
-            temp_user.verified = True
-            temp_user.save()
-        return Response({"message": "User verified and registered successfully"}, status=status.HTTP_201_CREATED)
+        serializer = VerifyAccountSerializer(data=request.data)
+        if serializer.is_valid():
+            register = serializer.validated_data.get('register')
+            if register:
+                user = serializer.save()
+                return Response({"message": "User verified and registered successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "User verified "}, status=status.HTTP_201_CREATED)
+        return Response({"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            user.last_login = timezone.now()
+            user.save(update_fields=["last_login"])
+
             profile_pic_url = request.build_absolute_uri(user.profile_pic.url) if user.profile_pic else None
 
             user_data = {
@@ -235,7 +248,8 @@ class LoginView(APIView):
                 'firstname': user.first_name,
                 'lastname': user.last_name,
                 'email': user.email,
-                'profilePic': profile_pic_url
+                'profilePic': profile_pic_url,
+                'isActive': user.is_active,
             }
 
             refresh = RefreshToken.for_user(user)
@@ -255,15 +269,16 @@ class LoginView(APIView):
                 value=accessToken,
                 httponly=True,
                 secure=False,
-                samesite='Strict',
+                samesite='Lax',
                 max_age=15*60
             )
             response.set_cookie(
                 key='refresh',
                 value=refreshToken,
                 httponly=True,
-                samesite='Strict',
-                max_age=7*24*60*60
+                samesite='Lax',
+                max_age=7*24*60*60,
+                secure=False,
             )
             return response
 
@@ -273,29 +288,160 @@ class ResetPassword(APIView):
     def post(self, request):
         serializer = ResetPasswordSerializer(data = request.data)
         if serializer.is_valid():
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
-
-            try:
-                user = User.objects.get(email=email)
-                user.set_password(password)
-                user.save()
-                return Response({"message": "Password reset successful"}, status=status.HTTP_200_OK)
-            except User.DoesNotExist:
-                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            serializer.save()
+            return Response({"message": "Password reset successful"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class LogoutView(APIView):
-    def post(self, request):
-        response = Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
-        # Clear both tokens
-        response.delete_cookie('access')
-        response.delete_cookie('refresh')
-        return response
-
-class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        serializer = ProfileDataSerializer(request.user)
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh')
+
+        if not refresh_token:
+            return Response({"error": "No refresh token found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except TokenError:
+            return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        response = Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
+
+        response.delete_cookie('access')
+        response.delete_cookie('refresh')
+
+        return response
+
+
+class UpdateProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self,request):
+        serializer = UpdateProfileSerializer(
+            instance = request.user,
+            data = request.data,
+            partial = True,
+            context={'request': request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Profile updated successfully"}, status=200)
+
+        return Response({"errors": serializer.errors}, status=400)
+    
+class UpdatePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        serializer = UpdatePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        old_password = serializer.validated_data["old_password"]
+        new_password = serializer.validated_data["new_password"]
+
+        # CHECK OLD PASSWORD
+        if not user.check_password(old_password):
+            return Response(
+                {"error": "Old password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # UPDATE PASSWORD
+        user.set_password(new_password)
+        user.save()
+
+        # IMPORTANT: keep user logged in
+        # update_session_auth_hash(request, user)
+
+        return Response(
+            {"message": "Password updated successfully"},
+            status=status.HTTP_200_OK
+        )
+
+class UpdateProfileImageView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def put(self,request):
+        user = request.user
+        serializer = UpdateProfileImageSerializer(user,data=request.data , partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Profile picture updated successfully",
+                "profilePic": serializer.data["profile_pic"]
+            })
+        return Response({"errors": serializer.errors}, status=400)
+
+
+class WalletView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        wallet, created = Wallet.objects.get_or_create(user=request.user)
+        
+        serializer = WalletSerializer(wallet)
+        return Response(serializer.data, status=200)
+    
+class WalletDepositeView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self,request):
+        amount = request.data.get('amount')
+        wallet = Wallet.objects.get(user=request.user)
+        if not amount:
+            return Response({"error": "Amount is required"}, status=400)
+        amount = Decimal(amount)
+        if amount <= 0:
+            return Response({"error": "Amount must be positive"}, status=400)
+        wallet.balance += amount
+        wallet.save()
+        WalletHistory.objects.create(
+            wallet = wallet,
+            user = request.user,
+            transaction_type = 'credit',
+            amount = amount,
+            purpose = 'top-up',
+            status = 'success'
+        )
+        return Response({
+            "message": "Deposit successful",
+            "balance": wallet.balance
+        }, status=200)
+    
+class WalletWithdrawView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        amount = request.data.get('amount')
+        if not amount:
+            return Response({"error": "Amount is required"}, status=400)
+        wallet = Wallet.objects.get(user=request.user)
+        amount = Decimal(amount)
+        if amount <= 0:
+            return Response({"error": "Amount must be positive"}, status=400)
+        if amount > wallet.balance:
+            return Response({"error": "inefficient balance."}, status=400)
+        wallet.balance -= amount
+        wallet.save()
+        WalletHistory.objects.create(
+            wallet = wallet,
+            user = request.user,
+            transaction_type = 'debit',
+            amount = amount,
+            purpose = 'withdraw',
+            status = 'success'
+        )
+        return Response({
+            "message": "withdraw successful",
+            "balance": wallet.balance
+        }, status=200)
+
+class SettingsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request):
+        setting, created = Settings.objects.get_or_create(user=request.user)
+        serializer = SettingsSerializer(setting)
         return Response(serializer.data)

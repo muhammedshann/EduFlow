@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from accounts.models import User
+from apps.accounts.models import User
 
 class Habit(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

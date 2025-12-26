@@ -70,49 +70,170 @@ export default function Settings() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const firstname = formData.first_name || "";
+            const lastname = formData.last_name || "";
+            const username = formData.username || "";
+            const email = formData.email || "";
+
+            // FIRSTNAME & LASTNAME VALIDATION
+            const cleanNameRegex = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+
+            // Firstname: No start/end space
+            if (firstname.trim() !== firstname) {
+                dispatch(showNotification({
+                    message: "Firstname cannot start or end with spaces.",
+                    type: "error"
+                }));
+                return;
+            }
+
+            // Firstname: Only alphabets
+            if (!cleanNameRegex.test(firstname)) {
+                dispatch(showNotification({
+                    message: "Firstname can only contain alphabets. No numbers, symbols, or extra spaces.",
+                    type: "error"
+                }));
+                return;
+            }
+
+            // Lastname: No start/end space
+            if (lastname.trim() !== lastname) {
+                dispatch(showNotification({
+                    message: "Lastname cannot start or end with spaces.",
+                    type: "error"
+                }));
+                return;
+            }
+
+            // Lastname: Only alphabets
+            if (!cleanNameRegex.test(lastname)) {
+                dispatch(showNotification({
+                    message: "Lastname can only contain alphabets. No numbers, symbols, or extra spaces.",
+                    type: "error"
+                }));
+                return;
+            }
+
+            // USERNAME VALIDATION
+            const allowedUsername = /^[a-zA-Z0-9._-]+$/;
+
+            if (username.includes(" ")) {
+                dispatch(showNotification({
+                    message: "Username cannot contain spaces.",
+                    type: "error"
+                }));
+                return;
+            }
+
+            if (username.includes("*")) {
+                dispatch(showNotification({
+                    message: "Username cannot contain '*' symbol.",
+                    type: "error"
+                }));
+                return;
+            }
+
+            if (!allowedUsername.test(username)) {
+                dispatch(showNotification({
+                    message: "Username can only contain letters, numbers, '.', '_' and '-'.",
+                    type: "error"
+                }));
+                return;
+            }
+
+            // EMAIL VALIDATION
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(email)) {
+                dispatch(showNotification({
+                    message: "Invalid email format.",
+                    type: "error"
+                }));
+                return;
+            }
             const result = await dispatch(updateProfile(formData))
         } catch (err) {
             console.log(err);
         }
     }
     const handlePasswordInput = (e) => {
-        setPasswordData((prev) => ({
+        const { name, value } = e.target;
+
+        setPasswordData(prev => ({
             ...prev,
-            [e.target.name]: e.target.value
+            [name]: value,
         }));
-    }
+    };
+
     const HandlePassword = async (e) => {
-        e.preventDefault()
-        if (PasswordData.new_password !== PasswordData.confirm_password) {
+        e.preventDefault();
+
+        const { current_password, new_password, confirm_password } = PasswordData;
+
+        // 1️⃣ Password match check
+        if (new_password !== confirm_password) {
             dispatch(showNotification({
                 message: "Passwords do not match",
-                type: 'error'
-            }))
+                type: "error",
+            }));
             return;
         }
+
+        // 2️⃣ Space validation
+        if (new_password.includes(" ")) {
+            dispatch(showNotification({
+                message: "Password cannot contain spaces.",
+                type: "error",
+            }));
+            return;
+        }
+
+        // 3️⃣ Symbol validation
+        if (new_password.includes("*")) {
+            dispatch(showNotification({
+                message: "Password cannot contain '*' symbol.",
+                type: "error",
+            }));
+            return;
+        }
+
         try {
-            const result = await dispatch(updatePassword({ old_password: PasswordData.current_password, new_password: PasswordData.new_password }))
+            await dispatch(
+                updatePassword({
+                    old_password: current_password,
+                    new_password: new_password,
+                })
+            ).unwrap();
+
+            dispatch(showNotification({
+                message: "Password updated successfully",
+                type: "success",
+            }));
+
             setPasswordData({
                 current_password: "",
                 new_password: "",
-                confirm_password: ""
+                confirm_password: "",
             });
-            console.log(result);
+
         } catch (err) {
-            console.log(err);
-        }
-    }
+            dispatch(showNotification({
+                message: err?.message || "Failed to update password",
+                type: "error",
+            }));
+        } 
+    };
 
     const openFileExplorer = () => {
         ProfileInputRef.current.click();
     };
 
-    const handleProfileImage = async(e) => {
+    const handleProfileImage = async (e) => {
         const file = e.target.files?.[0];
-        if (!file) return ;
+        if (!file) return;
         console.log(file);
         const formData = new FormData();
-        formData.append('profile_pic',file)
+        formData.append('profile_pic', file)
         try {
             const result = await dispatch(updateProfileImage(formData));
             console.log(result);

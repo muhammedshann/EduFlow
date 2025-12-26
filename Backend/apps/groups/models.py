@@ -1,7 +1,6 @@
 from django.db import models
-from accounts.models import User
+from apps.accounts.models import User
 import uuid
-
 
 class Group(models.Model):
     STATUS_CHOICES = (
@@ -48,12 +47,13 @@ class GroupMember(models.Model):
         return f"{self.user} in {self.group} ({self.role})"
 
 class GroupMessage(models.Model):
-    id = models.CharField(primary_key=True, max_length=50)
+    id = models.CharField(primary_key=True, max_length=50, default=uuid.uuid4, editable=False)
 
     group = models.ForeignKey(Group,on_delete=models.CASCADE,related_name="messages")
     user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,blank=True,related_name="group_messages")
 
     message = models.TextField()
+    image = models.ImageField(upload_to="group_messages/images/",blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

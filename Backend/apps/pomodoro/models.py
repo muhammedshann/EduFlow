@@ -1,5 +1,5 @@
 from django.db import models
-from accounts.models import User
+from apps.accounts.models import User
 
 class PomodoroSettings(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="pomodoro_settings")

@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from accounts.models import User, WalletHistory, Wallet
-from groups.models import Group
+from apps.accounts.models import User, WalletHistory, Wallet
+from apps.groups.models import Group
 
 class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:

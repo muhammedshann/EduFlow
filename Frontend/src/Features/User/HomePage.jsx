@@ -298,6 +298,7 @@ const HomePage = () => {
             ].map((testimonial, index) => (
               <div
                 key={index}
+                onClick={() => navigate('/review/')}
                 className="group bg-gray-50 p-8 rounded-2xl hover:shadow-xl hover:scale-105 transform transition-all duration-300 cursor-pointer"
               >
                 <div className="flex text-yellow-400 mb-4">

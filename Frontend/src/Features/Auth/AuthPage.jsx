@@ -101,44 +101,155 @@ function LoginPage() {
         setIsLoading(true);
 
         try {
+
+            // =====================================================
+            // 🚀 LOGIN — NO VALIDATION NEEDED
+            // =====================================================
             if (isLogin) {
-                // LOGIN
                 const loginData = {
                     username: formData.username,
                     password: formData.password,
                 };
+
                 const result = await dispatch(Login(loginData)).unwrap();
                 setUser(result.user);
-                console.log("Login success:", result);
                 navigate('/dashboard/');
-            } else {
-                // SIGNUP
-                if (formData.username.includes(" ")) {
-                    dispatch(showNotification({
-                        message: "Username cannot contain spaces",
-                        type: "error"
-                    }));
-                    setIsLoading(false);
-                    return;
-                }
-                const result = await dispatch(SignUp(formData)).unwrap();
-                console.log("Signup success:", result);
-                navigate(`/otp/?type=register&email=${formData.email}&created=${result.created_time}`);
+                return;
             }
+
+            // =====================================================
+            // 🚀 SIGNUP VALIDATION STARTS HERE (LOGIN SKIPPED)
+            // =====================================================
+
+            const firstname = formData.first_name || "";
+            const lastname = formData.last_name || "";
+            const username = formData.username || "";
+            const email = formData.email || "";
+            const password = formData.password || "";
+
+            // FIRSTNAME & LASTNAME VALIDATION
+            const cleanNameRegex = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+
+            // Firstname: No start/end space
+            if (firstname.trim() !== firstname) {
+                dispatch(showNotification({
+                    message: "Firstname cannot start or end with spaces.",
+                    type: "error"
+                }));
+                setIsLoading(false);
+                return;
+            }
+
+            // Firstname: Only alphabets
+            if (!cleanNameRegex.test(firstname)) {
+                dispatch(showNotification({
+                    message: "Firstname can only contain alphabets. No numbers, symbols, or extra spaces.",
+                    type: "error"
+                }));
+                setIsLoading(false);
+                return;
+            }
+
+            // Lastname: No start/end space
+            if (lastname.trim() !== lastname) {
+                dispatch(showNotification({
+                    message: "Lastname cannot start or end with spaces.",
+                    type: "error"
+                }));
+                setIsLoading(false);
+                return;
+            }
+
+            // Lastname: Only alphabets
+            if (!cleanNameRegex.test(lastname)) {
+                dispatch(showNotification({
+                    message: "Lastname can only contain alphabets. No numbers, symbols, or extra spaces.",
+                    type: "error"
+                }));
+                setIsLoading(false);
+                return;
+            }
+
+            // USERNAME VALIDATION
+            const allowedUsername = /^[a-zA-Z0-9._-]+$/;
+
+            if (username.includes(" ")) {
+                dispatch(showNotification({
+                    message: "Username cannot contain spaces.",
+                    type: "error"
+                }));
+                setIsLoading(false);
+                return;
+            }
+
+            if (username.includes("*")) {
+                dispatch(showNotification({
+                    message: "Username cannot contain '*' symbol.",
+                    type: "error"
+                }));
+                setIsLoading(false);
+                return;
+            }
+
+            if (!allowedUsername.test(username)) {
+                dispatch(showNotification({
+                    message: "Username can only contain letters, numbers, '.', '_' and '-'.",
+                    type: "error"
+                }));
+                setIsLoading(false);
+                return;
+            }
+
+            // EMAIL VALIDATION
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(email)) {
+                dispatch(showNotification({
+                    message: "Invalid email format.",
+                    type: "error"
+                }));
+                setIsLoading(false);
+                return;
+            }
+
+            // PASSWORD VALIDATION
+            if (password.includes(" ")) {
+                dispatch(showNotification({
+                    message: "Password cannot contain spaces.",
+                    type: "error"
+                }));
+                setIsLoading(false);
+                return;
+            }
+
+            if (password.includes("*")) {
+                dispatch(showNotification({
+                    message: "Password cannot contain '*' symbol.",
+                    type: "error"
+                }));
+                setIsLoading(false);
+                return;
+            }
+
+            const result = await dispatch(SignUp(formData)).unwrap();
+            navigate(`/otp/?type=register&email=${formData.email}&created=${result.created_time}`);
+
         } catch (err) {
             console.log("Auth error:", err);
-            const Error = JSON.stringify(err);
+
             setAlert({
-                message: Error,
+                message: JSON.stringify(err),
                 type: 'error',
                 show: true,
                 autoHide: true,
                 progress: 100
             });
+
         } finally {
             setIsLoading(false);
         }
     };
+
 
     const handleInputChange = (e) => {
         setFormData((prev) => ({

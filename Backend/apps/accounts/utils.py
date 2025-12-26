@@ -4,8 +4,8 @@ from .models import TempUser
 from rest_framework.response import Response
 from rest_framework import status
 
-def sent_otp_email(mail, otp):
-    subject = 'Your OTP Code for EduFlow'
+def sent_otp_email(mail, otp, subject):
+    subject = subject
     message = f'Hello,\n\nYour OTP code is: {otp}\nIt will expire in 5 minutes.\n\nThank you!'
     send_mail(
         subject,

@@ -29,14 +29,14 @@ SECRET_KEY = config("SECRET_KEY", default="fallback-secret")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-    "0.0.0.0"
+ALLOWED_HOSTS = ['*'
+    # "127.0.0.1",
+    # "localhost",
+    # "0.0.0.0"
 ]
 
 
-sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
+# sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 # Application definition
 
@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'django.contrib.sites',        # required by allauth
     'corsheaders',                 # if using django-cors-headers
+    'channels',
 
     'allauth',
     'allauth.account',
@@ -62,11 +63,12 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 
-    'accounts',
-    'admin_panel',
-    'pomodoro',
-    'habit_tracker',
-    'groups',
+    'apps.accounts',
+    'apps.admin_panel',
+    'apps.pomodoro',
+    'apps.habit_tracker',
+    'apps.groups',
+    'apps.review',
 
 ]
 
@@ -177,7 +179,7 @@ CORS_ALLOW_CREDENTIALS = True
 # settings.py
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'accounts.authentication.CookieJWTAuthentication',
+        'apps.accounts.authentication.CookieJWTAuthentication',
     ],
 }
 
@@ -250,14 +252,15 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = False
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None  # or 'same-origin-allow-popups'
 SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "None"
+CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = False
+# CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
 
-     # True only on HTTPS production
-
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 
@@ -268,3 +271,16 @@ ACCOUNT_LOGOUT_REDIRECT_URL = 'http://localhost:5173'
 # media
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# websocket config
+
+ASGI_APPLICATION = "Backend.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}

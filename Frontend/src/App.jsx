@@ -27,6 +27,7 @@ import GroupChatPage from './Features/CommunityGroups/GroupChatPage';
 import GroupsManagement from './Features/Admin/AdminGroupPage';
 import HabitManagement from './Features/Admin/AdminHabitPage';
 import PomodoroManagement from './Features/Admin/AdminPomodoro';
+import ReviewsPage from './Features/Review/ReviewPage';
 
 function App() {
   return (
@@ -116,6 +117,14 @@ function App() {
           element={
             <ProtectedRoute>
               <GroupChatPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/review/'
+          element={
+            <ProtectedRoute>
+              <ReviewsPage />
             </ProtectedRoute>
           }
         />

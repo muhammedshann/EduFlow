@@ -6,10 +6,10 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import AdminUserSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminEditUserSerializer, WalletSerializer, AdminGroupSerializer
 from rest_framework.permissions import IsAdminUser
-from accounts.models import User, Wallet
-from pomodoro.models import PomodoroSettings, PomodoroDailySummary
-from habit_tracker.models import Habit, HabitLog
-from groups.models import Group
+from apps.accounts.models import User, Wallet
+from apps.pomodoro.models import PomodoroSettings, PomodoroDailySummary
+from apps.habit_tracker.models import Habit, HabitLog
+from apps.groups.models import Group
 from django.contrib.auth import login
 from django.db.models import Sum, Count
 

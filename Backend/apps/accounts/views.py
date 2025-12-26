@@ -212,10 +212,8 @@ class GenerateOtpView(APIView):
                     'otp_created_at': timezone.now()
                 }
             )
-            print('------------->')
 
-            # Send OTP via email (implement your function)
-            sent_otp_email(email, otp)
+            sent_otp_email(email, otp,'Your OTP Code for EduFlow. For email Verification.')
 
             return Response({"email": email, "message": "OTP sent successfully",'created_time':temp_user.otp_created_at}, status=status.HTTP_200_OK)
 

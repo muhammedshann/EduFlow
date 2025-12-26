@@ -5,8 +5,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/accounts/', include('accounts.urls')),
+    path('default/admin/', admin.site.urls),
+    path('api/accounts/', include('apps.accounts.urls')),
+    path('api/admin/', include('apps.admin_panel.urls')),
+    path('api/pomodoro/', include('apps.pomodoro.urls')),
+    path('api/habit/', include('apps.habit_tracker.urls')),
+    path('api/groups/', include('apps.groups.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/accounts/auth/', include('dj_rest_auth.urls')),
     path('api/accounts/auth/registration/', include('dj_rest_auth.registration.urls')),

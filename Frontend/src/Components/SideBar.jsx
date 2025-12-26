@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     LayoutDashboard,
     Mic,
@@ -12,27 +12,39 @@ import {
     Menu,
     X,
     Sparkles,
-    LogOut
+    LogOut,
+    Wallet
 } from "lucide-react";
 import { useUser } from "../Context/UserContext";
 import { useSidebar } from "../Context/SideBarContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
-    // const [collapsed, setCollapsed] = useState(true);
-    const [selected, setSelected] = useState("Dashboard");
+    const location = useLocation();
+    const [selected, setSelected] = useState(location.pathname);
     const {collapsed , toggleSidebar} = useSidebar();
+    const navigate = useNavigate();
     const { logout } = useUser();
     const navItems = [
-        { label: "Dashboard", icon: LayoutDashboard },
+        { label: "Dashboard", icon: LayoutDashboard, path:'/dashboard' },
         { label: "Live Transcription", icon: Mic },
         { label: "Upload Transcription", icon: Upload },
         { label: "Chat", icon: MessageSquare },
-        { label: "Pomodoro", icon: Timer },
-        { label: "Habit Tracker", icon: Calendar },
-        { label: "Groups", icon: Users },
+        { label: "Pomodoro", icon: Timer, path:'/promodoro/' },
+        { label: "Habit Tracker", icon: Calendar, path:'/habit-tracker/' },
+        { label: "Groups", icon: Users, path:'/groups/' },
         { label: "Notes", icon: FileText },
-        { label: "Settings", icon: Settings },
+        { label: "Wallet", icon: Wallet, path:'/wallet/' },
+        { label: "Settings", icon: Settings, path:'/settings/' },
     ];
+    useEffect(() => {
+        setSelected(location.pathname);
+    }, [location.pathname]);
+
+    const HandlePages = ({label,path}) => {
+        setSelected(label);
+        navigate(path)
+    }
 
     return (
         <aside
@@ -64,11 +76,11 @@ export default function Sidebar() {
             <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
                 {navItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = selected === item.label;
+                    const isActive = selected === item.path;
                     return (
                         <button
                             key={item.label}
-                            onClick={() => setSelected(item.label)}
+                            onClick={() => HandlePages({'label':item.label,'path':item.path})}
                             className={`group flex items-center w-full px-3 py-3 rounded-xl transition-all duration-200 relative
                 ${isActive
                                     ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20 font-semibold"

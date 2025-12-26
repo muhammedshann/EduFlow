@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { clearNotification } from "../Redux/NotificationSlice";
 
 const Notification = () => {
     const [alert, setAlert] = useState({
@@ -9,10 +10,11 @@ const Notification = () => {
         autoHide: true,
         progress: 100
     });
+    const dispatch = useDispatch();
 
     // Get message and type from Redux
-    const reduxMessage = useSelector((state) => state.auth?.message);
-    const reduxMessageType = useSelector((state) => state.auth?.messageType || "error");
+    const reduxMessage = useSelector((state) => state.notification?.message);
+    const reduxMessageType = useSelector((state) => state.notification?.type || "error");
 
     // Function to show alert
     const showAlert = (message, type = 'success', autoHide = true) => {
@@ -59,9 +61,10 @@ const Notification = () => {
 
 
     // Show Redux messages automatically
-    useEffect(() => {
+    useEffect(() => {        
         if (reduxMessage) {
             showAlert(reduxMessage, reduxMessageType);
+            dispatch(clearNotification());
         }
     }, [reduxMessage, reduxMessageType]);
 

@@ -3,20 +3,22 @@ from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from django.conf import settings
 import uuid
+from datetime import timedelta
 
 
 class TempUser(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     username = models.CharField(max_length=50)
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     password = models.CharField(max_length=128)  # Store only hashed passwords
     otp = models.CharField(max_length=6)
-    otp_created_at = models.DateTimeField(auto_now_add=True)
+    otp_created_at = models.DateTimeField(default=timezone.now)
     verified = models.BooleanField(default=False)
 
     def is_expired(self):
-        return (timezone.now() - self.otp_created_at).total_seconds() > 300
+        expiry_time = self.otp_created_at + timedelta(minutes=5)
+        return timezone.now() > expiry_time
 
     def __str__(self):
         return f"{self.username} ({self.email})"
@@ -54,6 +56,45 @@ class Wallet(models.Model):
 
     def __str__(self):
         return f"Wallet({self.user.username}): {self.balance}"
+    
+class WalletHistory(models.Model):
+
+    TRANSACTION_TYPES = (
+        ("credit", "Credit"),
+        ("debit", "Debit"),
+    )
+
+    PURPOSE_TYPES = (
+        ("top-up", "Top Up"),
+        ("refund", "Refund"),
+        ("credit-purchase", "Credit Purchase"),
+        ("subscription", "Subscription"),
+        ("usage", "Usage"),
+        ("withdraw", "Withdraw"),
+    )
+
+    STATUS_TYPES = (
+        ("pending", "Pending"),
+        ("success", "Success"),
+        ("failed", "Failed"),
+        ("refunded", "Refunded"),
+    )
+    id = models.AutoField(primary_key=True)
+    wallet = models.ForeignKey(Wallet,on_delete=models.CASCADE,related_name="history")
+    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name="wallet_transactions")
+    transaction_type = models.CharField(max_length=10,choices=TRANSACTION_TYPES)
+    amount = models.DecimalField(max_digits=10,decimal_places=2)
+    purpose = models.CharField(max_length=30,choices=PURPOSE_TYPES)
+    reference_id = models.CharField(max_length=100,null=True,blank=True)
+    status = models.CharField(max_length=15,choices=STATUS_TYPES,default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.transaction_type} - {self.amount} ({self.status})"
 
 
 class SubscriptionPlan(models.Model):

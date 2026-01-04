@@ -3,6 +3,7 @@ from rest_framework.generics import RetrieveAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 
 from .models import Transcription
 from .serializers import TranscriptionCreateSerializer, NotesSerializer
@@ -59,6 +60,20 @@ class NotesView(APIView):
         serializer  = NotesSerializer(notes, many=True)
         return Response(
             serializer.data,
+            status=status.HTTP_200_OK
+        )
+    
+    def delete(self,request):
+        note_id = request.data.get('id')
+        if not note_id:
+            return Response(
+                'note not defined',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        note = get_object_or_404(Transcription, id=note_id)
+        note.delete()
+        return Response(
+            'note deleted',
             status=status.HTTP_200_OK
         )
 

@@ -9,13 +9,14 @@ django_asgi_app = get_asgi_application()
 
 from apps.groups.routing import websocket_urlpatterns as chat_wb
 from apps.live_transcription.routing import websocket_urlpatterns as live_transcription_ws
+from apps.chat_bot.routing import websocket_urlpatterns as chat_bot_ws
 from apps.accounts.middleware import JWTAuthMiddleware
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
     "websocket": AllowedHostsOriginValidator(
         JWTAuthMiddleware(
-            URLRouter(chat_wb + live_transcription_ws)
+            URLRouter(chat_wb + live_transcription_ws + chat_bot_ws)
         )
     ),
 })

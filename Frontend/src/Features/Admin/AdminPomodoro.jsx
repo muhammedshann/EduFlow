@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { AdminPomodoro } from '../../Redux/AdminRedux/AdminPomodoroSlice';
+import { AdminStatCard } from './AdminUserPage';
 
 export default function PomodoroManagement() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -98,52 +99,49 @@ export default function PomodoroManagement() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
 
                 {/* Total Active Users */}
-                <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex justify-between items-start">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500 mb-1">Total Active Users</p>
-                        <p className="text-3xl font-bold text-gray-800 mb-2">{stats.totalUsers}</p>
-                        <p className="text-sm font-medium text-gray-500">Pomodoro activity</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-purple-100 text-purple-600">
-                        <Users size={24} />
-                    </div>
-                </div>
+                <AdminStatCard
+                    title="Total Active Users"
+                    value={stats.totalUsers}
+                    change="Pomodoro activity"
+                    icon={Users}
+                    iconBg="bg-purple-100"
+                    iconColor="text-purple-600"
+                    valueColor="text-gray-800"
+                    changeColor="text-gray-500"
+                />
 
-                {/* Total Focus Sessions */}
-                <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex justify-between items-start">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500 mb-1">Total Focus Sessions</p>
-                        <p className="text-3xl font-bold text-gray-800 mb-2">{stats.totalSessions}</p>
-                        <p className="text-sm font-medium text-gray-500">Completed sessions</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-purple-100 text-purple-600">
-                        <Clock size={24} />
-                    </div>
-                </div>
+                <AdminStatCard
+                    title="Total Focus Sessions"
+                    value={stats.totalSessions}
+                    change="Completed sessions"
+                    icon={Clock}
+                    iconBg="bg-purple-100"
+                    iconColor="text-purple-600"
+                    valueColor="text-gray-800"
+                    changeColor="text-gray-500"
+                />
 
-                {/* Average Focus Time */}
-                <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex justify-between items-start">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500 mb-1">Average Focus Time</p>
-                        <p className="text-3xl font-bold text-gray-800 mb-2">{stats.averageFocus} min</p>
-                        <p className="text-sm font-medium text-green-500">Across all users</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-green-100 text-green-600">
-                        <Target size={24} />
-                    </div>
-                </div>
+                <AdminStatCard
+                    title="Average Focus Time"
+                    value={`${stats.averageFocus} min`}
+                    change="Across all users"
+                    icon={Target}
+                    iconBg="bg-green-100"
+                    iconColor="text-green-600"
+                    valueColor="text-gray-800"
+                    changeColor="text-green-500"
+                />
 
-                {/* Total Engagement Hours */}
-                <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex justify-between items-start">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500 mb-1">Total Engagement Hours</p>
-                        <p className="text-3xl font-bold text-gray-800 mb-2">{stats.totalHours} hrs</p>
-                        <p className="text-sm font-medium text-gray-500">Focus + Break time</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-purple-100 text-purple-600">
-                        <Activity size={24} />
-                    </div>
-                </div>
+                <AdminStatCard
+                    title="Total Engagement Hours"
+                    value={`${stats.totalHours} hrs`}
+                    change="Focus + Break time"
+                    icon={Activity}
+                    iconBg="bg-purple-100"
+                    iconColor="text-purple-600"
+                    valueColor="text-gray-800"
+                    changeColor="text-gray-500"
+                />
 
             </div>
 

@@ -69,7 +69,7 @@ INSTALLED_APPS = [
     'apps.habit_tracker',
     'apps.groups',
     'apps.review',
-
+    'apps.live_transcription'
 ]
 
 MIDDLEWARE = [

@@ -15,25 +15,7 @@ import { useDispatch } from 'react-redux';
 import { AdminGroup, AdminHanldeGroupDelete } from '../../Redux/AdminRedux/AdminGroupSlice';
 import { CreateGroupModal } from '../CommunityGroups/GroupsPage';
 import { CreateGroup } from '../../Redux/GroupsSlice';
-
-const StatCard = ({ title, value, change, icon: Icon }) => {
-    const isNegative = change.startsWith("-");
-    const changeColor = isNegative ? "text-red-500" : "text-green-500";
-
-    return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start flex-grow">
-            <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-                <p className="text-3xl font-bold text-gray-800 mb-2">{value}</p>
-                <p className={`text-sm font-medium ${changeColor}`}>{change}</p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-purple-100 text-purple-600">
-                <Icon size={24} />
-            </div>
-        </div>
-    );
-};
+import { AdminStatCard } from './AdminUserPage';
 
 const GroupRow = ({ group }) => {
     const dispatch = useDispatch();
@@ -160,10 +142,49 @@ export default function GroupsManagement() {
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <StatCard title="Total Groups" value={stats.totalGroups} change="+0 today" icon={Users} />
-                <StatCard title="Active Groups" value={stats.activeGroups} change="+0 today" icon={MessageSquare} />
-                <StatCard title="Flagged Content" value={stats.flagged} change="+0 today" icon={Flag} />
-                <StatCard title="Pending Approval" value={stats.pending} change="+0 today" icon={Shield} />
+                <AdminStatCard
+                    title="Total Groups"
+                    value={stats.totalGroups}
+                    change="+0 today"
+                    icon={Users}
+                    iconBg="bg-blue-50"
+                    iconColor="text-blue-600"
+                    valueColor="text-gray-800"
+                    changeColor="text-gray-500"
+                />
+
+                <AdminStatCard
+                    title="Active Groups"
+                    value={stats.activeGroups}
+                    change="+0 today"
+                    icon={MessageSquare}
+                    iconBg="bg-green-50"
+                    iconColor="text-green-600"
+                    valueColor="text-gray-800"
+                    changeColor="text-gray-500"
+                />
+
+                <AdminStatCard
+                    title="Flagged Content"
+                    value={stats.flagged}
+                    change="+0 today"
+                    icon={Flag}
+                    iconBg="bg-red-50"
+                    iconColor="text-red-600"
+                    valueColor="text-gray-800"
+                    changeColor="text-red-600"
+                />
+
+                <AdminStatCard
+                    title="Pending Approval"
+                    value={stats.pending}
+                    change="+0 today"
+                    icon={Shield}
+                    iconBg="bg-yellow-50"
+                    iconColor="text-yellow-600"
+                    valueColor="text-gray-800"
+                    changeColor="text-gray-500"
+                />
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">

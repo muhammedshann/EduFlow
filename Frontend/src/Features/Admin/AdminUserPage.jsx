@@ -271,59 +271,28 @@ const Input = ({ ...props }) => (
 const Badge = ({ children, className }) => (
     <span className={`px-3 py-1 rounded-full text-xs font-medium ${className}`}>{children}</span>
 );
-
-// Dropdown Menu Mocks
-const DropdownMenu = ({ children }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const toggle = () => setIsOpen(!isOpen);
-
-    const childrenWithProps = React.Children.map(children, child => {
-        if (React.isValidElement(child)) {
-            return React.cloneElement(child, { toggle, isOpen });
-        }
-        return child;
-    });
-
-    return <div className="relative inline-block text-left">{childrenWithProps}</div>;
-};
-
-const DropdownMenuTrigger = ({ children, toggle, asChild }) => {
-    if (asChild && React.isValidElement(children)) {
-        return React.cloneElement(children, { onClick: toggle });
-    }
-    return <div onClick={toggle} className="cursor-pointer">{children}</div>;
-};
-
-const DropdownMenuContent = ({ children, isOpen, align = 'end' }) => {
-    if (!isOpen) return null;
-    const alignmentClass = align === 'end' ? 'right-0' : 'left-0';
-
-    return (
-        <div className={`absolute ${alignmentClass} z-10 mt-2 w-40 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5`}
-            onClick={(e) => e.stopPropagation()}
-        >
-            {children}
-        </div>
-    );
-};
-
-const DropdownMenuItem = ({ children, className }) => (
-    <div className={`flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer ${className}`}>
-        {children}
-    </div>
-);
-
 // --- Stat Card Component for Dashboard UI ---
 
-const StatCard = ({ title, value, change, icon: Icon, iconBg, iconColor, valueColor, changeColor }) => (
-    <div className="rounded-xl bg-white p-4 flex items-center justify-between border border-gray-100 shadow-sm">
-        <div className="flex flex-col">
-            <div className={`text-3xl font-bold ${valueColor}`}>{value}</div>
-            <div className="text-sm text-gray-500 font-medium">{title}</div>
-            <div className={`text-xs mt-1 ${changeColor}`}>{change}</div>
-        </div>
-        <div className={`p-3 rounded-xl ${iconBg}`}>
-            <Icon className={`h-6 w-6 ${iconColor}`} />
+export const AdminStatCard = ({ title, value, change, icon: Icon, iconBg, iconColor, valueColor, changeColor }) => (
+    <div className="rounded-xl bg-white p-6 border border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between">
+            <div className="flex flex-col justify-center gap-1">
+                <div className={`text-3xl font-bold leading-tight ${valueColor}`}>
+                    {value}
+                </div>
+                <div className="text-sm text-gray-500 font-medium leading-tight">
+                    {title}
+                </div>
+                {change && (
+                    <div className={`text-xs font-medium ${changeColor}`}>
+                        {change}
+                    </div>
+                )}
+            </div>
+
+            <div className={`flex items-center justify-center h-12 w-12 rounded-xl ${iconBg}`}>
+                <Icon className={`h-6 w-6 ${iconColor}`} />
+            </div>
         </div>
     </div>
 );
@@ -474,48 +443,40 @@ export default function UserManagement() {
 
             {/* --- STATS CARDS (Hardcoded values maintained for dashboard look) --- */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <StatCard
+                <AdminStatCard
                     title="Total Users"
                     value={totalUsers}
-                    change=""
                     icon={Users}
                     iconBg="bg-purple-100"
                     iconColor="text-purple-700"
                     valueColor="text-gray-800"
-                    changeColor="text-purple-600"
                 />
 
-                <StatCard
+                <AdminStatCard
                     title="Active Users"
                     value={activeUsers}
-                    change=""
                     icon={Users}
                     iconBg="bg-green-100"
                     iconColor="text-green-600"
                     valueColor="text-gray-800"
-                    changeColor="text-green-600"
                 />
 
-                <StatCard
+                <AdminStatCard
                     title="Inactive Users"
                     value={inactiveUsers}
-                    change=""
                     icon={Ban}
                     iconBg="bg-yellow-100"
                     iconColor="text-yellow-700"
                     valueColor="text-gray-800"
-                    changeColor="text-yellow-600"
                 />
 
-                <StatCard
+                <AdminStatCard
                     title="Admin Accounts"
                     value={superUsers}
-                    change=""
                     icon={Crown}
                     iconBg="bg-blue-100"
                     iconColor="text-blue-700"
                     valueColor="text-gray-800"
-                    changeColor="text-blue-600"
                 />
             </div>
 

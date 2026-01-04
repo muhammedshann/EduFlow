@@ -174,7 +174,7 @@ export default function UserDashboard() {
                         Transcription
                     </h2>
                     <div className="space-y-3">
-                        <NavLink to="/app/live-transcription">
+                        <NavLink to="/live-transcription/">
                             <Button className="w-full justify-start flex items-center h-12">
                                 <Mic className="h-4 w-4 mr-3" />
                                 Start Live Recording

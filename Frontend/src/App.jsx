@@ -28,6 +28,10 @@ import GroupsManagement from './Features/Admin/AdminGroupPage';
 import HabitManagement from './Features/Admin/AdminHabitPage';
 import PomodoroManagement from './Features/Admin/AdminPomodoro';
 import ReviewsPage from './Features/Review/ReviewPage';
+import LiveTranscriptionPage from './Features/LiveTranscription/LiveTranscriptionPage';
+import NotesPage from './Features/LiveTranscription/Notes';
+import NoteDetailPage from './Features/LiveTranscription/NoteDetailPage';
+import NotesManagement from './Features/Admin/AdminNotesPage';
 
 function App() {
   return (
@@ -109,8 +113,34 @@ function App() {
             }
           />
 
+          <Route
+            path='/live-transcription/'
+            element={
+              <ProtectedRoute>
+                <LiveTranscriptionPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/notes/'
+            element={
+              <ProtectedRoute>
+                <NotesPage />
+              </ProtectedRoute>
+            }
+          />
 
         </Route>
+
+        <Route
+          path='/notes/:id'
+          element={
+            <ProtectedRoute>
+              <NoteDetailPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path='/groups/chat/:groupId'
@@ -168,6 +198,12 @@ function App() {
           <Route path='/admin/pomodoro/' element={
             <AdminProtectedRoute>
               <PomodoroManagement />
+            </AdminProtectedRoute>
+          } />
+
+          <Route path='/admin/notes/' element={
+            <AdminProtectedRoute>
+              <NotesManagement />
             </AdminProtectedRoute>
           } />
         </Route>

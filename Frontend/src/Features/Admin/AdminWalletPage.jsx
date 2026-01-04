@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Search, ChevronDown, Download, Eye, Settings, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { FetchWallet } from '../../Redux/AdminRedux/AdminWalletSlice';
+import { AdminStatCard } from './AdminUserPage';
 
 // --- Utility Components (Card, Badge, Button, Input) ---
 
@@ -63,7 +64,7 @@ const mockUsers = [
         status: 'Active',
         currentBalance: 34.50, // Wallet.balance
         // WalletHistory fields: amount, type (transaction_type), purpose
-        lastTransaction: { amount: 50.00, type: 'credit', purpose: 'top-up' }, 
+        lastTransaction: { amount: 50.00, type: 'credit', purpose: 'top-up' },
         totalSpent: 874.25,
         profileColor: 'bg-blue-500',
     },
@@ -126,7 +127,7 @@ const StatCard = ({ title, value, icon: Icon, iconBg, iconColor, subTitle, trend
                     <p className="text-sm font-medium text-gray-500">{title}</p>
                     <h2 className="text-3xl font-bold text-gray-800 mt-1">{value}</h2>
                 </div>
-                
+
                 {/* Custom Icon/Graph */}
                 <div className={`flex-shrink-0 p-3 rounded-xl ${iconBg}`}>
                     {title === 'Total Wallet Balance' && <DollarSign className={`h-6 w-6 ${iconColor}`} />}
@@ -146,7 +147,7 @@ const WalletUserCard = ({ user }) => {
     const getInitials = (name) => {
         return name.split(' ').map(n => n[0]).join('').toUpperCase();
     };
-    
+
     // Helper to format purpose for display (e.g., 'top-up' -> 'Wallet Top-up')
     const formatPurpose = (purpose) => {
         return purpose
@@ -189,7 +190,7 @@ const WalletUserCard = ({ user }) => {
                     {/* Amount uses sign based on transaction type, and amount is already positive in mock */}
                     <div className={`font-semibold ${transactionColor}`}>{transactionSign}${user.lastTransaction.amount.toFixed(2)}</div>
                     {/* Display formatted purpose from WalletHistory schema */}
-                    <div className="text-gray-400 mt-0.5">{formatPurpose(user.lastTransaction.purpose)}</div> 
+                    <div className="text-gray-400 mt-0.5">{formatPurpose(user.lastTransaction.purpose)}</div>
                 </div>
 
                 {/* Total Spent */}
@@ -278,20 +279,40 @@ export default function WalletManagement() {
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <StatCard title="Total Wallet Balance"
-                    value={`$${mappedUsers.reduce((s,u)=>s+u.currentBalance,0).toFixed(2)}`}
-                    icon={DollarSign} iconBg="bg-green-50" iconColor="text-green-600"
+                <AdminStatCard
+                    title="Total Wallet Balance"
+                    value={`$${mappedUsers.reduce((s, u) => s + u.currentBalance, 0).toFixed(2)}`}
+                    change="+ Overall balance"
+                    icon={DollarSign}
+                    iconBg="bg-green-50"
+                    iconColor="text-green-600"
+                    valueColor="text-gray-900"
+                    changeColor="text-green-600"
                 />
 
-                <StatCard title="Total Spent"
-                    value={`$${mappedUsers.reduce((s,u)=>s+u.totalSpent,0).toFixed(2)}`}
-                    icon={TrendingUp} iconBg="bg-blue-50" iconColor="text-blue-600"
+
+                <AdminStatCard
+                    title="Total Spent"
+                    value={`$${mappedUsers.reduce((s, u) => s + u.totalSpent, 0).toFixed(2)}`}
+                    change="Total expenditure"
+                    icon={TrendingUp}
+                    iconBg="bg-blue-50"
+                    iconColor="text-blue-600"
+                    valueColor="text-gray-900"
+                    changeColor="text-blue-600"
                 />
 
-                <StatCard title="Low Balance Users"
-                    value={mappedUsers.filter(u=>u.status==="Low Balance").length}
-                    icon={TrendingDown} iconBg="bg-red-50" iconColor="text-red-600"
+                <AdminStatCard
+                    title="Low Balance Users"
+                    value={mappedUsers.filter(u => u.status === "Low Balance").length}
+                    change="Requires attention"
+                    icon={TrendingDown}
+                    iconBg="bg-red-50"
+                    iconColor="text-red-600"
+                    valueColor="text-gray-900"
+                    changeColor="text-red-600"
                 />
+
             </div>
 
             {/* Search & Filters */}

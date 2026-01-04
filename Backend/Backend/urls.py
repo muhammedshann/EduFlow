@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/pomodoro/', include('apps.pomodoro.urls')),
     path('api/habit/', include('apps.habit_tracker.urls')),
     path('api/groups/', include('apps.groups.urls')),
+    path('api/live-transcription/', include('apps.live_transcription.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/accounts/auth/', include('dj_rest_auth.urls')),
     path('api/accounts/auth/registration/', include('dj_rest_auth.registration.urls')),

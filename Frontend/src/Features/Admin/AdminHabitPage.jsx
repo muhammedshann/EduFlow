@@ -13,19 +13,7 @@ import {
 
 import { useDispatch } from "react-redux";
 import { AdminFetchHabit } from "../../Redux/AdminRedux/AdminHabitSlice";
-
-const AdminStatCard = ({ title, value, icon: Icon, color }) => (
-    <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex justify-between items-start">
-        <div>
-            <p className="text-sm font-medium text-gray-500">{title}</p>
-            <p className="text-3xl font-bold text-gray-800 mt-1">{value}</p>
-        </div>
-
-        <div className={`p-4 rounded-xl ${color === "green" ? "bg-green-100 text-green-600" : "bg-purple-100 text-purple-600"}`}>
-            <Icon size={24} />
-        </div>
-    </div>
-);
+import { AdminStatCard } from "./AdminUserPage";
 
 const UserRow = ({ user }) => {
     const statusClass = {
@@ -114,10 +102,49 @@ export default function HabitManagement() {
 
             {/* ADMIN STATS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <AdminStatCard title="Total Users" value={stats.total_users} icon={Users} />
-                <AdminStatCard title="Total Habits" value={stats.total_habits} icon={Activity} />
-                <AdminStatCard title="Total Logs Recorded" value={stats.total_logs} icon={BarChart3} />
-                <AdminStatCard title="Avg Completion Rate" value={stats.avg_completion_rate + "%"} icon={CheckCircle} color="green" />
+                <AdminStatCard
+                    title="Total Users"
+                    value={stats.total_users}
+                    icon={Users}
+                    iconBg="bg-blue-50"
+                    iconColor="text-blue-600"
+                    valueColor="text-gray-900"
+                    change=""
+                    changeColor=""
+                />
+
+                <AdminStatCard
+                    title="Total Habits"
+                    value={stats.total_habits}
+                    icon={Activity}
+                    iconBg="bg-purple-50"
+                    iconColor="text-purple-600"
+                    valueColor="text-gray-900"
+                    change=""
+                    changeColor=""
+                />
+
+                <AdminStatCard
+                    title="Total Logs Recorded"
+                    value={stats.total_logs}
+                    icon={BarChart3}
+                    iconBg="bg-orange-50"
+                    iconColor="text-orange-600"
+                    valueColor="text-gray-900"
+                    change=""
+                    changeColor=""
+                />
+
+                <AdminStatCard
+                    title="Avg Completion Rate"
+                    value={`${stats.avg_completion_rate}%`}
+                    icon={CheckCircle}
+                    iconBg="bg-green-50"
+                    iconColor="text-green-600"
+                    valueColor="text-gray-900"
+                    change=""
+                    changeColor=""
+                />
             </div>
 
             {/* USERS TABLE */}

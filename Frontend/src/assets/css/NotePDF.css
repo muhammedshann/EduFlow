@@ -1,0 +1,28 @@
+/* Standard CSS to prevent PDF crashes and fix alignment */
+.pdf-export-container {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-family: sans-serif !important;
+    padding: 40px !important; /* Perfect page margins */
+    width: 800px !important;  /* Standard document width */
+    line-height: 1.6 !important;
+}
+
+.pdf-title {
+    font-size: 36px !important;
+    font-weight: bold !important;
+    margin-bottom: 10px !important;
+    color: #000000 !important;
+}
+
+.pdf-date {
+    font-size: 14px !important;
+    color: #666666 !important;
+    margin-bottom: 30px !important;
+}
+
+.pdf-body {
+    font-size: 18px !important;
+    color: #333333 !important;
+    white-space: pre-wrap !important;
+}

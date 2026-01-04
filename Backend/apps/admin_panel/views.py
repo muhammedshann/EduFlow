@@ -4,7 +4,7 @@ from rest_framework import status
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import AdminUserSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminEditUserSerializer, WalletSerializer, AdminGroupSerializer
+from .serializers import AdminUserSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminEditUserSerializer, WalletSerializer, AdminGroupSerializer, AdminNotesSerializer
 from rest_framework.permissions import IsAdminUser
 from apps.accounts.models import User, Wallet
 from apps.pomodoro.models import PomodoroSettings, PomodoroDailySummary
@@ -12,8 +12,7 @@ from apps.habit_tracker.models import Habit, HabitLog
 from apps.groups.models import Group
 from django.contrib.auth import login
 from django.db.models import Sum, Count
-
-
+from apps.live_transcription.models import Transcription
 
 
 # Create your views here.
@@ -225,3 +224,10 @@ class AdminHabitView(APIView):
 
         return Response(dashboard)
 
+class AdminFetchNotesView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        notes = Transcription.objects.select_related("user").all()
+        serializer = AdminNotesSerializer(notes, many=True)
+        return Response(serializer.data)

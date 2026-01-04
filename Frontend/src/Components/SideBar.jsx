@@ -27,13 +27,13 @@ export default function Sidebar() {
     const { logout } = useUser();
     const navItems = [
         { label: "Dashboard", icon: LayoutDashboard, path:'/dashboard' },
-        { label: "Live Transcription", icon: Mic },
+        { label: "Live Transcription", icon: Mic, path:'/live-transcription/' },
         { label: "Upload Transcription", icon: Upload },
         { label: "Chat", icon: MessageSquare },
         { label: "Pomodoro", icon: Timer, path:'/promodoro/' },
         { label: "Habit Tracker", icon: Calendar, path:'/habit-tracker/' },
         { label: "Groups", icon: Users, path:'/groups/' },
-        { label: "Notes", icon: FileText },
+        { label: "Notes", icon: FileText, path:'/notes/'},
         { label: "Wallet", icon: Wallet, path:'/wallet/' },
         { label: "Settings", icon: Settings, path:'/settings/' },
     ];

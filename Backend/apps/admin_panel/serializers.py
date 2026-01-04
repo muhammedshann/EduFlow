@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.accounts.models import User, WalletHistory, Wallet
 from apps.groups.models import Group
+from apps.live_transcription.models import Transcription
 
 class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -150,3 +151,10 @@ class AdminGroupSerializer(serializers.ModelSerializer):
 
     def get_admin_id(self, obj):
         return getattr(obj.created_by, "id", None)
+
+class AdminNotesSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+
+    class Meta:
+        model = Transcription
+        fields = "__all__"

@@ -15,7 +15,8 @@ import {
     AudioLines,
     Clock,
     CalendarDays,
-    Receipt, // Added Receipt icon back to the imports
+    Receipt,
+    Notebook, // Added Receipt icon back to the imports
 } from "lucide-react";
 // Assuming these context imports are correctly set up in your project
 import { useUser } from "../Context/UserContext"; 
@@ -37,12 +38,13 @@ export default function AdminSidebar() {
         { label: "Groups Management", icon: UsersRound, path: '/admin/group/' },
         { label: "Pomodoro Management", icon: Clock, path: '/admin/pomodoro/' },
         { label: "Habit Management", icon: CalendarDays, path: '/admin/habit/' },
+        { label: "Transcription Management", icon: AudioLines, path: '/admin/transcription' },
+        { label: "Notes Management", icon: Notebook, path: '/admin/notes/' },
         { label: "Subscription Management", icon: BadgeCheck, path: '/admin/subscription' },
         { label: "Review Management", icon: Star, path: '/admin/review' },
         { label: "Transaction Management", icon: Receipt, path: '/admin/transaction' },
         { label: "Wallet Management", icon: WalletCards, path: '/admin/wallet/' },
         { label: "Notification Management", icon: Bell, path: '/admin/notification' },
-        { label: "Transcription Management", icon: AudioLines, path: '/admin/transcription' },
     ];
 
     // Update selected path when URL changes

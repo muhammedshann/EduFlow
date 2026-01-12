@@ -17,12 +17,55 @@ import { CreateGroupModal } from '../CommunityGroups/GroupsPage';
 import { CreateGroup } from '../../Redux/GroupsSlice';
 import { AdminStatCard } from './AdminUserPage';
 
+function DeleteModal({ onClose, onConfirm }) {
+    return (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
+                <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                    Delete Group?
+                </h2>
+                <p className="text-gray-600 text-sm mb-6">
+                    Are you sure you want to delete this group?
+                </p>
+                <div className="flex justify-end gap-3">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        onClick={onConfirm}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 const GroupRow = ({ group }) => {
     const dispatch = useDispatch();
+    const [showDeleteConfirm, setshowDeleteConfirm] = useState(false);
+
     const handleDeleteGroup = async (id) => {
-        await dispatch(AdminHanldeGroupDelete({ id }))
-        window.location.reload();
-    }
+
+        try {
+            await dispatch(AdminHanldeGroupDelete({ id })).unwrap();
+        } catch (err) {
+            console.error("Group delete failed", err);
+        } finally {
+            window.location.reload();
+            setshowDeleteConfirm(false);
+        }
+    };
+    // const handleDeleteGroup = async (id) => {
+    //     await dispatch(AdminHanldeGroupDelete({ id }))
+    //     window.location.reload();
+    // }
     return (
         <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
 
@@ -52,10 +95,18 @@ const GroupRow = ({ group }) => {
                 </div>
 
                 <div className="flex items-center space-x-2 w-20 justify-end">
-                    <Trash2 size={18} onClick={() => handleDeleteGroup(group.id)} className="text-gray-400 hover:text-red-600 cursor-pointer" />
+                    <Trash2 size={18} onClick={() => setshowDeleteConfirm(true)} className="text-gray-400 hover:text-red-600 cursor-pointer" />
                     <MoreVertical size={18} className="text-gray-400 cursor-pointer" />
                 </div>
             </div>
+            {showDeleteConfirm && (
+                <DeleteModal
+                    onClose={() => {
+                        setshowDeleteConfirm(false);
+                    }}
+                    onConfirm={() => handleDeleteGroup(group.id)}
+                />
+            )}
         </div>
     );
 };
@@ -214,6 +265,7 @@ export default function GroupsManagement() {
                     )}
                 </div>
             </div>
+            
         </div>
     );
 }

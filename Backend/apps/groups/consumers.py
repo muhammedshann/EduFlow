@@ -63,10 +63,6 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
             "timestamp": event["timestamp"],
         }))
 
-    # -----------------------------
-    # DB HELPERS
-    # -----------------------------
-
     @database_sync_to_async
     def group_exists(self):
         return Group.objects.filter(id=self.group_id).exists()

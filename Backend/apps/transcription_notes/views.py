@@ -4,12 +4,32 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
 
-from .models import Transcription
+from .models import Notes,LiveTranscription
 from .serializers import TranscriptionCreateSerializer, NotesSerializer
 
 
 class LiveTranscriptionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self,request):
+        today = now().date()
+        transcription, created = LiveTranscription.objects.get_or_create(user=request.user,created_at__date=today, defaults={"count": 1})
+
+        if not created:
+            transcription.count += 1
+            transcription.save(update_fields=["count"])
+
+        return Response(
+            {
+                "count_today": transcription.count,
+            },
+            status=200,
+        )
+
+
+class NoteCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -22,7 +42,7 @@ class LiveTranscriptionView(APIView):
             )
 
         # ✅ SAFE duplicate check
-        already_saved = Transcription.objects.filter(
+        already_saved = Notes.objects.filter(
             user=request.user,
             type="live",
             title=note_title
@@ -56,7 +76,7 @@ class LiveTranscriptionView(APIView):
 class NotesView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):
-        notes = Transcription.objects.filter(user=request.user)
+        notes = Notes.objects.filter(user=request.user)
         serializer  = NotesSerializer(notes, many=True)
         return Response(
             serializer.data,
@@ -70,7 +90,7 @@ class NotesView(APIView):
                 'note not defined',
                 status=status.HTTP_400_BAD_REQUEST
             )
-        note = get_object_or_404(Transcription, id=note_id)
+        note = get_object_or_404(Notes, id=note_id)
         note.delete()
         return Response(
             'note deleted',
@@ -82,11 +102,11 @@ class NoteDetailView(RetrieveAPIView):
     serializer_class = NotesSerializer
 
     def get_queryset(self):
-        return Transcription.objects.filter(user=self.request.user)
+        return Notes.objects.filter(user=self.request.user)
     
 class NoteUpdateView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = NotesSerializer
 
     def get_queryset(self):
-        return Transcription.objects.filter(user=self.request.user)
+        return Notes.objects.filter(user=self.request.user)

@@ -7,19 +7,34 @@ GEMINI_URL = (
 )
 
 def call_gemini(prompt: str) -> str:
-    response = requests.post(
-        f"{GEMINI_URL}?key={os.getenv('GEMINI_API_KEY')}",
-        headers={"Content-Type": "application/json"},
-        json={
-            "contents": [
-                {
-                    "parts": [{"text": prompt}]
-                }
-            ]
-        },
-        timeout=60
-    )
+    try :
+        response = requests.post(
+            f"{GEMINI_URL}?key={os.getenv('GEMINI_API_KEY')}",
+            headers={"Content-Type": "application/json"},
+            json={
+                "contents": [
+                    {
+                        "parts": [{"text": prompt}]
+                    }
+                ]
+            },
+            timeout=60
+        )
+        if response.status_code == 429:
+            return (
+                "⚠️ I'm getting too many requests right now.\n"
+                "Please wait a few seconds and try again."
+            )
 
-    response.raise_for_status()
+        if response.status_code != 200:
+            return "❌ AI service is temporarily unavailable."
 
-    return response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        data = response.json()
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+
+    except Exception:
+        return "❌ Something went wrong. Please try again later."
+
+    # response.raise_for_status()
+
+    # return response.json()["candidates"][0]["content"]["parts"][0]["text"]

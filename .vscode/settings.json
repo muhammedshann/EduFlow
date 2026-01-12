@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "/Users/muhammedshan/Documents/codes/EduFlow/venv/bin/python",
+    "python.terminal.activateEnvInSelectedTerminal": true,
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": []
+}

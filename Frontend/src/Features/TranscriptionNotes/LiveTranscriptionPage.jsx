@@ -11,7 +11,7 @@ import {
     X,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { SaveLiveNote } from "../../Redux/LiveTranscriptionSlice";
+import { SaveLiveNote, StartLiveTranscription } from "../../Redux/LiveTranscriptionSlice";
 
 export default function LiveTranscriptionPage() {
     const navigate = useNavigate();
@@ -20,6 +20,8 @@ export default function LiveTranscriptionPage() {
     const [isRecording, setIsRecording] = useState(false);
     const [isListening, setIsListening] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [noteSaved, setNoteSaved] = useState(false);
+    const [noteId, setNoteId] = useState(false);
     const [showSaveNoteModal, SetShowSaveNoteModal] = useState(false);
     const [noteTitle, setNoteTitle] = useState("");
 
@@ -70,6 +72,8 @@ export default function LiveTranscriptionPage() {
             return;
         }
 
+        await dispatch(StartLiveTranscription());
+
         setIsRecording(true);
         setIsListening(true);
         setShowTranscript(true);
@@ -112,7 +116,7 @@ export default function LiveTranscriptionPage() {
 
     /* ---------------- OTHER ---------------- */
     const handleChat = () => {
-        navigate("/chat", { state: { transcript } });
+        navigate(`/chat-bot/${noteId}`);
     };
 
     const saveEdits = () => {
@@ -122,7 +126,8 @@ export default function LiveTranscriptionPage() {
 
     const HandleSaveNote = async () => {
         const response = await dispatch(SaveLiveNote({ type: "live", title: noteTitle, transcript_text: transcript }))
-        console.log(response);
+        setNoteId(response.payload.id)
+        setNoteSaved(true);
     }
 
     return (
@@ -273,13 +278,15 @@ export default function LiveTranscriptionPage() {
 
                         {!isEditing ? (
                             <div className="flex justify-center gap-4">
-                                <button
-                                    onClick={handleChat}
-                                    className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-2 rounded-lg hover:scale-105 transition"
-                                >
-                                    <MessageSquare size={18} />
-                                    Chat
-                                </button>
+                                {noteSaved && (
+                                    <button
+                                        onClick={handleChat}
+                                        className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-2 rounded-lg hover:scale-105 transition"
+                                    >
+                                        <MessageSquare size={18} />
+                                        Chat
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => {
                                         setEditedTranscript(transcript);

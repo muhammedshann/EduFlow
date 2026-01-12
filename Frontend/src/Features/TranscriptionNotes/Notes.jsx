@@ -2,13 +2,44 @@ import { useEffect, useState } from "react";
 import {
     Search,
     Eye,
-    Download,
+    Trash2,
     FileText,
     Sparkles,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { FetchNotes } from "../../Redux/LiveTranscriptionSlice";
+import { DeleteNote, FetchNotes } from "../../Redux/LiveTranscriptionSlice";
 import { useNavigate } from "react-router-dom";
+
+function DeleteModal({ onClose, onConfirm }) {
+    return (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
+                <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                    Delete Note?
+                </h2>
+                <p className="text-gray-600 text-sm mb-6">
+                    Are you sure you want to delete this note?
+                </p>
+                <div className="flex justify-end gap-3">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        onClick={onConfirm}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 
 export default function NotesPage() {
     const dispatch = useDispatch();
@@ -17,6 +48,9 @@ export default function NotesPage() {
     const [notes, setNotes] = useState([]);      // ✅ always array
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
+    const [showDeleteConfirm, setshowDeleteConfirm] = useState(false);
+    const [noteToDelete, setNoteToDelete] = useState(null);
+
 
     /* ================= FETCH NOTES ================= */
     const fetchNotes = async () => {
@@ -42,6 +76,20 @@ export default function NotesPage() {
     const filteredNotes = notes.filter((n) =>
         (n.title || "").toLowerCase().includes(query)
     );
+
+    const handleDelete = async () => {
+        if (!noteToDelete) return;
+
+        try {
+            await dispatch(DeleteNote(noteToDelete)).unwrap();
+            setNotes((prev) => prev.filter((n) => n.id !== noteToDelete));
+        } catch (err) {
+            console.error("Delete failed:", err);
+        } finally {
+            setshowDeleteConfirm(false);
+            setNoteToDelete(null);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#f6f3ff] to-[#fafafa] p-6">
@@ -132,12 +180,25 @@ export default function NotesPage() {
                                         </span>
                                     </div>
 
-                                    <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition"
-                                        onClick={() => navigate(`/notes/${note.id}`)}
-                                    >
-                                        <Eye size={16} />
-                                        View Details
-                                    </button>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => navigate(`/notes/${note.id}`)}
+                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition"
+                                        >
+                                            <Eye size={16} />
+                                            View Details
+                                        </button>
+
+                                        <Trash2
+                                            size={18}
+                                            onClick={() => {
+                                                setNoteToDelete(note.id);
+                                                setshowDeleteConfirm(true);
+                                            }}
+                                            className="text-gray-400 hover:text-red-600 cursor-pointer"
+                                        />
+
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -145,6 +206,16 @@ export default function NotesPage() {
                 )}
 
             </div>
+            {showDeleteConfirm && (
+                <DeleteModal
+                    onClose={() => {
+                        setshowDeleteConfirm(false);
+                        setNoteToDelete(null);
+                    }}
+                    onConfirm={handleDelete}
+                />
+            )}
+
         </div>
     );
 }

@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import Transcription
+from .models import Notes
 
 
 class TranscriptionCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Transcription
+        model = Notes
         fields = [
             "id",
             "type",
@@ -17,14 +17,14 @@ class TranscriptionCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        return Transcription.objects.create(
+        return Notes.objects.create(
             user=user,
             **validated_data
         )
     
 class NotesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Transcription
+        model = Notes
         fields = [
             "id",
             "type",

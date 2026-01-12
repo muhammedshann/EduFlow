@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react"; // Added useRef
 import { useParams, useNavigate } from "react-router-dom";
-import { Edit3, Save, X, Download, ArrowLeft } from "lucide-react";
+import { Edit3, Save, X, Download, ArrowLeft, MessageCircle } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { FetchDetailNote, UpdateNote } from "../../Redux/LiveTranscriptionSlice";
 import '../../assets/css/NotePDF.css'
@@ -100,6 +100,10 @@ export default function NoteDetailPage() {
         }
     };
 
+    const handleChat = () => {
+        navigate(`/chat-bot/${id}`);
+    };
+
 
     if (loading) {
         return (
@@ -125,6 +129,12 @@ export default function NoteDetailPage() {
                     <div className="flex gap-4">
                         {!isEditing ? (
                             <>
+                                <button
+                                    onClick={handleChat}
+                                    className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1"
+                                >
+                                    <MessageCircle size={14} /> Chat
+                                </button>
                                 <button
                                     onClick={() => setIsEditing(true)}
                                     className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1"

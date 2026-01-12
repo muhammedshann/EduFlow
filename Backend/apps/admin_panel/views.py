@@ -4,7 +4,7 @@ from rest_framework import status
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import AdminUserSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminEditUserSerializer, WalletSerializer, AdminGroupSerializer, AdminNotesSerializer
+from .serializers import AdminUserSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminEditUserSerializer, WalletSerializer, AdminGroupSerializer, AdminNotesSerializer, AdminLiveTranscriptionSerializer
 from rest_framework.permissions import IsAdminUser
 from apps.accounts.models import User, Wallet
 from apps.pomodoro.models import PomodoroSettings, PomodoroDailySummary
@@ -12,7 +12,8 @@ from apps.habit_tracker.models import Habit, HabitLog
 from apps.groups.models import Group
 from django.contrib.auth import login
 from django.db.models import Sum, Count
-from apps.live_transcription.models import Transcription
+from apps.transcription_notes.models import Notes, LiveTranscription
+from apps.chat_bot.models import ChatBot
 
 
 # Create your views here.
@@ -228,6 +229,51 @@ class AdminFetchNotesView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        notes = Transcription.objects.select_related("user").all()
+        notes = Notes.objects.select_related("user").all()
         serializer = AdminNotesSerializer(notes, many=True)
         return Response(serializer.data)
+    
+class AdminLiveTranscriptionView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        users = (
+            LiveTranscription.objects
+            .values("user_id", "user__username")
+            .annotate(total_count=Sum("count"))
+            .order_by("-total_count")
+        )
+
+        return Response({
+            "users": [
+                {
+                    "user_id": u["user_id"],
+                    "username": u["user__username"],
+                    "total_count": u["total_count"],
+                }
+                for u in users
+            ]
+        })
+
+    
+class AdminChatBotView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self,request):
+        users = (
+            ChatBot.objects
+            .values("user_id", "user__username")
+            .annotate(total_requests=Sum("request_count"))
+            .order_by("-total_requests")
+        )
+
+        return Response({
+            "users": [
+                {
+                    "user_id": u["user_id"],
+                    "username": u["user__username"],
+                    "total_count": u["total_requests"],
+                }
+                for u in users
+            ]
+        })

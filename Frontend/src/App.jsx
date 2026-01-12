@@ -28,10 +28,14 @@ import GroupsManagement from './Features/Admin/AdminGroupPage';
 import HabitManagement from './Features/Admin/AdminHabitPage';
 import PomodoroManagement from './Features/Admin/AdminPomodoro';
 import ReviewsPage from './Features/Review/ReviewPage';
-import LiveTranscriptionPage from './Features/LiveTranscription/LiveTranscriptionPage';
-import NotesPage from './Features/LiveTranscription/Notes';
-import NoteDetailPage from './Features/LiveTranscription/NoteDetailPage';
+import LiveTranscriptionPage from './Features/TranscriptionNotes/LiveTranscriptionPage';
+import NotesPage from './Features/TranscriptionNotes/Notes';
+import NoteDetailPage from './Features/TranscriptionNotes/NoteDetailPage';
 import NotesManagement from './Features/Admin/AdminNotesPage';
+import ChatBotPage from './Features/ChatBot/ChatBot';
+import AdminReviewManagement from './Features/Admin/AdminReviewPage';
+import LiveTranscriptionManagement from './Features/Admin/AdminLiveTranscription';
+import ChatBotManagement from './Features/Admin/AdminChatBotPage';
 
 function App() {
   return (
@@ -131,6 +135,23 @@ function App() {
             }
           />
 
+          <Route
+            path='/chat-bot/'
+            element={
+              <ProtectedRoute>
+                <ChatBotPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/chat-bot/:noteId'
+            element={
+              <ProtectedRoute>
+                <ChatBotPage />
+              </ProtectedRoute>
+            }
+          />
+
         </Route>
 
         <Route
@@ -204,6 +225,24 @@ function App() {
           <Route path='/admin/notes/' element={
             <AdminProtectedRoute>
               <NotesManagement />
+            </AdminProtectedRoute>
+          } />
+
+          <Route path='/admin/review/' element={
+            <AdminProtectedRoute>
+              <AdminReviewManagement />
+            </AdminProtectedRoute>
+          } />
+
+          <Route path='/admin/live-transcription/' element={
+            <AdminProtectedRoute>
+              <LiveTranscriptionManagement />
+            </AdminProtectedRoute>
+          } />
+
+          <Route path='/admin/chat-bot/' element={
+            <AdminProtectedRoute>
+              <ChatBotManagement />
             </AdminProtectedRoute>
           } />
         </Route>

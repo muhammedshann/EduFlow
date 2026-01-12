@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from apps.accounts.models import User, WalletHistory, Wallet
 from apps.groups.models import Group
-from apps.live_transcription.models import Transcription
+from apps.transcription_notes.models import Notes
 
 class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -156,5 +156,10 @@ class AdminNotesSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
 
     class Meta:
-        model = Transcription
+        model = Notes
         fields = "__all__"
+
+class AdminLiveTranscriptionSerializer(serializers.Serializer):
+    user_id = serializers.UUIDField()
+    username = serializers.CharField()
+    total_count = serializers.IntegerField()

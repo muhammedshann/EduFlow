@@ -196,7 +196,7 @@ export default function UserDashboard() {
                         AI Assistant
                     </h2>
                     <div className="space-y-3">
-                        <NavLink to="/chat">
+                        <NavLink to="/chat-bot/">
                             <Button className="w-full justify-start flex items-center h-12">
                                 <MessageSquare className="h-4 w-4 mr-3" />
                                 Chat with AI

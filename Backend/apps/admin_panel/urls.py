@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import adminLoginView, GetUsers, CreateUser, EditUser, DeleteUser, WalletDetailView, PomodoroView, AdminGroupView, AdminGroupDeleteView, AdminHabitView, AdminFetchNotesView
+from .views import adminLoginView, GetUsers, CreateUser, EditUser, DeleteUser, WalletDetailView, PomodoroView, AdminGroupView, AdminGroupDeleteView, AdminHabitView, AdminFetchNotesView, AdminLiveTranscriptionView, AdminChatBotView
 
 urlpatterns = [
     path('login/',adminLoginView.as_view(),name='adminLogin'),
@@ -13,4 +13,6 @@ urlpatterns = [
     path('groups/delete/',AdminGroupDeleteView.as_view(),name='AdminGroupDeleteView'),
     path('habits/',AdminHabitView.as_view(),name='AdminHabitView'),
     path('notes/', AdminFetchNotesView.as_view(), name="fetch-all-notes"),
+    path('live-transcription/', AdminLiveTranscriptionView.as_view(), name="fetch-all-live-transcriptions"),
+    path('chat-bot/', AdminChatBotView.as_view(), name="fetch-all-chat-bot"),
 ]

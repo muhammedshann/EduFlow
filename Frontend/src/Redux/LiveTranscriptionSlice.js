@@ -2,11 +2,39 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api/axios";
 import { showNotification } from "./NotificationSlice";
 
+export const StartLiveTranscription = createAsyncThunk(
+    'liveTranscription/StartLiveTranscription',
+    async( _,{dispatch,rejectWithValue}) => {
+        try {
+            const response = await api.post('/transcription-notes/start/');
+            console.log(response.data);
+            dispatch(showNotification({
+                message: 'note started successfully',
+                type: "success"
+            }));
+            return response.data
+        } catch(err) {
+            const errorMessage =
+                err.response?.data?.error ||
+                err.response?.data ||
+                err.message ||
+                'starting note failed';
+
+            dispatch(showNotification({
+                message: errorMessage,
+                type: 'error',
+            }));
+
+            return rejectWithValue(errorMessage);
+        }
+    }
+)
+
 export const SaveLiveNote = createAsyncThunk(
     'liveTranscription/SaveLiveNote',
     async( note,{dispatch,rejectWithValue}) => {
         try {
-            const response = await api.post('/live-transcription/', note);
+            const response = await api.post('/transcription-notes/', note);
             console.log(response.data);
             dispatch(showNotification({
                 message: 'note saved successfully',
@@ -32,9 +60,9 @@ export const SaveLiveNote = createAsyncThunk(
 
 export const FetchNotes = createAsyncThunk(
     'liveTranscription/FetchNotes',
-    async( _,{rejectWithValue}) => {
+    async( _,{dispatch, rejectWithValue}) => {
         try {
-            const response = await api.get('/live-transcription/notes/');
+            const response = await api.get('/transcription-notes/notes/');
             console.log(response.data);
             return response.data
         } catch(err) {
@@ -56,9 +84,9 @@ export const FetchNotes = createAsyncThunk(
 
 export const FetchDetailNote = createAsyncThunk(
     'liveTranscription/FetchDetailNote',
-    async( id,{rejectWithValue}) => {
+    async( id,{dispatch, rejectWithValue}) => {
         try {
-            const response = await api.get(`/live-transcription/notes/${id}/`);
+            const response = await api.get(`/transcription-notes/notes/${id}/`);
             console.log(response.data);
             return response.data
         } catch(err) {
@@ -84,7 +112,7 @@ export const UpdateNote = createAsyncThunk(
     async ({ id, title, transcript_text }, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.patch(
-                `/live-transcription/notes-update/${id}/`,
+                `/transcription-notes/notes-update/${id}/`,
                 { title, transcript_text }
             );
             dispatch(showNotification({
@@ -109,3 +137,35 @@ export const UpdateNote = createAsyncThunk(
     }
 );
 
+export const DeleteNote = createAsyncThunk(
+    'liveTranscription/DeleteNote',
+    async( id,{dispatch, rejectWithValue}) => {
+        try {
+            const response = await api.delete(
+                '/transcription-notes/notes/',
+                {
+                    data: { id }   // ✅ THIS IS THE FIX
+                }
+            );
+            console.log(response.data);
+            dispatch(showNotification({
+                message: 'note deleted succesfully',
+                type: 'success',
+            }));
+            return response.data
+        } catch(err) {
+            const errorMessage =
+                err.response?.data?.error ||
+                err.response?.data ||
+                err.message ||
+                ' note failed';
+
+            dispatch(showNotification({
+                message: errorMessage,
+                type: 'error',
+            }));
+
+            return rejectWithValue(errorMessage);
+        }
+    }
+)

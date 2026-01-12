@@ -29,7 +29,7 @@ export default function Sidebar() {
         { label: "Dashboard", icon: LayoutDashboard, path:'/dashboard' },
         { label: "Live Transcription", icon: Mic, path:'/live-transcription/' },
         { label: "Upload Transcription", icon: Upload },
-        { label: "Chat", icon: MessageSquare },
+        { label: "Chat", icon: MessageSquare, path:'/chat-bot/' },
         { label: "Pomodoro", icon: Timer, path:'/promodoro/' },
         { label: "Habit Tracker", icon: Calendar, path:'/habit-tracker/' },
         { label: "Groups", icon: Users, path:'/groups/' },

@@ -180,7 +180,7 @@ export default function TranscriptProReviews() {
 
               <div>
                 <label className="block text-xs font-bold mb-2 uppercase tracking-wide">
-                  Review Title (Optional)
+                  Review Title
                 </label>
                 <input
                   type="text"

@@ -36,6 +36,7 @@ import ChatBotPage from './Features/ChatBot/ChatBot';
 import AdminReviewManagement from './Features/Admin/AdminReviewPage';
 import LiveTranscriptionManagement from './Features/Admin/AdminLiveTranscription';
 import ChatBotManagement from './Features/Admin/AdminChatBotPage';
+import SubscriptionManagement from './Features/Admin/AdminSubscriptionPage';
 
 function App() {
   return (
@@ -243,6 +244,12 @@ function App() {
           <Route path='/admin/chat-bot/' element={
             <AdminProtectedRoute>
               <ChatBotManagement />
+            </AdminProtectedRoute>
+          } />
+
+          <Route path='/admin/subscriptions/' element={
+            <AdminProtectedRoute>
+              <SubscriptionManagement />
             </AdminProtectedRoute>
           } />
         </Route>

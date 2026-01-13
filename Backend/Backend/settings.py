@@ -70,7 +70,8 @@ INSTALLED_APPS = [
     'apps.groups',
     'apps.review',
     'apps.transcription_notes',
-    'apps.chat_bot'
+    'apps.chat_bot',
+    'apps.subscriptions'
 ]
 
 MIDDLEWARE = [

@@ -40,6 +40,7 @@ import SubscriptionManagement from './Features/Admin/AdminSubscriptionPage';
 import SubscriptionPlansPage from './Features/Subscriptions/SubscriptionPlansPage';
 import CheckoutPage from './Features/Subscriptions/CheckoutPage';
 import UploadTranscriptionManagement from './Features/Admin/AdminUploadTranscription';
+import NotificationManagement from './Features/Admin/AdminNotificationPage';
 
 function App() {
   return (
@@ -276,6 +277,11 @@ function App() {
           <Route path='/admin/subscriptions/' element={
             <AdminProtectedRoute>
               <SubscriptionManagement />
+            </AdminProtectedRoute>
+          } />
+          <Route path='/admin/notification/' element={
+            <AdminProtectedRoute>
+              <NotificationManagement />
             </AdminProtectedRoute>
           } />
         </Route>

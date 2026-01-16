@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import adminLoginView, GetUsers, CreateUser, EditUser, DeleteUser, WalletDetailView, PomodoroView, AdminGroupView, AdminGroupDeleteView, AdminHabitView, AdminFetchNotesView, AdminLiveTranscriptionView, AdminChatBotView, AdminUploadTranscriptionView
+from .views import adminLoginView, GetUsers, CreateUser, EditUser, DeleteUser, WalletDetailView, PomodoroView, AdminGroupView, AdminGroupDeleteView, AdminHabitView, AdminFetchNotesView, AdminLiveTranscriptionView, AdminChatBotView, AdminUploadTranscriptionView, AdminNotificationView
 
 urlpatterns = [
     path('login/',adminLoginView.as_view(),name='adminLogin'),
@@ -16,4 +16,5 @@ urlpatterns = [
     path('live-transcription/', AdminLiveTranscriptionView.as_view(), name="fetch-all-live-transcriptions"),
     path('upload-transcription/', AdminUploadTranscriptionView.as_view(), name="fetch-all-upload-transcriptions"),
     path('chat-bot/', AdminChatBotView.as_view(), name="fetch-all-chat-bot"),
+    path('notifications/', AdminNotificationView.as_view(), name="fetch-all-notificaion"),
 ]

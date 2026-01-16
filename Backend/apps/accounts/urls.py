@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, LoginView, VerifyOtp, GenerateOtpView, ResetPassword, MeView, LogoutView, RefreshView, GoogleLoginView, UpdateProfileView, WalletView,UpdatePasswordView, SettingsView, UpdateProfileImageView, WalletDepositeView, WalletWithdrawView, SubscriptionPlanView
+from .views import RegisterView, LoginView, VerifyOtp, GenerateOtpView, ResetPassword, MeView, LogoutView, RefreshView, GoogleLoginView, UpdateProfileView, WalletView,UpdatePasswordView, SettingsView, UpdateProfileImageView, WalletDepositeView, WalletWithdrawView, SubscriptionPlanView, NotificationView
 
 urlpatterns = [
     path('me/', MeView.as_view(), name='me'),
@@ -18,5 +18,6 @@ urlpatterns = [
     path('wallet-deposite/', WalletDepositeView.as_view(), name='walletDeposite'),
     path('wallet-withdraw/', WalletWithdrawView.as_view(), name='walletWithdraw'),
     path('settings/', SettingsView.as_view(), name='settings'),
-    path('subscription-plans/', SubscriptionPlanView.as_view(), name='SubscriptionPlanView')
+    path('subscription-plans/', SubscriptionPlanView.as_view(), name='SubscriptionPlanView'),
+    path('notifications/', NotificationView.as_view(), name='NotificationView')
 ]

@@ -2,9 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
-from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, VerifyAccountSerializer, UpdateProfileSerializer, WalletSerializer,UpdatePasswordSerializer, SettingsSerializer, UpdateProfileImageSerializer, UserCreditsSerializer
+from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, VerifyAccountSerializer, UpdateProfileSerializer, WalletSerializer,UpdatePasswordSerializer, SettingsSerializer, UpdateProfileImageSerializer, UserCreditsSerializer, UserNotificationSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from .models import TempUser, Wallet, WalletHistory,Settings, UserCredits
+from apps.admin_panel.models import Notification
 from django.contrib.auth import get_user_model
 from .utils import sent_otp_email
 import random
@@ -451,4 +452,13 @@ class SubscriptionPlanView(APIView):
         # get_or_create ensures the logic doesn't break for new users
         credits, created = UserCredits.objects.get_or_create(user=request.user)
         serializer = UserCreditsSerializer(credits)
+        return Response(serializer.data)
+    
+class NotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Fetch only notifications for the logged-in user
+        notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+        serializer = UserNotificationSerializer(notifications, many=True)
         return Response(serializer.data)

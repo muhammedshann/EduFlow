@@ -23,7 +23,6 @@ import { fetchWallet } from "../../Redux/WalletSlice";
 export default function UserDashboard() {
     const [TodayHabitPercentage, setTodayHabitPercentage] = useState(0);
     const [TodayPomodoroCount, setTodayPomodoroCount] = useState(0);
-    const [Credits, setCredits] = useState(0);
     const { userCredits } = useSelector((state) => state.subscriptions);
     const notifications = [
         { message: "Pomodoro session completed!", time: "5 min ago", unread: true },
@@ -34,14 +33,10 @@ export default function UserDashboard() {
     const dispatch = useDispatch();
     const { user, logout } = useUser();
 
-    const unreadCount = notifications.filter((n) => n.unread).length;
-
-    // Simple Card Component
     const Card = ({ children, className }) => (
         <div className={`bg-white shadow-md rounded-xl p-4 ${className}`}>{children}</div>
     );
 
-    // Simple Button Component
     const Button = ({ children, className, onClick }) => (
         <button
             onClick={onClick}
@@ -56,9 +51,6 @@ export default function UserDashboard() {
         const PomodoroResponse = await dispatch(FetchDailyStats()).unwrap();
         console.log(PomodoroResponse);
         setTodayPomodoroCount(PomodoroResponse.sessions_completed)
-        // const CreditsResponse = await dispatch(FetchCredit()).unwrap();
-        // setCredits(CreditsResponse.remaining_credits)
-        
 
         const todayName = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];
         const todayStats = HabitResponse.find(day => day.date === todayName);
@@ -66,8 +58,6 @@ export default function UserDashboard() {
 
         setTodayHabitPercentage(todayPercentage);
 
-        // If you need to set state:
-        // setWeeklyProgress(weeklyAverage);
     };
 
     return (
@@ -106,11 +96,7 @@ export default function UserDashboard() {
                     <div className="relative">
                         <button className="relative p-2 rounded-lg hover:bg-gray-100 transition" onClick={() => navigate('/notification/')}>
                             <Bell className="h-5 w-5" />
-                            {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs text-white rounded-full bg-red-500">
-                                    {unreadCount}
-                                </span>
-                            )}
+
                         </button>
                     </div>
 

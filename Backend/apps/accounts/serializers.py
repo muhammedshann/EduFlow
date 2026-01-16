@@ -5,6 +5,7 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
 from .models import TempUser, Wallet, WalletHistory, Settings, UserCredits
+from apps.admin_panel.models import Notification
 from django.contrib.auth.hashers import make_password
 import random
 from .utils import sent_otp_email
@@ -300,3 +301,13 @@ class UserCreditsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserCredits
         fields = ['total_credits', 'used_credits', 'remaining_credits', 'last_purchase_date']
+
+class UserNotificationSerializer(serializers.ModelSerializer):
+    time_ago = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'title', 'message', 'notification_type', 'created_at', 'time_ago']
+
+    def get_time_ago(self, obj):
+        return obj.created_at.strftime("%b %d, %Y")

@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { RzpCreateOrder, RzpVerifyOrder } from '../../Redux/SubscriptionSlice';
 import confetti from 'canvas-confetti';
 import { useUser } from '../../Context/UserContext';
+import { SentNotification } from '../../Redux/AdminRedux/AdminNotificationSlice';
 
 export default function CheckoutPage() {
     const navigate = useNavigate();
@@ -93,6 +94,17 @@ export default function CheckoutPage() {
                     }));
 
                     if (RzpVerifyOrder.fulfilled.match(verifyRes) && verifyRes.payload.status === "Success") {
+                        const notificationData = {
+                            title: 'Credits purchased',
+                            notification_type: 'system',
+                            message: `Successfully added ${bundle.credits} credits.`,
+                            username: user.username // Use the user object directly
+                        };
+                        const payload = {
+                            data: notificationData,
+                            target_type: 'personal'
+                        };
+                        await dispatch(SentNotification(payload));
                         setIsSuccess(true); // Switch to Success UI
                         triggerFireworks();
                         setTimeout(() => {

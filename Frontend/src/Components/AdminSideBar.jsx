@@ -46,7 +46,7 @@ export default function AdminSidebar() {
         { label: "Review Management", icon: Star, path: '/admin/review' },
         { label: "Transaction Management", icon: Receipt, path: '/admin/transaction' },
         { label: "Wallet Management", icon: WalletCards, path: '/admin/wallet/' },
-        { label: "Notification Management", icon: Bell, path: '/admin/notification' },
+        { label: "Notification Management", icon: Bell, path: '/admin/notification/' },
     ];
 
     // Update selected path when URL changes

@@ -5,7 +5,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import AdminUserSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminEditUserSerializer, WalletSerializer, AdminGroupSerializer, AdminNotesSerializer, AdminLiveTranscriptionSerializer,AdminUploadStatsSerializer
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from apps.accounts.models import User, Wallet
 from apps.pomodoro.models import PomodoroSettings, PomodoroDailySummary
 from apps.habit_tracker.models import Habit, HabitLog
@@ -15,6 +15,8 @@ from django.db.models import Sum, Count, Q
 from apps.transcription_notes.models import Notes, LiveTranscription
 from apps.chat_bot.models import ChatBot
 from django.utils import timezone
+from .models import Notification
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 class adminLoginView(APIView):
@@ -289,3 +291,63 @@ class AdminUploadTranscriptionView(APIView):
 
         serializer = AdminUploadStatsSerializer(users_data, many=True)
         return Response({"users": serializer.data})
+    
+class AdminNotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # 1. Simplified Stats (No is_read logic)
+        total_users = User.objects.count()
+        total_notifications_sent = Notification.objects.count()
+        
+        # Unique campaigns (grouped by title/date)
+        campaign_count = Notification.objects.values('title', 'created_at').distinct().count()
+
+        # 2. History List (Grouped by campaign)
+        history = Notification.objects.values(
+            'title', 'message', 'notification_type', 'created_at'
+        ).annotate(
+            recipient_count=Count('id'),
+        ).order_by('-created_at')
+
+        return Response({
+            "stats": {
+                "totalSent": campaign_count,
+                "totalReads": 0, # Placeholder since you don't want is_read
+                "totalUsers": total_users,
+                "readRate": 0
+            },
+            "history": history
+        })
+
+    def post(self, request):
+        title = request.data.get('title')
+        message = request.data.get('message')
+        n_type = request.data.get('notification_type')
+        target_type = request.data.get('target_type')  # 'all' or 'personal'
+        username = request.data.get('username')
+
+        if target_type == 'personal':
+            # Send to one specific user
+            user = get_object_or_404(User, username=username)
+            Notification.objects.create(
+                recipient=user,
+                title=title,
+                message=message,
+                notification_type=n_type
+            )
+            return Response({"message": f"Notification sent to {username}"}, status=status.HTTP_201_CREATED)
+        
+        else:
+            # Send to ALL users
+            users = User.objects.all()
+            notifications = [
+                Notification(
+                    recipient=user,
+                    title=title,
+                    message=message,
+                    notification_type=n_type
+                ) for user in users
+            ]
+            Notification.objects.bulk_create(notifications)
+            return Response({"message": "Broadcast sent to all users"}, status=status.HTTP_201_CREATED)

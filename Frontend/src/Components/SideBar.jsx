@@ -1,30 +1,23 @@
 import { useState, useEffect } from "react";
-import {
-    LayoutDashboard,
-    Mic,
-    Upload,
-    MessageSquare,
-    Timer,
-    Calendar,
-    Users,
-    FileText,
-    Settings,
-    Menu,
-    X,
-    Sparkles,
-    LogOut,
-    Wallet
-} from "lucide-react";
+import {LayoutDashboard,Mic,Upload,MessageSquare,Timer,Calendar,Users,FileText,Settings,Menu,X,Sparkles,LogOut,Wallet} from "lucide-react";
 import { useUser } from "../Context/UserContext";
 import { useSidebar } from "../Context/SideBarContext";
 import { useLocation, useNavigate } from "react-router-dom";
+import { FetchCredit } from "../Redux/SubscriptionSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function Sidebar() {
     const location = useLocation();
+    const dispatch = useDispatch();
     const [selected, setSelected] = useState(location.pathname);
     const {collapsed , toggleSidebar} = useSidebar();
     const navigate = useNavigate();
     const { logout } = useUser();
+    const [Credits, setCredits] = useState(0);
+    const { userCredits } = useSelector((state) => state.subscriptions);
+    console.log('credit from reducer',userCredits);
+    
+    
     const navItems = [
         { label: "Dashboard", icon: LayoutDashboard, path:'/dashboard' },
         { label: "Live Transcription", icon: Mic, path:'/live-transcription/' },
@@ -37,8 +30,15 @@ export default function Sidebar() {
         { label: "Wallet", icon: Wallet, path:'/wallet/' },
         { label: "Settings", icon: Settings, path:'/settings/' },
     ];
+
+    const fetch = async() => {
+        const CreditsResponse = await dispatch(FetchCredit()).unwrap();
+        setCredits(CreditsResponse.remaining_credits)
+    }
+
     useEffect(() => {
         setSelected(location.pathname);
+        fetch()
     }, [location.pathname]);
 
     const HandlePages = ({label,path}) => {
@@ -118,7 +118,7 @@ export default function Sidebar() {
                         <div className="flex flex-col items-center justify-between space-y-3">
                             <div className="flex flex-col items-center">
                                 {/* <Sparkles className="w-6 h-6 text-indigo-600 mb-1" /> */}
-                                <div className="text-lg font-bold text-gray-900">247</div>
+                                <div className="text-lg font-bold text-gray-900">{userCredits?.remaining_credits || 0}</div>
                             </div>
 
                             <button
@@ -137,16 +137,16 @@ export default function Sidebar() {
                             </div>
 
                             <div className="flex items-baseline gap-1 mb-3">
-                                <span className="text-3xl font-bold text-gray-900">247</span>
+                                <span className="text-3xl font-bold text-gray-900">{userCredits?.remaining_credits || 0}</span>
                                 <span className="text-gray-600 text-sm">remaining</span>
                             </div>
 
-                            <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                            {/* <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
                                 <div
                                     className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
                                     style={{ width: "65%" }}
                                 />
-                            </div>
+                            </div> */}
 
                             <button
                                 onClick={() => logout()}

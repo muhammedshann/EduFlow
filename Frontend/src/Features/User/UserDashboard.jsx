@@ -9,17 +9,22 @@ import {
     Bell,
     CreditCard,
     BarChart3,
-    LogOut
+    LogOut,
+    Settings
 } from "lucide-react";
 import { useUser } from "../../Context/UserContext";
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { WeeklyStatsHabit } from "../../Redux/HabitTrackerSlice";
 import { FetchDailyStats } from "../../Redux/PomodoroSlice";
+import { FetchCredit } from "../../Redux/SubscriptionSlice";
+import { fetchWallet } from "../../Redux/WalletSlice";
 
 export default function UserDashboard() {
     const [TodayHabitPercentage, setTodayHabitPercentage] = useState(0);
     const [TodayPomodoroCount, setTodayPomodoroCount] = useState(0);
+    const [Credits, setCredits] = useState(0);
+    const { userCredits } = useSelector((state) => state.subscriptions);
     const notifications = [
         { message: "Pomodoro session completed!", time: "5 min ago", unread: true },
         { message: "Weekly habits goal achieved!", time: "2 hours ago", unread: true },
@@ -51,6 +56,9 @@ export default function UserDashboard() {
         const PomodoroResponse = await dispatch(FetchDailyStats()).unwrap();
         console.log(PomodoroResponse);
         setTodayPomodoroCount(PomodoroResponse.sessions_completed)
+        // const CreditsResponse = await dispatch(FetchCredit()).unwrap();
+        // setCredits(CreditsResponse.remaining_credits)
+        
 
         const todayName = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];
         const todayStats = HabitResponse.find(day => day.date === todayName);
@@ -61,11 +69,6 @@ export default function UserDashboard() {
         // If you need to set state:
         // setWeeklyProgress(weeklyAverage);
     };
-
-
-    useEffect(() => {
-        fetch()
-    },[])
 
     return (
         <div className="space-y-8 p-15">
@@ -111,6 +114,9 @@ export default function UserDashboard() {
                         </button>
                     </div>
 
+                    <button className="flex items-center gap-2 p-2 rounded-md hover:bg-dark-100 text-grey-600 font-medium transition" onClick={() => navigate('/settings/')}>
+                        <Settings className="w-5 h-5" />
+                    </button>
                     {/* Logout Button */}
                     <button className="flex items-center gap-2 p-2 rounded-md hover:bg-red-100 text-red-600 font-medium transition" onClick={() => logout()}>
                         <LogOut className="w-5 h-5" />
@@ -146,7 +152,7 @@ export default function UserDashboard() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-500">Credits</p>
-                            <p className="text-2xl font-bold">47</p>
+                            <p className="text-2xl font-bold">{userCredits?.remaining_credits}</p>
                             <p className="text-xs text-gray-500">Remaining</p>
                         </div>
                         <CreditCard className="h-8 w-8 text-blue-500" />

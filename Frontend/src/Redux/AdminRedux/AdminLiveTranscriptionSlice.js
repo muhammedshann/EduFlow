@@ -25,3 +25,27 @@ export const FetchLiveTranscription = createAsyncThunk(
         }
     }
 )
+
+export const FetchUploadTranscription = createAsyncThunk(
+    'liveTranscription/FetchUploadTranscription',
+    async( _,{dispatch, rejectWithValue}) => {
+        try {
+            const response = await api.get('/admin/upload-transcription/');
+            console.log(response.data);
+            return response.data
+        } catch(err) {
+            const errorMessage =
+                err.response?.data?.error ||
+                err.response?.data ||
+                err.message ||
+                'fetch upload failed';
+
+            dispatch(showNotification({
+                message: errorMessage,
+                type: 'error',
+            }));
+
+            return rejectWithValue(errorMessage);
+        }
+    }
+)

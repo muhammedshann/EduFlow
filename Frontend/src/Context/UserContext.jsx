@@ -1,9 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
+import { fetchWallet } from "../Redux/WalletSlice";
+import { useDispatch } from "react-redux";
+import { FetchCredit } from "../Redux/SubscriptionSlice";
 
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
+    const dispatch = useDispatch();
 
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -13,6 +17,8 @@ export const UserProvider = ({ children }) => {
             try {
                 const res = await api.get("accounts/me/");
                 console.log('inside of me==',res);
+                dispatch(fetchWallet());
+                dispatch(FetchCredit());
                 
                 setUser(res.data);
             } catch (err) {

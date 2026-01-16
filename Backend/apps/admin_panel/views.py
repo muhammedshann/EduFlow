@@ -4,17 +4,17 @@ from rest_framework import status
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import AdminUserSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminEditUserSerializer, WalletSerializer, AdminGroupSerializer, AdminNotesSerializer, AdminLiveTranscriptionSerializer
+from .serializers import AdminUserSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminEditUserSerializer, WalletSerializer, AdminGroupSerializer, AdminNotesSerializer, AdminLiveTranscriptionSerializer,AdminUploadStatsSerializer
 from rest_framework.permissions import IsAdminUser
 from apps.accounts.models import User, Wallet
 from apps.pomodoro.models import PomodoroSettings, PomodoroDailySummary
 from apps.habit_tracker.models import Habit, HabitLog
 from apps.groups.models import Group
 from django.contrib.auth import login
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from apps.transcription_notes.models import Notes, LiveTranscription
 from apps.chat_bot.models import ChatBot
-
+from django.utils import timezone
 
 # Create your views here.
 class adminLoginView(APIView):
@@ -277,3 +277,15 @@ class AdminChatBotView(APIView):
                 for u in users
             ]
         })
+    
+class AdminUploadTranscriptionView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        # We use 'upload_' because that is what you set in the model
+        users_data = User.objects.annotate(
+            total_count=Count('upload_Transcription') 
+        ).filter(total_count__gt=0).order_by('-total_count')
+
+        serializer = AdminUploadStatsSerializer(users_data, many=True)
+        return Response({"users": serializer.data})

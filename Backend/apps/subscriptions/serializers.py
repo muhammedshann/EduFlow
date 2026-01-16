@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import CreditBundle, CreditPricing
+from apps.accounts.models import UserCredits
 
 class CreditPricingSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,3 +23,10 @@ class CreditBundleSerializer(serializers.ModelSerializer):
             'active',
             'created_at'
         ]
+    
+class UserCreditsSerializer(serializers.ModelSerializer):
+    balance = serializers.IntegerField(source='total_credits')
+
+    class Meta:
+        model = UserCredits
+        fields = ['balance','remaining_credits']

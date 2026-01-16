@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
-from .models import TempUser, Wallet, WalletHistory, Settings, UserSubscription, SubscriptionPlan
+from .models import TempUser, Wallet, WalletHistory, Settings, UserCredits
 from django.contrib.auth.hashers import make_password
 import random
 from .utils import sent_otp_email
@@ -296,3 +296,7 @@ class UpdateProfileImageSerializer(serializers.ModelSerializer):
         model = User
         fields = ['profile_pic']
 
+class UserCreditsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserCredits
+        fields = ['total_credits', 'used_credits', 'remaining_credits', 'last_purchase_date']

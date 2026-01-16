@@ -2,9 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
-from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, VerifyAccountSerializer, UpdateProfileSerializer, WalletSerializer,UpdatePasswordSerializer, SettingsSerializer, UpdateProfileImageSerializer
+from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, VerifyAccountSerializer, UpdateProfileSerializer, WalletSerializer,UpdatePasswordSerializer, SettingsSerializer, UpdateProfileImageSerializer, UserCreditsSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from .models import TempUser, Wallet, WalletHistory,Settings
+from .models import TempUser, Wallet, WalletHistory,Settings, UserCredits
 from django.contrib.auth import get_user_model
 from .utils import sent_otp_email
 import random
@@ -442,4 +442,13 @@ class SettingsView(APIView):
     def get(self,request):
         setting, created = Settings.objects.get_or_create(user=request.user)
         serializer = SettingsSerializer(setting)
+        return Response(serializer.data)
+
+class SubscriptionPlanView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # get_or_create ensures the logic doesn't break for new users
+        credits, created = UserCredits.objects.get_or_create(user=request.user)
+        serializer = UserCreditsSerializer(credits)
         return Response(serializer.data)

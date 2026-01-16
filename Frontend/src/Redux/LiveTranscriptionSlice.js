@@ -8,10 +8,6 @@ export const StartLiveTranscription = createAsyncThunk(
         try {
             const response = await api.post('/transcription-notes/start/');
             console.log(response.data);
-            dispatch(showNotification({
-                message: 'note started successfully',
-                type: "success"
-            }));
             return response.data
         } catch(err) {
             const errorMessage =
@@ -169,3 +165,34 @@ export const DeleteNote = createAsyncThunk(
         }
     }
 )
+
+
+export const UploadTranscription = createAsyncThunk(
+    "liveTranscription/UploadTranscription",
+    async (data, { dispatch, rejectWithValue }) => {
+        try {
+            const response = await api.post(
+                '/transcription-notes/upload/',
+                data
+            );
+            dispatch(showNotification({
+                message: 'uploaded please wait...',
+                type: 'success',
+            }));
+            return response.data;
+        } catch (err) {
+            const errorMessage =
+                err.response?.data?.error ||
+                err.response?.data ||
+                err.message ||
+                ' upload failed';
+
+            dispatch(showNotification({
+                message: errorMessage,
+                type: 'error',
+            }));
+
+            return rejectWithValue(errorMessage);
+        }
+    }
+);

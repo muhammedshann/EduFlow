@@ -37,6 +37,9 @@ import AdminReviewManagement from './Features/Admin/AdminReviewPage';
 import LiveTranscriptionManagement from './Features/Admin/AdminLiveTranscription';
 import ChatBotManagement from './Features/Admin/AdminChatBotPage';
 import SubscriptionManagement from './Features/Admin/AdminSubscriptionPage';
+import SubscriptionPlansPage from './Features/Subscriptions/SubscriptionPlansPage';
+import CheckoutPage from './Features/Subscriptions/CheckoutPage';
+import UploadTranscriptionManagement from './Features/Admin/AdminUploadTranscription';
 
 function App() {
   return (
@@ -153,6 +156,24 @@ function App() {
             }
           />
 
+          <Route
+            path='/subscription-plans/'
+            element={
+              <ProtectedRoute>
+                <SubscriptionPlansPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/checkout/'
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+
         </Route>
 
         <Route
@@ -238,6 +259,11 @@ function App() {
           <Route path='/admin/live-transcription/' element={
             <AdminProtectedRoute>
               <LiveTranscriptionManagement />
+            </AdminProtectedRoute>
+          } />
+          <Route path='/admin/upload-transcription/' element={
+            <AdminProtectedRoute>
+              <UploadTranscriptionManagement />
             </AdminProtectedRoute>
           } />
 

@@ -163,3 +163,8 @@ class AdminLiveTranscriptionSerializer(serializers.Serializer):
     user_id = serializers.UUIDField()
     username = serializers.CharField()
     total_count = serializers.IntegerField()
+
+class AdminUploadStatsSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(source='id')
+    username = serializers.CharField()
+    total_count = serializers.IntegerField()

@@ -1,20 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Send, Loader2 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { Send, Loader2, Zap, X } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { FetchDetailNote } from "../../Redux/LiveTranscriptionSlice";
 import { ClearChatBot, FetchChatBot } from "../../Redux/ChatBotSlice";
+import { FetchCredit } from "../../Redux/SubscriptionSlice";
 
 export default function ChatPage() {
     const { noteId } = useParams();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
+    const [showLimitModal, setShowLimitModal] = useState(false);
 
     const [noteTitle, setNoteTitle] = useState("");
     const [noteContent, setNoteContent] = useState("");
@@ -62,22 +65,31 @@ export default function ChatPage() {
     }, [noteId, dispatch]);
 
     useEffect(() => {
+        const credit = dispatch(FetchCredit())
+    }, [messages])
+    useEffect(() => {
         socket.current = new WebSocket("ws://localhost:8000/ws/chat-bot/");
 
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
             setIsLoading(false);
+            console.log(data);
 
-            // CORRECTED: Handle both 'reply' (streaming) and 'answer' (final) keys
-            const incomingText = data.reply || data.answer || "";
 
+            // 1. CHECK FOR LIMIT REACHED TYPE
+            if (data.type === "limit_reached") {
+                setShowLimitModal(true);
+                // Remove the "user" message that was just added since it wasn't processed
+                setMessages(prev => prev.slice(0, -1));
+                return;
+            }
+
+            const incomingText = data.reply ? data.reply : "";
+            // ... rest of your incoming text logic
             setMessages((prev) => {
                 const last = prev[prev.length - 1];
                 if (last && last.role === "bot") {
-                    return [
-                        ...prev.slice(0, -1),
-                        { role: "bot", text: last.text + incomingText }
-                    ];
+                    return [...prev.slice(0, -1), { role: "bot", text: last.text + incomingText }];
                 }
                 return [...prev, { role: "bot", text: incomingText }];
             });
@@ -132,8 +144,19 @@ export default function ChatPage() {
                 <h1 className="text-2xl font-bold text-slate-800">AI Assistant</h1>
                 <p className="text-sm text-slate-500 font-medium mt-0.5">Chat with our intelligent AI</p>
                 {noteTitle && (
-                    <div className="mt-3 px-4 py-2 rounded-xl bg-blue-100 text-blue-800 text-sm font-medium">
-                        📄 Using note: <span className="font-semibold">{noteTitle}</span>
+                    <div className="mt-3 px-4 py-2 rounded-xl bg-blue-100 text-blue-800 text-sm font-medium flex items-center justify-between group">
+                        <div className="flex items-center gap-2">
+                            <span>📄 Using note:</span>
+                            <span className="font-semibold">{noteTitle}</span>
+                        </div>
+
+                        <button
+                            onClick={() => {navigate('/chat-bot/') }}
+                            className="p-1 hover:bg-blue-200 rounded-full transition-colors duration-200"
+                            aria-label="Remove note"
+                        >
+                            <X size={16} className="text-blue-600" />
+                        </button>
                     </div>
                 )}
                 {messages.length > 0 && (
@@ -214,6 +237,33 @@ export default function ChatPage() {
                                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                             >
                                 Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showLimitModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[32px] p-8 w-full max-w-sm text-center shadow-2xl scale-in-center">
+                        <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Zap className="text-purple-600 fill-purple-600" size={40} />
+                        </div>
+                        <h2 className="text-2xl font-black text-slate-800 mb-2">Daily Limit Reached</h2>
+                        <p className="text-slate-500 font-medium mb-8">
+                            You've used your 5 free daily messages. Upgrade your account or buy credits to keep chatting!
+                        </p>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => navigate('/subscription-plans/')}
+                                className="w-full py-4 bg-purple-600 text-white rounded-2xl font-black shadow-lg shadow-purple-200 hover:bg-purple-700 transition-all active:scale-[0.98]"
+                            >
+                                Get More Credits
+                            </button>
+                            <button
+                                onClick={() => setShowLimitModal(false)}
+                                className="w-full py-4 text-slate-400 font-bold hover:text-slate-600 transition-all"
+                            >
+                                Maybe Later
                             </button>
                         </div>
                     </div>

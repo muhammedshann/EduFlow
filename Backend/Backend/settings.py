@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',        # required by allauth
     'corsheaders',                 # if using django-cors-headers
     'channels',
+    'django_celery_results',
 
     'allauth',
     'allauth.account',
@@ -286,3 +287,14 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Razorpay
+
+RZP_KEY_ID=config('RZP_KEY_ID')
+RZP_KEY_SECRET=config('RZP_KEY_SECRET')
+
+# whisper transcription
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_BACKEND = "django-db"

@@ -74,6 +74,27 @@ export const updateProfileImage = createAsyncThunk(
     }
 )
 
+export const FetchUserSubscription = createAsyncThunk(
+    'user/FetchUserSubscription',
+    async(formData,{dispatch,rejectWithValue}) => {
+        try {
+            const response = await api.get('/accounts/subscription-plans/',formData);
+            console.log(response.data);
+            return response.data
+            
+        }catch(err){
+            console.log(err);
+            dispatch(showNotification({
+                message: err.response?.data?.message || "Upload failed",
+                type: "error"
+            }));
+            return rejectWithValue(err.response?.data);
+        }
+    }
+)
+
+
+
 const UserSlice = createSlice({
     name:'user',
     initialState: {

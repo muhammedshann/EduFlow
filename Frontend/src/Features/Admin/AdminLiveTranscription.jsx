@@ -136,10 +136,10 @@ export default function LiveTranscriptionManagement() {
                 </div>
 
                 {/* HEADER */}
-                <div className="grid grid-cols-5 text-sm font-semibold text-gray-500 border-b py-3 px-4">
+                <div className="grid grid-cols-3 text-sm font-semibold text-gray-500 border-b py-3 px-4">
                     <div className="col-span-2">Username</div>
                     <div>Total Live Transcriptions</div>
-                    <div className="text-right">Credits Used</div>
+                    {/* <div className="text-right">Credits Used</div> */}
                 </div>
 
                 {/* ROWS */}
@@ -148,7 +148,7 @@ export default function LiveTranscriptionManagement() {
                         filteredUsers.map((user) => (
                             <div
                                 key={user.user_id}
-                                className="grid grid-cols-5 items-center p-4 hover:bg-gray-50"
+                                className="grid grid-cols-3 items-center p-4 hover:bg-gray-50"
                             >
                                 <div className="col-span-2 font-medium truncate">
                                     {user.username}
@@ -157,10 +157,10 @@ export default function LiveTranscriptionManagement() {
                                 <div className="font-semibold text-gray-800">
                                     {user.total_count}
                                 </div>
-
+{/* 
                                 <div className="flex justify-end space-x-2">
                                     1
-                                </div>
+                                </div> */}
                             </div>
                         ))
                     ) : (

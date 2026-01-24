@@ -87,3 +87,17 @@ export const StreakStatsHabit = createAsyncThunk(
         }
     }
 )
+
+export const DeleteHabit = createAsyncThunk(
+    'habit/DeleteHabit',
+    async (id,{rejectWithValue}) => {
+        try {
+            const response = await api.delete(`/habit/delete/${id}/`);
+            console.log(response.data);
+            return response.data
+        } catch(err) {
+            console.log(err);
+            return rejectWithValue(err.response?.data || "deleting habit failed")
+        }
+    }
+)

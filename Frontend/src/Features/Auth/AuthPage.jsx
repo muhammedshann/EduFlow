@@ -101,10 +101,7 @@ function LoginPage() {
         setIsLoading(true);
 
         try {
-
-            // =====================================================
-            // 🚀 LOGIN — NO VALIDATION NEEDED
-            // =====================================================
+            localStorage.clear();
             if (isLogin) {
                 const loginData = {
                     username: formData.username,

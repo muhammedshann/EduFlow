@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import CreditView, PricingView, BundlesView, CreateOrderView, VerifyPaymentView, RazorpayWebhookView
+from .views import CreditView, PricingView, BundlesView, CreateOrderView, VerifyPaymentView, RazorpayWebhookView, WalletPurchaseView
+print("🔥 LOADED subscriptions.urls FROM:", __file__)
 
 urlpatterns = [
     path('credit/',CreditView.as_view(),name='CreditView'),
@@ -8,4 +9,5 @@ urlpatterns = [
     path('create-order/', CreateOrderView.as_view(), name='create-order'),
     path('verify-payment/', VerifyPaymentView.as_view(), name='verify-payment'),
     path('webhook/razorpay/', RazorpayWebhookView.as_view(), name='razorpay-webhook'),
+    path('wallet-payment/', WalletPurchaseView.as_view(), name='wallet_payment'),
 ]

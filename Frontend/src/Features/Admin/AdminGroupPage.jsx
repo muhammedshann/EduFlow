@@ -120,8 +120,6 @@ export default function GroupsManagement() {
     const [stats, setStats] = useState({
         totalGroups: 0,
         activeGroups: 0,
-        flagged: 0,
-        pending: 0,
     });
 
     const dispatch = useDispatch();
@@ -137,6 +135,8 @@ export default function GroupsManagement() {
 
     const fetchData = async () => {
         const response = await dispatch(AdminGroup()).unwrap();
+        console.log(response);
+        
 
         const groups = response.groups;
         setGroupsData(groups);
@@ -144,14 +144,10 @@ export default function GroupsManagement() {
 
         const totalGroups = groups.length;
         const activeGroups = groups.filter(g => g.status === "active").length;
-        const flagged = groups.filter(g => g.status === "flagged").length;
-        const pending = groups.filter(g => g.status === "pending").length;
 
         setStats({
             totalGroups,
             activeGroups,
-            flagged,
-            pending,
         });
     };
 
@@ -192,7 +188,7 @@ export default function GroupsManagement() {
                 onSubmit={handleCreateGroup}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-10">
                 <AdminStatCard
                     title="Total Groups"
                     value={stats.totalGroups}
@@ -215,27 +211,6 @@ export default function GroupsManagement() {
                     changeColor="text-gray-500"
                 />
 
-                <AdminStatCard
-                    title="Flagged Content"
-                    value={stats.flagged}
-                    change="+0 today"
-                    icon={Flag}
-                    iconBg="bg-red-50"
-                    iconColor="text-red-600"
-                    valueColor="text-gray-800"
-                    changeColor="text-red-600"
-                />
-
-                <AdminStatCard
-                    title="Pending Approval"
-                    value={stats.pending}
-                    change="+0 today"
-                    icon={Shield}
-                    iconBg="bg-yellow-50"
-                    iconColor="text-yellow-600"
-                    valueColor="text-gray-800"
-                    changeColor="text-gray-500"
-                />
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">

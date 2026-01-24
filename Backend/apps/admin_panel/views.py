@@ -1,20 +1,25 @@
 from rest_framework.views import APIView
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import AdminUserSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminEditUserSerializer, WalletSerializer, AdminGroupSerializer, AdminNotesSerializer, AdminLiveTranscriptionSerializer,AdminUploadStatsSerializer
+from .serializers import AdminUserSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminEditUserSerializer, WalletSerializer, AdminGroupSerializer, AdminNotesSerializer, AdminLiveTranscriptionSerializer,AdminUploadStatsSerializer, RecentPurchaseSerializer, CreditUsageHistorySerializer, AdminCreditPurchaseSerializer
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from apps.accounts.models import User, Wallet
-from apps.pomodoro.models import PomodoroSettings, PomodoroDailySummary
+
+from apps.accounts.models import User, Wallet, UserCredits
+from apps.pomodoro.models import PomodoroSession, PomodoroDailySummary
 from apps.habit_tracker.models import Habit, HabitLog
 from apps.groups.models import Group
+from apps.transcription_notes.models import Notes, LiveTranscription, UploadTranscription
+from apps.chat_bot.models import ChatBot, ChatBotMessage
+from apps.subscriptions.models import CreditPurchase, CreditUsageHistory
+
 from django.contrib.auth import login
 from django.db.models import Sum, Count, Q
-from apps.transcription_notes.models import Notes, LiveTranscription
-from apps.chat_bot.models import ChatBot
 from django.utils import timezone
+from datetime import timedelta
 from .models import Notification
 from django.shortcuts import get_object_or_404
 
@@ -284,7 +289,6 @@ class AdminUploadTranscriptionView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        # We use 'upload_' because that is what you set in the model
         users_data = User.objects.annotate(
             total_count=Count('upload_Transcription') 
         ).filter(total_count__gt=0).order_by('-total_count')
@@ -296,14 +300,11 @@ class AdminNotificationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # 1. Simplified Stats (No is_read logic)
         total_users = User.objects.count()
         total_notifications_sent = Notification.objects.count()
         
-        # Unique campaigns (grouped by title/date)
         campaign_count = Notification.objects.values('title', 'created_at').distinct().count()
 
-        # 2. History List (Grouped by campaign)
         history = Notification.objects.values(
             'title', 'message', 'notification_type', 'created_at'
         ).annotate(
@@ -313,7 +314,7 @@ class AdminNotificationView(APIView):
         return Response({
             "stats": {
                 "totalSent": campaign_count,
-                "totalReads": 0, # Placeholder since you don't want is_read
+                "totalReads": 0,
                 "totalUsers": total_users,
                 "readRate": 0
             },
@@ -324,11 +325,10 @@ class AdminNotificationView(APIView):
         title = request.data.get('title')
         message = request.data.get('message')
         n_type = request.data.get('notification_type')
-        target_type = request.data.get('target_type')  # 'all' or 'personal'
+        target_type = request.data.get('target_type')
         username = request.data.get('username')
 
         if target_type == 'personal':
-            # Send to one specific user
             user = get_object_or_404(User, username=username)
             Notification.objects.create(
                 recipient=user,
@@ -339,7 +339,6 @@ class AdminNotificationView(APIView):
             return Response({"message": f"Notification sent to {username}"}, status=status.HTTP_201_CREATED)
         
         else:
-            # Send to ALL users
             users = User.objects.all()
             notifications = [
                 Notification(
@@ -351,3 +350,109 @@ class AdminNotificationView(APIView):
             ]
             Notification.objects.bulk_create(notifications)
             return Response({"message": "Broadcast sent to all users"}, status=status.HTTP_201_CREATED)
+        
+class AdminDashboardStatsView(APIView):
+    permission_classes = [IsAdminUser] # Ensure only admins see this
+
+    def get(self, request):
+        today = timezone.now().date()
+        
+        # --- GENERAL USER STATS ---
+        total_users = User.objects.count()
+        new_users_today = User.objects.filter(date_joined__date=today).count()
+
+        # --- REVENUE & CREDIT ECONOMY ---
+        total_revenue = CreditPurchase.objects.filter(status='success').aggregate(
+            total=Sum('total_amount'))['total'] or 0
+            
+        # Total Credits Bought (Sum of credits from all successful purchases)
+        total_credits_bought = CreditPurchase.objects.filter(status='success').aggregate(
+            total=Sum('credit_bundle__credits'))['total'] or 0
+            
+        total_credits_used = UserCredits.objects.aggregate(
+            total=Sum('used_credits'))['total'] or 0
+
+        # --- PRODUCTIVITY METRICS ---
+        completed_pomodoros_today = PomodoroSession.objects.filter(
+            completed=True, 
+            ended_at__date=today
+        ).count()
+
+        total_active_habits = Habit.objects.count()
+        habits_completed_today = HabitLog.objects.filter(date=today, completed=True).count()
+        
+        # Calculate Average Habit Completion Rate
+        # (How many logs are completed vs total logs created today)
+        total_logs_today = HabitLog.objects.filter(date=today).count()
+        completion_rate = (habits_completed_today / total_logs_today * 100) if total_logs_today > 0 else 0
+
+        # --- RECENT ACTIVITY ---
+        recent_purchases_qs = CreditPurchase.objects.select_related('user', 'credit_bundle').order_by('-created_at')[:5]
+        recent_purchases = RecentPurchaseSerializer(recent_purchases_qs, many=True).data
+
+        # --- SYSTEM ENGAGEMENT ---
+        last_7_days = timezone.now() - timedelta(days=7)
+        chatbot_engagement = ChatBotMessage.objects.filter(created_at__gte=last_7_days).count()
+        
+        # Total files processed ever
+        total_files_processed = UploadTranscription.objects.filter(status='completed').count()
+
+        return Response({
+            "stats": {
+                "total_users": total_users,
+                "new_users_today": new_users_today,
+                "total_revenue": total_revenue,
+                "credits_bought": total_credits_bought,
+                "credits_used": total_credits_used,
+            },
+            "product_metrics": {
+                "pomodoros_today": completed_pomodoros_today,
+                "active_habits": total_active_habits,
+                "habits_completed_today": habits_completed_today,
+                "habit_success_rate": round(completion_rate, 2),
+            },
+            "usage_metrics": {
+                "chatbot_7d_requests": chatbot_engagement,
+                "total_files_processed": total_files_processed,
+            },
+            "recent_purchases": recent_purchases,
+        })
+
+class AdminCreditUsageListView(generics.ListAPIView):
+
+    queryset = CreditUsageHistory.objects.all().order_by('-created_at')
+    serializer_class = CreditUsageHistorySerializer
+    permission_classes = [IsAdminUser]
+
+class AdminRecentPurchasesListView(generics.ListAPIView):
+    """
+    Returns all credit purchases for the admin transaction history log.
+    """
+    queryset = CreditPurchase.objects.select_related('user', 'credit_bundle').all().order_by('-created_at')
+    serializer_class = AdminCreditPurchaseSerializer
+    permission_classes = [IsAdminUser]
+
+class AdminSubscriptionStatsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+
+        total_revenue = CreditPurchase.objects.filter(status='success').aggregate(
+            total=Sum('total_amount')
+        )['total'] or 0
+
+        total_credits_bought = CreditPurchase.objects.filter(status='success').aggregate(
+            total=Sum('credits_purchased')
+        )['total'] or 0
+
+        total_credits_used = CreditUsageHistory.objects.aggregate(
+            total=Sum('credits_used')
+        )['total'] or 0
+
+        return Response({
+            "stats": {
+                "total_revenue": float(total_revenue),
+                "credits_bought": total_credits_bought,
+                "credits_used": total_credits_used,
+            }
+        })

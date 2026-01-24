@@ -10,25 +10,21 @@ import {
     CreditCard,
     BarChart3,
     LogOut,
-    Settings
+    Settings,
+    Notebook
 } from "lucide-react";
 import { useUser } from "../../Context/UserContext";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { WeeklyStatsHabit } from "../../Redux/HabitTrackerSlice";
 import { FetchDailyStats } from "../../Redux/PomodoroSlice";
-import { FetchCredit } from "../../Redux/SubscriptionSlice";
-import { fetchWallet } from "../../Redux/WalletSlice";
+import { FetchNotes } from "../../Redux/LiveTranscriptionSlice";
 
 export default function UserDashboard() {
     const [TodayHabitPercentage, setTodayHabitPercentage] = useState(0);
     const [TodayPomodoroCount, setTodayPomodoroCount] = useState(0);
+    const [TotalNotes, setTotalNotes] = useState(0);
     const { userCredits } = useSelector((state) => state.subscriptions);
-    const notifications = [
-        { message: "Pomodoro session completed!", time: "5 min ago", unread: true },
-        { message: "Weekly habits goal achieved!", time: "2 hours ago", unread: true },
-        { message: "New group message from AI Study", time: "1 day ago", unread: false },
-    ];
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { user, logout } = useUser();
@@ -57,8 +53,13 @@ export default function UserDashboard() {
         const todayPercentage = todayStats ? todayStats.completion_percent : 0;
 
         setTodayHabitPercentage(todayPercentage);
-
+        const notesResponse = await dispatch(FetchNotes()).unwrap();
+        setTotalNotes(notesResponse.length)
     };
+
+    useEffect(() => {
+        fetch()
+    },[])
 
     return (
         <div className="space-y-8 p-15">
@@ -149,8 +150,8 @@ export default function UserDashboard() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-500">Total</p>
-                            <p className="text-2xl font-bold">12</p>
-                            <p className="text-xs text-gray-500">Transcripts</p>
+                            <p className="text-2xl font-bold">{TotalNotes}</p>
+                            <p className="text-xs text-gray-500">Notes</p>
                         </div>
                         <Mic className="h-8 w-8 text-purple-500" />
                     </div>
@@ -163,19 +164,19 @@ export default function UserDashboard() {
                 <Card>
                     <h2 className="text-xl font-semibold mb-4 flex items-center">
                         <Mic className="h-5 w-5 mr-2 text-purple-500" />
-                        Transcription
+                        Smart Notes
                     </h2>
                     <div className="space-y-3">
-                        <NavLink to="/live-transcription/">
+                        <NavLink to="/smart-note/">
                             <Button className="w-full justify-start flex items-center h-12">
                                 <Mic className="h-4 w-4 mr-3" />
-                                Start Live Recording
+                                Start Live/Upload Note
                             </Button>
                         </NavLink>
-                        <NavLink to="/app/upload-transcription">
+                        <NavLink to="/notes/">
                             <Button className="w-full justify-start flex items-center mt-1 h-12">
-                                <Upload className="h-4 w-4 mr-3" />
-                                Upload Audio/Video/PDF
+                                <Notebook className="h-4 w-4 mr-3" />
+                                Notes
                             </Button>
                         </NavLink>
                     </div>
@@ -195,7 +196,7 @@ export default function UserDashboard() {
                             </Button>
                         </NavLink>
                         <p className="text-sm text-gray-500 mt-3">
-                            Ask questions about your transcripts or get study help
+                            Ask questions about studies.
                         </p>
                     </div>
                 </Card>
@@ -235,35 +236,10 @@ export default function UserDashboard() {
                                 Study Groups
                             </Button>
                         </NavLink>
-                        <p className="text-sm text-gray-500 mt-3">Join 3 active groups</p>
+                        <p className="text-sm text-gray-500 mt-3">Learn with friends</p>
                     </div>
                 </Card>
             </div>
-
-            {/* Recent Activity */}
-            <Card>
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                    <BarChart3 className="h-5 w-5 mr-2 text-green-500" />
-                    Recent Activity
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                        <h3 className="font-medium text-gray-800">Latest Transcript</h3>
-                        <p className="text-sm text-gray-500">React Patterns Lecture</p>
-                        <p className="text-xs text-gray-400">2 hours ago</p>
-                    </div>
-                    <div className="space-y-1">
-                        <h3 className="font-medium text-gray-800">Study Streak</h3>
-                        <p className="text-sm text-gray-500">7 days strong!</p>
-                        <p className="text-xs text-gray-400">Keep it up</p>
-                    </div>
-                    <div className="space-y-1">
-                        <h3 className="font-medium text-gray-800">Weekly Goal</h3>
-                        <p className="text-sm text-gray-500">85% completed</p>
-                        <p className="text-xs text-gray-400">3 more hours</p>
-                    </div>
-                </div>
-            </Card>
         </div>
     );
 }

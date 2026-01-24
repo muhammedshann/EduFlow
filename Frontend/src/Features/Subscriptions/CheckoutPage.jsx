@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Lock, CheckCircle2, AlertCircle, PartyPopper, ArrowRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ChevronLeft, Lock, CheckCircle2, AlertCircle, PartyPopper, Wallet, CreditCard } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { RzpCreateOrder, RzpVerifyOrder } from '../../Redux/SubscriptionSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { RzpCreateOrder, RzpVerifyOrder, WalletPayment } from '../../Redux/SubscriptionSlice'; // Added WalletPayment
 import confetti from 'canvas-confetti';
 import { useUser } from '../../Context/UserContext';
 import { SentNotification } from '../../Redux/AdminRedux/AdminNotificationSlice';
@@ -12,33 +12,47 @@ export default function CheckoutPage() {
     const dispatch = useDispatch();
     const location = useLocation();
     const bundle = location.state?.bundle;
+    console.log('bundle',bundle);
+    
 
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState(null);
-    const [isSuccess, setIsSuccess] = useState(false); // NEW: Track success state
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'wallet'
+    const { balance } = useSelector(state => state.wallet);
 
-    const {user} = useUser()
+    const { user } = useUser();
 
     useEffect(() => {
         if (!bundle) navigate('/subscription-plans');
     }, [bundle, navigate]);
 
-    // Premium Fireworks Logic
     const triggerFireworks = () => {
         const duration = 4 * 1000;
         const animationEnd = Date.now() + duration;
         const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
-
         const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
         const interval = setInterval(function () {
             const timeLeft = animationEnd - Date.now();
             if (timeLeft <= 0) return clearInterval(interval);
-
             const particleCount = 50 * (timeLeft / duration);
             confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
             confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
         }, 250);
+    };
+
+    const handleSuccessFlow = async () => {
+        const notificationData = {
+            title: 'Credits purchased',
+            notification_type: 'system',
+            message: `Successfully added ${bundle.credits} credits.`,
+            username: user.username
+        };
+        await dispatch(SentNotification({ data: notificationData, target_type: 'personal' }));
+        setIsSuccess(true);
+        triggerFireworks();
+        setTimeout(() => navigate('/settings/'), 3000);
     };
 
     const loadRazorpay = () => {
@@ -56,7 +70,41 @@ export default function CheckoutPage() {
         e.preventDefault();
         setErrorMsg(null);
         setLoading(true);
+        console.log(balance,'-------',bundle.price);
+        
 
+        // --- WALLET PAYMENT LOGIC ---
+        if (paymentMethod === 'wallet') {
+            const numericBalance = parseFloat(balance);
+            const numericPrice = parseFloat(bundle.price);
+
+            if (numericBalance < numericPrice) {
+                setErrorMsg("Insufficient wallet balance.");
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const res = await dispatch(WalletPayment({ 
+                    amount: bundle.price,
+                    credits: bundle.credits,
+                    bundle_id: bundle.id || null 
+                }));
+
+                if (WalletPayment.fulfilled.match(res)) {
+                    await handleSuccessFlow();
+                } else {
+                    setErrorMsg(res.payload || "Wallet transaction failed.");
+                    setLoading(false);
+                }
+            } catch (err) {
+                setErrorMsg("Wallet payment error.");
+                setLoading(false);
+            }
+            return;
+        }
+
+        // --- ONLINE (RAZORPAY) LOGIC ---
         const isScriptLoaded = await loadRazorpay();
         if (!isScriptLoaded) {
             setErrorMsg("Razorpay SDK failed to load.");
@@ -94,24 +142,9 @@ export default function CheckoutPage() {
                     }));
 
                     if (RzpVerifyOrder.fulfilled.match(verifyRes) && verifyRes.payload.status === "Success") {
-                        const notificationData = {
-                            title: 'Credits purchased',
-                            notification_type: 'system',
-                            message: `Successfully added ${bundle.credits} credits.`,
-                            username: user.username // Use the user object directly
-                        };
-                        const payload = {
-                            data: notificationData,
-                            target_type: 'personal'
-                        };
-                        await dispatch(SentNotification(payload));
-                        setIsSuccess(true); // Switch to Success UI
-                        triggerFireworks();
-                        setTimeout(() => {
-                            navigate('/settings/');
-                        }, 3000); // Slightly longer for the animation
+                        await handleSuccessFlow();
                     } else {
-                        setErrorMsg("Verification failed. Please contact support.");
+                        setErrorMsg("Verification failed.");
                         setLoading(false);
                     }
                 },
@@ -127,7 +160,7 @@ export default function CheckoutPage() {
             });
             rzp.open();
         } catch (error) {
-            setErrorMsg("Something went wrong. Please try again.");
+            setErrorMsg("Something went wrong.");
             setLoading(false);
         }
     };
@@ -138,82 +171,76 @@ export default function CheckoutPage() {
     return (
         <div className="min-h-screen bg-gray-50/50 py-12 px-4 flex items-center justify-center">
             <div className="max-w-md w-full transition-all duration-500">
-                
-                {/* Back Button - Hidden on Success */}
                 {!isSuccess && (
-                    <button 
-                        onClick={() => navigate(-1)}
-                        className="flex items-center gap-1.5 text-gray-400 hover:text-purple-600 font-bold text-xs mb-8 transition-colors group"
-                    >
+                    <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-gray-400 hover:text-purple-600 font-bold text-xs mb-8 transition-colors group">
                         <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
                         Back to Plans
                     </button>
                 )}
 
                 <div className={`bg-white rounded-[40px] border border-gray-100 shadow-2xl overflow-hidden transition-all duration-500 ${isSuccess ? 'scale-105 border-green-100' : ''}`}>
-                    
-                    {/* SUCCESS INTERFACE */}
                     {isSuccess ? (
                         <div className="p-10 text-center animate-in zoom-in-95 duration-500">
+                            {/* ... (Existing Success UI) */}
                             <div className="mb-6 flex justify-center">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-green-200 blur-2xl rounded-full opacity-40 animate-pulse" />
-                                    <div className="relative w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-100">
-                                        <CheckCircle2 className="text-white" size={48} />
-                                    </div>
+                                <div className="relative w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-100">
+                                    <CheckCircle2 className="text-white" size={48} />
                                 </div>
                             </div>
-
                             <h2 className="text-3xl font-black text-gray-900 mb-2">Payment Received!</h2>
-                            <p className="text-gray-500 font-bold text-sm mb-8">
-                                Congratulations! Your account has been credited with 
-                                <span className="text-purple-600 px-1">{bundle.credits.toLocaleString()} credits</span>.
-                            </p>
-
-                            <div className="bg-gray-50 rounded-3xl p-6 mb-8 border border-gray-100">
-                                <div className="flex items-center justify-between text-left">
-                                    <div>
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Transaction Status</p>
-                                        <p className="text-sm font-black text-green-600 uppercase">Confirmed</p>
-                                    </div>
-                                    <PartyPopper className="text-purple-400" size={32} />
-                                </div>
-                            </div>
-
+                            <p className="text-gray-500 font-bold text-sm mb-8">Successfully added <span className="text-purple-600">{bundle.credits.toLocaleString()} credits</span>.</p>
                             <div className="space-y-4">
                                 <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                    <div className="h-full bg-purple-600 animate-progress origin-left" style={{ animation: 'progress 4s linear forward' }} />
+                                    <div className="h-full bg-purple-600 animate-progress origin-left" />
                                 </div>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest animate-pulse">
-                                    Redirecting to Dashboard...
-                                </p>
                             </div>
                         </div>
                     ) : (
-                        /* CHECKOUT INTERFACE */
                         <>
                             <div className="p-8 border-b border-gray-50 text-center bg-gray-50/30">
                                 <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Finalizing Order</h2>
                                 <h3 className="font-black text-gray-900 text-3xl mb-1">{bundle.name}</h3>
-                                <p className="text-purple-600 font-black text-xs mt-2 uppercase">
-                                    {bundle.credits.toLocaleString()} Credits
-                                </p>
+                                <p className="text-purple-600 font-black text-xs mt-2 uppercase">{bundle.credits.toLocaleString()} Credits</p>
                             </div>
 
-                            <div className="p-8 space-y-4">
+                            <div className="p-8 space-y-6">
                                 {errorMsg && (
-                                    <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-center gap-3 text-red-600 animate-in slide-in-from-top-2">
+                                    <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-center gap-3 text-red-600">
                                         <AlertCircle size={18} />
-                                        <span className="text-xs font-bold">{errorMsg}</span>
+                                        <span className="text-xs font-bold">{typeof errorMsg === 'object' ? errorMsg.message : errorMsg}</span>
                                     </div>
                                 )}
-                                <div className="flex items-center gap-4 text-gray-600 font-bold text-sm">
-                                    <CheckCircle2 className="text-green-500" size={18} />
-                                    Instant Activation
+
+                                {/* PAYMENT METHOD TOGGLE */}
+                                <div className="space-y-3">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Select Payment Method</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button 
+                                            onClick={() => setPaymentMethod('online')}
+                                            className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${paymentMethod === 'online' ? 'border-purple-600 bg-purple-50 text-purple-600' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}
+                                        >
+                                            <CreditCard size={20} />
+                                            <span className="text-[10px] font-black uppercase">Online</span>
+                                        </button>
+                                        <button 
+                                            onClick={() => setPaymentMethod('wallet')}
+                                            className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${paymentMethod === 'wallet' ? 'border-purple-600 bg-purple-50 text-purple-600' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}
+                                        >
+                                            <Wallet size={20} />
+                                            <span className="text-[10px] font-black uppercase tracking-tighter">Wallet (₹{balance})</span>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-4 text-gray-600 font-bold text-sm">
-                                    <CheckCircle2 className="text-green-500" size={18} />
-                                    256-bit Secure Payment
+
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-4 text-gray-600 font-bold text-sm">
+                                        <CheckCircle2 className="text-green-500" size={18} />
+                                        {paymentMethod === 'wallet' ? 'Instant Wallet Debit' : 'Instant Activation'}
+                                    </div>
+                                    <div className="flex items-center gap-4 text-gray-600 font-bold text-sm">
+                                        <CheckCircle2 className="text-green-500" size={18} />
+                                        Secure Transaction
+                                    </div>
                                 </div>
                             </div>
 
@@ -237,7 +264,7 @@ export default function CheckoutPage() {
                                         </div>
                                     ) : (
                                         <>
-                                            <span>Pay Securely</span>
+                                            <span>{paymentMethod === 'wallet' ? 'Confirm Wallet Pay' : 'Pay Securely'}</span>
                                             <Lock size={20} />
                                         </>
                                     )}
@@ -247,15 +274,9 @@ export default function CheckoutPage() {
                     )}
                 </div>
             </div>
-
             <style>{`
-                @keyframes progress {
-                    0% { transform: scaleX(0); }
-                    100% { transform: scaleX(1); }
-                }
-                .animate-progress {
-                    animation: progress 4s linear forwards;
-                }
+                @keyframes progress { 0% { transform: scaleX(0); } 100% { transform: scaleX(1); } }
+                .animate-progress { animation: progress 4s linear forwards; }
             `}</style>
         </div>
     );

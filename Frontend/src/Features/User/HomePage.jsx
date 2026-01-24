@@ -7,12 +7,16 @@ import Pricing from '../../Components/Pricing'
 import Header from '../../Components/Header'
 import HomePageIMG from '../../assets/media/HomePageIMG.jpg'
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { FetchReviews } from '../../Redux/ReviewSlice';
 
 const HomePage = () => {
   const [activeFeature, setActiveFeature] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [testimonials, setReviews] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const features = [
     {
@@ -87,7 +91,20 @@ const HomePage = () => {
     }
   ];
 
+  const fetch = async () => {
+    try {
+      const response = await dispatch(FetchReviews()).unwrap();
+      setReviews(response)
+      console.log("review", response);
+
+    } catch (err) {
+      console.log(err);
+
+    }
+  }
+
   useEffect(() => {
+    fetch()
     const interval = setInterval(() => {
       setActiveFeature((prev) => (prev + 1) % features.length);
     }, 4000);
@@ -269,59 +286,59 @@ const HomePage = () => {
             <p className="text-xl text-gray-600">See what professionals are saying about EchoNote</p>
           </div>
 
+          {/* Dynamic Testimonials Grid */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {[
-              {
-                name: "Sarah Chen",
-                role: "Product Manager at TechFlow",
-                rating: 5,
-                quote: "This app helped me stay on track with my studies. I improved 1.5 times speed boost!",
-                avatar: "S",
-                color: "bg-blue-500"
-              },
-              {
-                name: "Marcus Rodriguez",
-                role: "UI Engineering at DataCorp",
-                rating: 5,
-                quote: "The transcription quality is phenomenal. Even with technical discussions and multiple speakers, EchoNote captures everything with perfect accuracy.",
-                avatar: "M",
-                color: "bg-purple-500"
-              },
-              {
-                name: "Emily Watson",
-                role: "Marketing Lead at StartupXYZ",
-                rating: 5,
-                quote: "Timeshare love it, best feature improved my consistency.",
-                avatar: "E",
-                color: "bg-green-500"
-              }
-            ].map((testimonial, index) => (
-              <div
-                key={index}
-                onClick={() => navigate('/review/')}
-                className="group bg-gray-50 p-8 rounded-2xl hover:shadow-xl hover:scale-105 transform transition-all duration-300 cursor-pointer"
-              >
-                <div className="flex text-yellow-400 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <div key={i} className="w-5 h-5 text-yellow-400 animate-pulse" style={{ animationDelay: `${i * 100}ms` }}>
-                      ⭐
+            {testimonials && testimonials.length > 0 ? (
+              testimonials.slice(0, 3).map((testimonial, index) => (
+                <div
+                  key={testimonial.id || index}
+                  onClick={() => navigate('/review/')}
+                  className="group bg-gray-50 p-8 rounded-2xl hover:shadow-xl hover:scale-105 transform transition-all duration-300 cursor-pointer"
+                >
+                  {/* Dynamic Star Rating */}
+                  <div className="flex text-yellow-400 mb-4">
+                    {[...Array(Number(testimonial.rating) || 5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-5 h-5 text-yellow-400 animate-pulse"
+                        style={{ animationDelay: `${i * 100}ms` }}
+                      >
+                        ⭐
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Title from Backend Data */}
+                  <h3 className="font-bold text-gray-900 mb-2 capitalize">
+                    {testimonial.title}
+                  </h3>
+
+                  {/* Comment from Backend Data */}
+                  <blockquote className="text-gray-700 mb-6 italic leading-relaxed">
+                    "{testimonial.comment}"
+                  </blockquote>
+
+                  <div className="flex items-center gap-4">
+                    {/* Dynamic Avatar using user's initial */}
+                    <div className={`w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform`}>
+                      {testimonial.username ? testimonial.username[0].toUpperCase() : 'U'}
                     </div>
-                  ))}
-                </div>
-                <blockquote className="text-gray-700 mb-6 italic leading-relaxed">
-                  "{testimonial.quote}"
-                </blockquote>
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 ${testimonial.color} rounded-full flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform`}>
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                    <div className="text-sm text-gray-500">{testimonial.role}</div>
+                    <div>
+                      <div className="font-semibold text-gray-900">
+                        {testimonial.username || "Verified Student"}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {testimonial.created_at ? new Date(testimonial.created_at).toLocaleDateString() : 'Recent'}
+                      </div>
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-20 text-gray-400">
+                No reviews available yet.
               </div>
-            ))}
+            )}
           </div>
 
           {/* CTA within testimonials */}
@@ -331,7 +348,11 @@ const HomePage = () => {
             <div className="flex items-center justify-center gap-2 text-purple-600 font-semibold mb-6">
               <div className="flex -space-x-1">
                 {[1, 2, 3, 4, 5].map(i => (
-                  <div key={i} className={`w-8 h-8 ${i <= 3 ? 'bg-purple-500' : i === 4 ? 'bg-blue-500' : 'bg-green-500'} rounded-full border-2 border-white animate-bounce`} style={{ animationDelay: `${i * 200}ms` }}></div>
+                  <div
+                    key={i}
+                    className={`w-8 h-8 ${i <= 3 ? 'bg-purple-500' : i === 4 ? 'bg-blue-500' : 'bg-green-500'} rounded-full border-2 border-white animate-bounce`}
+                    style={{ animationDelay: `${i * 200}ms` }}
+                  ></div>
                 ))}
               </div>
               <span className="ml-3">10,000+ happy users</span>

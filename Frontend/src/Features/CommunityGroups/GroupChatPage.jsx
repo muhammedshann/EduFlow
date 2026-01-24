@@ -6,19 +6,12 @@ import { useDispatch } from "react-redux";
 import { useUser } from "../../Context/UserContext";
 import api from "../../api/axios";
 
-// ----------------------------------------------------
-// SAFE time formatting
-// ----------------------------------------------------
 const formatTime = (date) => {
     if (!date) return "";
     const d = new Date(date);
     if (isNaN(d.getTime())) return "";
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
-
-// ----------------------------------------------------
-// Message Bubble UI (UNCHANGED)
-// ----------------------------------------------------
 
 const ImagePreviewModal = ({ image, onClose }) => {
     if (!image) return null;
@@ -49,7 +42,7 @@ const ImagePreviewModal = ({ image, onClose }) => {
 const MessageBubble = ({ message }) => {
     const [previewImage,setPreviewImage] = useState(false);
     const isCurrentUser = message.isCurrentUser;
-
+    
     const bubbleClasses = isCurrentUser
         ? 'bg-purple-600 text-white rounded-xl rounded-tr-none shadow-md'
         : 'bg-white text-gray-800 rounded-xl rounded-tl-none shadow-sm border border-gray-100';
@@ -134,9 +127,7 @@ const MessageBubble = ({ message }) => {
 };
 
 
-// ----------------------------------------------------
-// Group Info Modal (UNCHANGED)
-// ----------------------------------------------------
+
 const GroupInfoModal = ({ open, onClose, group, users_count }) => {
     if (!open || !group) return null;
     const [copied, setCopied] = useState(false);
@@ -225,9 +216,7 @@ const GroupInfoModal = ({ open, onClose, group, users_count }) => {
     );
 };
 
-// ----------------------------------------------------
-// MAIN COMPONENT (FIXED LOGIC ONLY)
-// ----------------------------------------------------
+
 export default function GroupChat() {
 
     const { groupId } = useParams();
@@ -252,13 +241,11 @@ export default function GroupChat() {
     const fetch = async () => {
         try {
             const result = await dispatch(fetchGroupDetails(groupId)).unwrap();
-            console.log(result);
-
+            
             setGroupName(result.group.name);
             setTotalUsers(result.users_count);
             setGroup(result.group);
 
-            // FIXED: Normalize serializer fields properly
             setMessages(
                 result.group_messages.map(msg => ({
                     id: msg.id,
@@ -267,44 +254,87 @@ export default function GroupChat() {
                     image: msg.image,
                     content: msg.message,
                     timestamp: new Date(msg.created_at),
-                    isCurrentUser: msg.username === user.username   // <-- FIXED
+                    isCurrentUser: msg.username === user.username
                 }))
             );
+            return true;
 
         } catch (err) {
             console.log(err);
+            return false ;
         }
     };
 
-
     useEffect(() => {
+        let ws = null;
 
-        fetch(); // Load messages FIRST
+        const setupChat = async () => {
+            // 2. WAIT for the API to finish get_or_create
+            const success = await fetch();
+            
+            if (success) {
+                // 3. Now it is safe to connect
+                ws = new WebSocket(`ws://localhost:8000/ws/chat/${groupId}/`);
+                ws.withCredentials = true;
 
-        const ws = new WebSocket(`ws://localhost:8000/ws/chat/${groupId}/`);
-        ws.withCredentials = true;
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    const formattedMessage = {
+                        id: crypto.randomUUID(),
+                        sender: data.username,
+                        content: data.message,
+                        image: data.image,
+                        timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
+                        isCurrentUser: data.username === user.username,
+                    };
+                    setMessages(prev => [...prev, formattedMessage]);
+                };
 
-        console.log("WebSocket:", ws);
-        setSocket(ws);
+                ws.onclose = (e) => {
+                    console.log("WebSocket closed:", e.reason);
+                };
 
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-
-            const formattedMessage = {
-                id: crypto.randomUUID(),
-                sender: data.username,
-                content: data.message,
-                timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
-                isCurrentUser: data.username === user.username,
-            };
-
-            setMessages(prev => [...prev, formattedMessage]);
+                setSocket(ws);
+            }
         };
 
-        ws.onclose = () => console.log("WebSocket closed");
+        setupChat();
 
-        return () => ws.close();
+        return () => {
+            if (ws) ws.close();
+        };
     }, [groupId]);
+
+
+    // useEffect(() => {
+
+    //     fetch(); // Load messages FIRST
+
+    //     const ws = new WebSocket(`ws://localhost:8000/ws/chat/${groupId}/`);
+    //     ws.withCredentials = true;
+
+    //     setSocket(ws);
+
+    //     ws.onmessage = (event) => {
+    //         const data = JSON.parse(event.data);
+
+    //         // FIXED: Capture image from socket data to show it suddenly
+    //         const formattedMessage = {
+    //             id: crypto.randomUUID(),
+    //             sender: data.username,
+    //             content: data.message,
+    //             image: data.image, // <--- Corrected this line
+    //             timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
+    //             isCurrentUser: data.username === user.username,
+    //         };
+
+    //         setMessages(prev => [...prev, formattedMessage]);
+    //     };
+
+    //     ws.onclose = () => console.log("WebSocket closed");
+
+    //     return () => ws.close();
+    // }, [groupId]);
 
     const handleSendMessage = () => {
         if (!inputValue.trim()) return;
@@ -349,10 +379,6 @@ export default function GroupChat() {
     };
 
 
-
-    // ---------------------------------------------------------
-    // UI Section (UNCHANGED)
-    // ---------------------------------------------------------
     return (
         <div className="flex flex-col h-screen w-full bg-gray-50 antialiased">
 

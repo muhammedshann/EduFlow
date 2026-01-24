@@ -57,7 +57,7 @@ export default function PomodoroManagement() {
         );
 
         const averageFocus = totalUsers > 0
-            ? (totalFocusMinutes / totalUsers).toFixed(1)
+            ? (totalFocusMinutes ).toFixed(1)
             : 0;
 
         const totalBreakMinutes = users.reduce(
@@ -96,7 +96,7 @@ export default function PomodoroManagement() {
             </header>
 
             {/* STATS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
 
                 {/* Total Active Users */}
                 <AdminStatCard
@@ -122,7 +122,7 @@ export default function PomodoroManagement() {
                 />
 
                 <AdminStatCard
-                    title="Average Focus Time"
+                    title="Total Focus Time"
                     value={`${stats.averageFocus} min`}
                     change="Across all users"
                     icon={Target}
@@ -132,7 +132,7 @@ export default function PomodoroManagement() {
                     changeColor="text-green-500"
                 />
 
-                <AdminStatCard
+                {/* <AdminStatCard
                     title="Total Engagement Hours"
                     value={`${stats.totalHours} hrs`}
                     change="Focus + Break time"
@@ -141,7 +141,7 @@ export default function PomodoroManagement() {
                     iconColor="text-purple-600"
                     valueColor="text-gray-800"
                     changeColor="text-gray-500"
-                />
+                /> */}
 
             </div>
 
@@ -172,12 +172,12 @@ export default function PomodoroManagement() {
                 </div>
 
                 {/* TABLE HEADER */}
-                <div className="grid grid-cols-7 text-sm font-semibold text-gray-500 border-b border-gray-200 py-3 px-4">
+                <div className="grid grid-cols-5 text-sm font-semibold text-gray-500 border-b border-gray-200 py-3 px-4">
                     <div className="col-span-2">Username</div>
                     <div>Total Sessions</div>
                     <div>Focus Time</div>
                     <div>Break Time</div>
-                    <div className="text-right">Actions</div>
+                    {/* <div className="text-right">Actions</div> */}
                 </div>
 
                 {/* TABLE ROWS */}
@@ -186,7 +186,7 @@ export default function PomodoroManagement() {
                         filteredUsers.map((user) => (
                             <div
                                 key={user.user_id}
-                                className="grid grid-cols-7 items-center p-4 hover:bg-gray-50 transition-colors"
+                                className="grid grid-cols-5 items-center p-4 hover:bg-gray-50 transition-colors"
                             >
                                 <div className="flex items-center col-span-2 min-w-0">
                                     <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mr-4 flex-shrink-0">
@@ -207,10 +207,10 @@ export default function PomodoroManagement() {
                                     {user.break_minutes} min
                                 </p>
 
-                                <div className="flex items-center justify-end space-x-2 flex-shrink-0">
+                                {/* <div className="flex items-center justify-end space-x-2 flex-shrink-0">
                                     <Eye size={18} className="text-gray-400 hover:text-purple-600 cursor-pointer" />
                                     <MoreVertical size={18} className="text-gray-400 cursor-pointer" />
-                                </div>
+                                </div> */}
                             </div>
                         ))
                     ) : (

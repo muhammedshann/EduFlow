@@ -63,6 +63,7 @@ INSTALLED_APPS = [
 
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'django_extensions',
 
     'apps.accounts',
     'apps.admin_panel',
@@ -173,7 +174,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",  # your React dev server
-    "http://127.0.0.1:5173",  # optional
+    "http://127.0.0.1:5173",
 ]
 
 # Allow credentials if needed

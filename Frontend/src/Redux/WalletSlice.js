@@ -40,26 +40,6 @@ export const WalletDeposit = createAsyncThunk(
     }
 )
 
-export const WalletWithdraw = createAsyncThunk(
-    'wallet/WalletWithdraw',
-    async(amount, {dispatch, rejectWithValue}) => {
-        try {
-            const response = await api.post('/accounts/wallet-withdraw/',{'amount': amount});
-            dispatch(showNotification({
-                message: response.data.message,
-                type: "success"
-            }));
-            return response.data;
-        } catch(err) {
-            console.log('from wallet :===',err);
-            dispatch(showNotification({
-                message: err.response?.data?.error || "Withdraw failed",
-                type: "error"
-            }));
-            return rejectWithValue(err.response?.data?.message || err.message);
-        }
-    }
-)
 
 
 const walletSlice = createSlice({

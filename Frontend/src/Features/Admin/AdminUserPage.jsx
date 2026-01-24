@@ -364,7 +364,7 @@ export default function UserManagement() {
     // Convert API response into your table-friendly format
     const cleanUsers = users.map((u) => {
         // Dynamic properties based on API data
-        const plan = u.is_superuser ? "Enterprise" : u.plan_level || "Free";
+        const role = u.is_superuser ? "Admin" : "User";
         const status = u.is_active ? "active" : "inactive";
         const fullName = `${u.first_name || ''} ${u.last_name || ''}`.trim();
 
@@ -373,7 +373,7 @@ export default function UserManagement() {
             name: fullName || u.username || 'N/A',
             email: u.email || 'N/A',
             username: u.username || 'N/A',
-            plan: plan,
+            role: role,
             status: status,
             lastLogin: u.last_login
                 ? new Date(u.last_login).toISOString().slice(0, 16).replace("T", " ")
@@ -391,11 +391,10 @@ export default function UserManagement() {
         )
         .filter((u) => (statusFilter === "all" ? true : u.status === statusFilter));
 
-    const getPlanBadgeColor = (plan) => {
-        switch (plan) {
-            case "Enterprise": return "bg-purple-100 text-purple-800";
-            case "Pro": return "bg-blue-100 text-blue-800";
-            case "Free": return "bg-gray-100 text-gray-800";
+    const getPlanBadgeColor = (role) => {
+        switch (role) {
+            case "Admin": return "bg-purple-100 text-purple-800";
+            case "User": return "bg-gray-100 text-gray-800";
             default: return "bg-gray-100 text-gray-800";
         }
     };
@@ -425,7 +424,7 @@ export default function UserManagement() {
 
     const inactiveUsers = cleanUsers.filter(u => u.status === "inactive").length;
 
-    const superUsers = cleanUsers.filter(u => u.plan === "Enterprise").length;
+    const superUsers = cleanUsers.filter(u => u.role === "Enterprise").length;
 
 
     // --- Render ---
@@ -515,7 +514,7 @@ export default function UserManagement() {
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                {["User", "Plan", "Status", "username", "Last Login", "Actions"].map(
+                                {["User", "role", "Status", "username", "Last Login", "Actions"].map(
                                     (head) => (
                                         <th
                                             key={head}
@@ -585,7 +584,7 @@ export default function UserManagement() {
 
                                         {/* PLAN */}
                                         <td className="p-4 whitespace-nowrap">
-                                            <Badge className={getPlanBadgeColor(user.plan)}>{user.plan}</Badge>
+                                            <Badge className={getPlanBadgeColor(user.role)}>{user.role}</Badge>
                                         </td>
 
                                         {/* STATUS */}

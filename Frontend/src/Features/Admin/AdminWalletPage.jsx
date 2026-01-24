@@ -1,10 +1,109 @@
 import React, { useEffect, useState } from 'react';
-import { Search, ChevronDown, Download, Eye, Settings, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { Search, ChevronDown, Clock, Eye, Hash, TrendingUp, TrendingDown, DollarSign, X, ArrowDownLeft, ArrowUpRight, Calendar, CreditCard, Activity } from 'lucide-react';
 import { useDispatch } from 'react-redux';
-import { FetchWallet } from '../../Redux/AdminRedux/AdminWalletSlice';
+import { AdminFetchWallet } from '../../Redux/AdminRedux/AdminWalletSlice';
 import { AdminStatCard } from './AdminUserPage';
 
-// --- Utility Components (Card, Badge, Button, Input) ---
+// --- Utility Components (Card, Badge, Button, Input, Modal) ---
+
+const TransactionModal = ({ isOpen, onClose, history, formatCurrency }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl shadow-slate-200/50 flex flex-col max-h-[85vh] overflow-hidden border border-slate-100">
+        
+        {/* Minimal Header */}
+        <div className="px-8 pt-8 pb-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Activity</h2>
+            <p className="text-[13px] text-slate-400 font-medium mt-0.5">Wallet movement and history</p>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-full transition-all text-slate-400 hover:text-slate-900"
+          >
+            <X size={18} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        {/* Minimal List Body */}
+        <div className="flex-1 overflow-y-auto px-8 py-4 scrollbar-hide">
+          {history && history.length > 0 ? (
+            <div className="space-y-1">
+              {history.map((tx) => {
+                const isIncoming = tx.transaction_type === "credit";
+                return (
+                  <div 
+                    key={tx.id} 
+                    className="group flex items-center justify-between py-4 border-b border-slate-50 last:border-0"
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Subdued Icon Design */}
+                      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-colors ${
+                        isIncoming ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                      }`}>
+                        {isIncoming ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+                      </div>
+                      
+                      <div className="space-y-0.5">
+                        <p className="text-[15px] font-semibold text-slate-800 capitalize leading-tight">
+                            {tx.purpose.replace('-', ' ')}
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <span className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            <Clock size={12} className="opacity-70" />
+                            {new Date(tx.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          </span>
+                          <span className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            <Hash size={12} className="opacity-70" />
+                            {tx.id}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right space-y-1">
+                      <p className={`text-lg font-bold tabular-nums tracking-tight ${
+                        isIncoming ? 'text-emerald-600' : 'text-slate-900'
+                      }`}>
+                        {isIncoming ? '+' : '-'}{formatCurrency(tx.amount)}
+                      </p>
+                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-widest border ${
+                        tx.status === 'success' 
+                          ? 'bg-white text-emerald-500 border-emerald-100' 
+                          : 'bg-white text-slate-400 border-slate-100'
+                      }`}>
+                        {tx.status}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
+                <Hash size={24} className="text-slate-200" />
+              </div>
+              <p className="text-slate-400 text-sm font-medium tracking-wide">Empty transaction log</p>
+            </div>
+          )}
+        </div>
+
+        {/* Floating Style Footer */}
+        <div className="p-8 bg-gradient-to-t from-white via-white to-transparent">
+          <button 
+            onClick={onClose}
+            className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl shadow-slate-200 hover:bg-slate-800 hover:shadow-none transition-all active:scale-[0.98]"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Card = ({ children, className = '' }) => (
     <div className={`rounded-xl bg-white shadow-sm border border-gray-100 ${className}`}>
@@ -55,16 +154,16 @@ const Badge = ({ children, className = '' }) => (
 );
 
 
-const WalletUserCard = ({ user }) => {
+const WalletUserCard = ({ user, onViewHistory }) => {
     const isLowBalance = user.status === 'Low Balance';
     const transactionColor = user.lastTransaction.type === 'credit' ? 'text-green-600' : 'text-red-600';
     const transactionSign = user.lastTransaction.type === 'credit' ? '+' : '–';
+    
 
     const getInitials = (name) => {
         return name.split(' ').map(n => n[0]).join('').toUpperCase();
     };
 
-    // Helper to format purpose for display (e.g., 'top-up' -> 'Wallet Top-up')
     const formatPurpose = (purpose) => {
         return purpose
             .split('-')
@@ -75,7 +174,6 @@ const WalletUserCard = ({ user }) => {
     return (
         <Card className="p-4 mb-3">
             <div className="grid grid-cols-12 items-center">
-                {/* Col 1: User Info */}
                 <div className="col-span-12 sm:col-span-5 flex items-center space-x-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-base font-semibold ${user.profileColor}`}>
                         {getInitials(user.name)}
@@ -86,7 +184,6 @@ const WalletUserCard = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Col 2: Status & Balance */}
                 <div className="col-span-12 sm:col-span-7 flex justify-end items-center space-x-4">
                     <Badge className={isLowBalance ? "bg-red-100 text-red-800" : "bg-purple-100 text-purple-800"}>
                         {user.status}
@@ -98,31 +195,22 @@ const WalletUserCard = ({ user }) => {
                 </div>
             </div>
 
-            {/* Separator / Metrics Row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3 pt-3 border-t border-gray-100 text-xs">
-                {/* Last Transaction */}
                 <div className="col-span-2 sm:col-span-1">
                     <div className="text-gray-500 mb-0.5">Last Transaction</div>
-                    {/* Amount uses sign based on transaction type, and amount is already positive in mock */}
                     <div className={`font-semibold ${transactionColor}`}>{transactionSign}${user.lastTransaction.amount.toFixed(2)}</div>
-                    {/* Display formatted purpose from WalletHistory schema */}
                     <div className="text-gray-400 mt-0.5">{formatPurpose(user.lastTransaction.purpose)}</div>
                 </div>
 
-                {/* Total Spent */}
                 <div className="col-span-1 sm:col-span-1">
                     <div className="text-gray-500 mb-0.5">Total Spent</div>
                     <div className="font-semibold text-gray-800">${user.totalSpent.toFixed(2)}</div>
                     <div className="text-gray-400 mt-0.5">All time</div>
                 </div>
 
-                {/* Actions */}
                 <div className="col-span-2 sm:col-span-2 flex items-center justify-end space-x-2">
-                    <Button variant="ghost" className="text-purple-600 hover:bg-purple-50">
-                        <Eye className="h-4 w-4" /> View Details
-                    </Button>
-                    <Button variant="action" className="bg-purple-600 hover:bg-purple-700">
-                        <Settings className="h-4 w-4" /> Manage
+                    <Button onClick={() => onViewHistory(user.rawHistory)} variant="ghost" className="text-purple-600 hover:bg-purple-50">
+                        <Eye className="h-4 w-4" /> View all transactions
                     </Button>
                 </div>
             </div>
@@ -134,13 +222,24 @@ export default function WalletManagement() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All Status');
     const [WalletUsers, setWalletUsers] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedHistory, setSelectedHistory] = useState([]);
+    
     const dispatch = useDispatch();
+
+    const formatCurrency = (amount) => {
+        return Number(amount).toFixed(2);
+    };
+
+    const handleOpenModal = (history) => {
+        setSelectedHistory(history);
+        setIsModalOpen(true);
+    };
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const result = await dispatch(FetchWallet()).unwrap();
-                console.log("WALLET RESULT:", result);
+                const result = await dispatch(AdminFetchWallet()).unwrap();
                 setWalletUsers(result);
             } catch (err) {
                 console.error("Fetch Wallet Error:", err);
@@ -148,7 +247,7 @@ export default function WalletManagement() {
         };
 
         fetchData();
-    }, []);
+    }, [dispatch]);
 
     const mappedUsers = WalletUsers.map(w => ({
         id: w.user.id,
@@ -156,6 +255,7 @@ export default function WalletManagement() {
         email: w.user.email,
         status: w.balance <= 10 ? "Low Balance" : "Active",
         currentBalance: Number(w.balance),
+        rawHistory: w.history, // Keep the history here to pass to modal
         lastTransaction: w.history.length > 0 ? {
             amount: Number(w.history[0].amount),
             type: w.history[0].transaction_type,
@@ -262,14 +362,27 @@ export default function WalletManagement() {
                 </div>
 
                 {/* Render Wallet Users */}
-                {filteredUsers.length > 0 ? (
-                    filteredUsers.map(user => (
-                        <WalletUserCard key={user.id} user={user} />
-                    ))
-                ) : (
-                    <div className="text-center p-8 text-gray-500">No users found.</div>
-                )}
+                <div className="space-y-4">
+                    {filteredUsers.length > 0 ? (
+                        filteredUsers.map(user => (
+                            <WalletUserCard 
+                                key={user.id} 
+                                user={user} 
+                                onViewHistory={handleOpenModal} 
+                            />
+                        ))
+                    ) : (
+                        <div className="text-center p-8 text-gray-500">No users found.</div>
+                    )}
+                </div>
             </Card>
+
+            <TransactionModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                history={selectedHistory} 
+                formatCurrency={formatCurrency}
+            />
         </div>
     );
 }

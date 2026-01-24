@@ -23,7 +23,7 @@ const StatCard = ({ title, value, subtext, icon: Icon, colorClass, iconBg }) => 
     </div>
 );
 
-const NotificationItem = ({ type, title, message, recipients, date, readCount, readRate, status }) => (
+const NotificationItem = ({ type, title, message, recipients, date, status }) => (
     <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-4 hover:shadow-md transition-shadow">
         <div className="flex justify-between items-start mb-4 gap-4">
             {/* Left Section: Icon and Text */}
@@ -144,7 +144,7 @@ export default function NotificationManagement() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
                     <StatCard title="Total Sent" value={stats.totalSent} subtext="Notifications" icon={Send} colorClass="text-blue-500" iconBg="bg-blue-50" />
-                    <StatCard title="Drafts" value="0" subtext="Saved" icon={Bell} colorClass="text-yellow-500" iconBg="bg-yellow-50" />
+                    {/* <StatCard title="Drafts" value="0" subtext="Saved" icon={Bell} colorClass="text-yellow-500" iconBg="bg-yellow-50" /> */}
                     {/* <StatCard title="Total Reads" value={stats.totalReads} subtext="All-time" icon={CheckCircle} colorClass="text-blue-500" iconBg="bg-blue-50" /> */}
                     {/* <StatCard title="Read Rate" value={`${stats.readRate}%`} subtext="Average" icon={Users} colorClass="text-purple-500" iconBg="bg-purple-50" /> */}
                 </div>

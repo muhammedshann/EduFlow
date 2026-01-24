@@ -5,6 +5,8 @@ from asgiref.sync import sync_to_async
 from .models import ChatBot, ChatBotMessage
 from .gemini_service import call_gemini
 from apps.accounts.models import UserCredits
+from apps.subscriptions.models import CreditUsageHistory
+from django.db import models
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -23,7 +25,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not message:
             return
         
-        # --- 1. PRE-CHECK (Read Only) ---
         check_result = await self.check_can_ask()
         
         if not check_result['allowed']:
@@ -33,18 +34,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }))
             return
 
-        # --- 2. CALL GEMINI ---
         prompt = f"Note: {note_title}\nContext: {context}\nQuestion: {message}" if context else message
         
         reply = await sync_to_async(call_gemini, thread_sensitive=False)(prompt)
 
-        # --- 3. VALIDATION & COMMITMENT ---
-        # Only deduct credits if the reply is successful (doesn't start with error emojis)
         if "❌" not in reply and "⚠️" not in reply:
-            # AI responded correctly, now we "charge" the user
             self.chatbot_obj = await self.finalise_transaction(check_result['mode'])
             
-            # Save the message to history
             await self.save_request_reply(message, reply)
 
             await self.send(text_data=json.dumps({
@@ -52,13 +48,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "mode": check_result['mode']
             }))
         else:
-            # AI failed or was rate-limited; send the error but do NOT deduct credits
             await self.send(text_data=json.dumps({
                 "type": "error",
-                "message": reply # This will be the "AI service unavailable" message
+                "message": reply 
             }))
 
-    # ================= DATABASE HELPERS =================
 
     @sync_to_async
     def check_can_ask(self):
@@ -66,7 +60,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         today = timezone.now().date()
         obj, _ = ChatBot.objects.get_or_create(user=self.user, created_at__date=today)
 
-        if obj.request_count < 3:
+        if obj.request_count < 5:
             return {'allowed': True, 'mode': 'free'}
 
         try:
@@ -88,6 +82,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             credits_obj = UserCredits.objects.get(user=self.user)
             credits_obj.used_credits += 1
             credits_obj.save()
+            credit_usage = CreditUsageHistory.objects.create(
+                user = self.user,
+                credits_used = 1,
+                purpose = 'chat_bot'
+            )
         
         obj.request_count += 1
         obj.save(update_fields=["request_count"])

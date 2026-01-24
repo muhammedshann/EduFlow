@@ -13,9 +13,9 @@ urlpatterns = [
     path('api/habit/', include('apps.habit_tracker.urls')),
     path('api/groups/', include('apps.groups.urls')),
     path('api/review/', include('apps.review.urls')),
+    path('api/subscriptions/', include('apps.subscriptions.urls')),
     path('api/transcription-notes/', include('apps.transcription_notes.urls')),
     path('api/chat-bot/', include('apps.chat_bot.urls')),
-    path('api/subscriptions/', include('apps.subscriptions.urls')),
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/accounts/auth/', include('dj_rest_auth.urls')),

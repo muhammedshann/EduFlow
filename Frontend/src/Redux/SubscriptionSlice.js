@@ -31,10 +31,25 @@ export const RzpVerifyOrder = createAsyncThunk(
     'subscriptions/RzpVerifyOrder',
     async(payload, { rejectWithValue }) => {
         try {
-            const response = await api.post('/subscriptions/verify-payment/', payload);
+            const response = await api.post('subscriptions/verify-payment/', payload);
             return response.data;
         } catch(err) {
             return rejectWithValue(err.response?.data || "Verification failed");
+        }
+    }
+);
+
+export const WalletPayment = createAsyncThunk(
+    'subscriptions/WalletPayment',
+    async (payload, { rejectWithValue }) => {
+        try {
+            // Use 'api' instead of 'axios'
+            // Path should NOT start with /api/ because baseURL already has it
+            const response = await api.post('subscriptions/wallet-payment/', payload);
+            return response.data;
+        } catch (err) {
+            const message = err.response?.data?.error || "Wallet payment failed";
+            return rejectWithValue(message);
         }
     }
 );

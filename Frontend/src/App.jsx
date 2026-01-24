@@ -123,7 +123,7 @@ function App() {
           />
 
           <Route
-            path='/live-transcription/'
+            path='/smart-note/'
             element={
               <ProtectedRoute>
                 <LiveTranscriptionPage />

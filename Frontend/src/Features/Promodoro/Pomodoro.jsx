@@ -2,46 +2,36 @@ import { useState, useEffect, useRef } from "react";
 import { Play, Pause, RotateCcw, Settings, Clock, TrendingUp, CheckCircle } from "lucide-react";
 import { useDispatch } from "react-redux";
 import {
-  FetchDailyStats,
-  FetchPomodoro,
-  FetchWeeklyStats,
-  SavePomodoro,
-  UpdatePomodoro,
-  FetchStreak
+    FetchDailyStats,
+    FetchPomodoro,
+    FetchWeeklyStats,
+    SavePomodoro,
+    UpdatePomodoro,
+    FetchStreak
 } from "../../Redux/PomodoroSlice";
 
 export default function Pomodoro() {
-    // --- dispatch MUST be declared before any effect that uses it ---
     const dispatch = useDispatch();
 
-    // --- USER SETTINGS / TIMER state ---
     const [workMinutes, setWorkMinutes] = useState(55);
     const [breakMinutes, setBreakMinutes] = useState(5);
 
-    // timeLeft is in seconds
     const [timeLeft, setTimeLeft] = useState(25 * 60);
     const [isActive, setIsActive] = useState(false);
     const [isBreak, setIsBreak] = useState(false);
 
-    // UI counters
     const [sessionsCompleted, setSessionsCompleted] = useState(0);
     const [currentCycle, setCurrentCycle] = useState(1);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    // stats
     const [daily, setDaily] = useState({});
     const [weekly, setWeekly] = useState([]);
     const [streak, setStreak] = useState(0);
 
-    // interval ref so we can clear reliably
     const intervalRef = useRef(null);
 
-    // storage key
     const STORAGE_KEY = "pomodoro_state_v1";
-    
-    // ----------------------
-    // Helper function to fetch all stats (moved outside the first useEffect)
-    // ----------------------
+
     const refetchStats = async (mounted) => {
         try {
             const d = await dispatch(FetchDailyStats()).unwrap();
@@ -65,58 +55,45 @@ export default function Pomodoro() {
         }
     };
 
-
-    // ----------------------
-    // Load settings, then restore saved timer, and fetch initial stats
-    // ----------------------
     useEffect(() => {
         let mounted = true;
 
         const loadAll = async () => {
             try {
-                // 1) fetch user's pomodoro settings first (so we know default session lengths)
                 const settings = await dispatch(FetchPomodoro()).unwrap();
                 if (!mounted) return;
 
-                // set settings (do NOT overwrite restored timeLeft yet)
                 setWorkMinutes(settings.focus_minutes);
                 setBreakMinutes(settings.break_minutes);
 
-                // 2) fetch stats (daily/weekly/streak)
                 await refetchStats(mounted);
 
 
-                // 3) then restore local state (if any)
                 const savedRaw = localStorage.getItem(STORAGE_KEY);
                 if (!savedRaw) {
-                    // default initial time depends on focusMinutes
                     setTimeLeft(settings.focus_minutes * 60);
                     return;
                 }
 
                 const saved = JSON.parse(savedRaw);
 
-                // If saved indicates an active timer (endTime) — compute remaining
                 if (saved.isActive && saved.endTime) {
                     const now = Date.now();
                     const remainingSeconds = Math.ceil((saved.endTime - now) / 1000);
 
                     if (remainingSeconds > 0) {
-                        // restore running timer
                         setIsBreak(saved.isBreak ?? false);
                         setTimeLeft(remainingSeconds);
                         setIsActive(true);
                     } else {
-                        // expired: maybe user closed tab. we clear and set defaults
                         localStorage.removeItem(STORAGE_KEY);
                         setIsBreak(false);
                         setIsActive(false);
                         setTimeLeft(settings.focus_minutes * 60);
                     }
                 } else {
-                    // saved paused state (timeLeft stored) or malformed -> restore paused timeLeft
                     const tl = typeof saved.timeLeft === "number"
-                        ? Math.max(1, saved.timeLeft) // ensure at least 1s
+                        ? Math.max(1, saved.timeLeft)
                         : settings.focus_minutes * 60;
 
                     setIsBreak(saved.isBreak ?? false);
@@ -126,7 +103,6 @@ export default function Pomodoro() {
 
             } catch (err) {
                 console.error("Error loading Pomodoro settings/stats:", err);
-                // fallback defaults
                 setWorkMinutes(25);
                 setBreakMinutes(5);
                 setTimeLeft(25 * 60);
@@ -139,11 +115,7 @@ export default function Pomodoro() {
     }, [dispatch]);
 
 
-    // ----------------------
-    // interval that ticks the timer every second when active
-    // ----------------------
     useEffect(() => {
-        // clear previous interval if any
         if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
@@ -163,23 +135,14 @@ export default function Pomodoro() {
         };
     }, [isActive]);
 
-
-    // ----------------------
-    // when timeLeft hits zero -> finalize session, save to server and reset properly
-    // This is the CRITICAL section being corrected.
-    // ----------------------
     useEffect(() => {
-        // Only run when the timer reaches zero and the timer is active
         if (timeLeft > 0 || !isActive) return;
 
-        // Immediately pause the timer interval
         setIsActive(false);
 
-        // Use a self-invoking async function to handle session completion and stat refresh
         (async () => {
             const mounted = { current: true };
-            
-            // 1. Determine session details and payload
+
             const durationSeconds = (isBreak ? breakMinutes : workMinutes) * 60;
             const payload = {
                 session_type: isBreak ? "break" : "focus",
@@ -190,30 +153,23 @@ export default function Pomodoro() {
             };
 
             try {
-                // 2. Save the completed session to the server
                 await dispatch(SavePomodoro(payload)).unwrap();
-                
-                // 3. Wait for new stats to be fetched and updated in component state
+
                 if (mounted.current) {
-                   await refetchStats(mounted.current);
+                    await refetchStats(mounted.current);
                 }
-                
-                // 4. Update UI counters and transition to the next session (this MUST be done AFTER stat refresh)
                 if (isBreak) {
-                    // finished break -> go to next focus
                     setIsBreak(false);
                     setTimeLeft(workMinutes * 60);
                     setCurrentCycle(prev => prev + 1);
                 } else {
-                    // finished focus -> increment sessions and go to break
                     setSessionsCompleted(prev => prev + 1);
                     setIsBreak(true);
                     setTimeLeft(breakMinutes * 60);
                 }
-                
+
             } catch (err) {
                 console.log("Session completion error:", err);
-                // Even on error, attempt to transition the timer state
                 if (isBreak) {
                     setIsBreak(false);
                     setTimeLeft(workMinutes * 60);
@@ -224,21 +180,16 @@ export default function Pomodoro() {
                     setTimeLeft(breakMinutes * 60);
                 }
             }
-            
-            // 5. Clean up
+
             localStorage.removeItem(STORAGE_KEY);
-            
+
             return () => { mounted.current = false; };
-            
-        })(); // Self-invoke the async function
 
-    }, [timeLeft, isBreak, workMinutes, breakMinutes, dispatch, isActive]); // Added isActive to dependency array
+        })();
 
-    // ----------------------
-    // toggleTimer: start / pause behavior
-    // - When starting: store endTime
-    // - When pausing: store remaining time
-    // ----------------------
+    }, [timeLeft, isBreak, workMinutes, breakMinutes, dispatch, isActive]);
+
+
     const toggleTimer = () => {
         // starting
         if (!isActive) {
@@ -253,8 +204,6 @@ export default function Pomodoro() {
             return;
         }
 
-        // pausing
-        // save paused remaining time
         const pausedPayload = {
             isBreak,
             isActive: false,
@@ -265,7 +214,6 @@ export default function Pomodoro() {
     };
 
 
-    // reset timer to default (focus length)
     const resetTimer = () => {
         setIsActive(false);
         setIsBreak(false);
@@ -274,7 +222,6 @@ export default function Pomodoro() {
     };
 
 
-    // if user changes settings and timer is not active -> update defaults and persist cleared state
     const saveSettings = async () => {
         if (!isActive) {
             try {
@@ -287,12 +234,10 @@ export default function Pomodoro() {
                 setBreakMinutes(updated.break_minutes);
                 setTimeLeft(updated.focus_minutes * 60);
 
-                // update local storage if paused state exists (keep paused time consistent)
                 const savedRaw = localStorage.getItem(STORAGE_KEY);
                 if (savedRaw) {
                     const saved = JSON.parse(savedRaw);
                     if (!saved.isActive) {
-                        // paused: overwrite saved pause time to match new focus length if it was focus and timeLeft > new
                         saved.timeLeft = (saved.isBreak ? updated.break_minutes : updated.focus_minutes) * 60;
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
                     }
@@ -305,7 +250,6 @@ export default function Pomodoro() {
     };
 
 
-    // small helpers
     const formatTime = seconds => {
         const minutes = Math.floor(Math.max(0, seconds) / 60);
         const remainingSeconds = Math.max(0, seconds) % 60;
@@ -314,16 +258,10 @@ export default function Pomodoro() {
 
     const getProgress = () => {
         const totalTime = isBreak ? breakMinutes * 60 : workMinutes * 60;
-        if (totalTime <= 0) return 0;
+        if (totalTime <= 0 || timeLeft >= totalTime) return 0;
         return ((totalTime - timeLeft) / totalTime) * 100;
     };
 
-    // ----------------------
-    // Minimal safety: if user closes tab while active, saved endTime will be used on reload.
-    // If paused, saved timeLeft will be used.
-    // ----------------------
-
-    // --- RENDER (unchanged structure/styles) ---
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex">
             <div className="flex-1 w-full max-w-6xl mx-auto p-4 pb-16">
@@ -357,7 +295,7 @@ export default function Pomodoro() {
                                     strokeDasharray={2 * Math.PI * 90}
                                     strokeDashoffset={2 * Math.PI * 90 * (1 - getProgress() / 100)}
                                     strokeLinecap="round"
-                                    className="transition-all duration-1000 ease-linear"
+                                    className={`${isActive ? "transition-[stroke-dashoffset] duration-1000 ease-linear" : "transition-none"}`}
                                 />
                                 <circle
                                     cx="100" cy="100" r="90"
@@ -367,7 +305,7 @@ export default function Pomodoro() {
                                     strokeDasharray={2 * Math.PI * 90}
                                     strokeDashoffset={2 * Math.PI * 90 * (1 - getProgress() / 100)}
                                     strokeLinecap="round"
-                                    className="opacity-20 blur-lg transition-all duration-1000 ease-linear"
+                                    className={`opacity-20 blur-lg ${isActive ? "transition-[stroke-dashoffset] duration-1000 ease-linear" : "transition-none"}`}
                                 />
                             </svg>
 
@@ -396,7 +334,7 @@ export default function Pomodoro() {
                     </div>
                 </div>
 
-                {/* Stats Section (unchanged structure) */}
+                {/* Stats Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 pb-16">
                     <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
                         <div className="flex items-center space-x-3 mb-6">
@@ -439,7 +377,7 @@ export default function Pomodoro() {
 
             </div>
 
-            {/* Settings Modal (unchanged) */}
+            {/* Settings Modal */}
             {isSettingsOpen && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 transform transition-all">

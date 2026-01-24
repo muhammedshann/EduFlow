@@ -2,6 +2,7 @@ from rest_framework import serializers
 from apps.accounts.models import User, WalletHistory, Wallet
 from apps.groups.models import Group
 from apps.transcription_notes.models import Notes
+from apps.subscriptions.models import CreditPurchase, CreditUsageHistory
 
 class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -168,3 +169,43 @@ class AdminUploadStatsSerializer(serializers.Serializer):
     user_id = serializers.IntegerField(source='id')
     username = serializers.CharField()
     total_count = serializers.IntegerField()
+
+class RecentPurchaseSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    bundle_name = serializers.CharField(source='Credit_bundle_id.name', read_only=True)
+
+    class Meta:
+        model = CreditPurchase
+        fields = ['user_email', 'bundle_name', 'total_amount', 'status', 'created_at']
+    
+class CreditUsageHistorySerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+
+    class Meta:
+        model = CreditUsageHistory
+        fields = [
+            'id', 
+            'user', 
+            'user_email', 
+            'credits_used', 
+            'purpose', 
+            'created_at'
+        ]
+
+class AdminCreditPurchaseSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    bundle_name = serializers.CharField(source='Credit_bundle_id.name', read_only=True)
+
+    class Meta:
+        model = CreditPurchase
+        fields = [
+            'id', 
+            'user', 
+            'user_email', 
+            'bundle_name', 
+            'credits_purchased', 
+            'total_amount', 
+            'status', 
+            'payment_id', 
+            'created_at'
+        ]

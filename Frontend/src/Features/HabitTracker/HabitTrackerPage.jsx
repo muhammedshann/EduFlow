@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Plus, TrendingUp, CheckCircle, Flame, Heart, Info } from 'lucide-react';
+import { Plus, TrendingUp, CheckCircle, Flame, Heart, Info, Trash2, X } from 'lucide-react';
 import { useDispatch } from 'react-redux';
-import { AddHabit, FetchHabit, StreakStatsHabit, ToggleHabit, WeeklyStatsHabit } from '../../Redux/HabitTrackerSlice';
+import { AddHabit, FetchHabit, StreakStatsHabit, ToggleHabit, WeeklyStatsHabit, DeleteHabit } from '../../Redux/HabitTrackerSlice';
+import { DeleteConfirmModal } from '../../Components/ConfirmDelete';
+
 
 const HabitTracker = () => {
     const dispatch = useDispatch();
@@ -11,6 +13,10 @@ const HabitTracker = () => {
     const [weeklyOverview, setWeeklyOverview] = useState([]);
     const [longestStreak, setLongestStreak] = useState(0);
     const [isAddingHabit, setIsAddingHabit] = useState(false);
+
+    // DELETE MODAL STATES
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [habitToDelete, setHabitToDelete] = useState(null);
 
     // DAILY SUMMARY
     const dailySummary = {
@@ -52,36 +58,46 @@ const HabitTracker = () => {
 
     // TOGGLE HABIT
     const toggleHabitCompletion = async ({ habit_id, completed }) => {
-        try {
-            await dispatch(ToggleHabit({ habit_id, completed: !completed }));
-            fetchAndSetHabits();
-        } catch (err) {
-            console.log(err);
-        }
-
-        // Optimistic UI update
+        const previousHabits = [...habits];
+        const newStatus = !completed;
+        
         setHabits(prev =>
-            prev.map(h =>
-                h.id === habit_id
-                    ? {
-                          ...h,
-                          done_today: !completed,
-                          doneToday: !completed
-                      }
-                    : h
-            )
+            prev.map(h => h.id === habit_id ? { ...h, done_today: newStatus } : h)
         );
+
+        try {
+            await dispatch(ToggleHabit({ habit_id, completed: newStatus })).unwrap();
+            // SUCCESS: Fetch fresh weekly stats to update the progress bars
+            const weeklyRes = await dispatch(WeeklyStatsHabit()).unwrap();
+            setWeeklyOverview(Array.isArray(weeklyRes) ? weeklyRes : []);
+        } catch (err) {
+            setHabits(previousHabits);
+            console.error("Sync failed:", err);
+        }
     };
 
     // ADD HABIT
     const handleAddHabit = async (title, description) => {
         if (!title.trim()) return;
-
         await dispatch(AddHabit({ title, description })).unwrap();
-        const res = await dispatch(FetchHabit()).unwrap();
-        setHabits(Array.isArray(res) ? res : []);
-
+        fetchAndSetHabits();
         setIsAddingHabit(false);
+    };
+
+    // --- NEW: DELETE LOGIC ---
+    const handleConfirmDelete = async () => {
+        if (!habitToDelete) return;
+        try {
+            await dispatch(DeleteHabit(habitToDelete.id)).unwrap();
+            setIsDeleteModalOpen(false);
+            setHabitToDelete(null);
+            
+            // IMPORTANT: Refresh ALL stats so the total habit count in 
+            // the weekly calculation is correct
+            await fetchAndSetHabits(); 
+        } catch (err) {
+            console.error("Delete failed:", err);
+        }
     };
 
     // ON MOUNT
@@ -99,13 +115,15 @@ const HabitTracker = () => {
                     <label className="flex items-center cursor-pointer">
                         <input
                             type="checkbox"
-                            checked={isDone}
-                            onChange={() => toggleHabitCompletion({ habit_id: habit.id, completed: isDone })}
-                            className={`form-checkbox h-5 w-5 rounded-md transition duration-150 ease-in-out ${
-                                isDone
-                                    ? 'text-purple-600 border-purple-600 bg-purple-100 focus:ring-purple-500'
-                                    : 'text-purple-600 border-gray-300 focus:ring-purple-500'
-                            }`}
+                            checked={habit.done_today}
+                            onChange={() => toggleHabitCompletion({
+                                habit_id: habit.id,
+                                completed: habit.done_today
+                            })}
+                            className={`form-checkbox h-5 w-5 rounded-md cursor-pointer transition duration-150 ease-in-out ${habit.done_today
+                                    ? 'text-purple-600 border-purple-600 bg-purple-100'
+                                    : 'text-purple-600 border-gray-300'
+                                }`}
                         />
 
                         <div className="ml-3 flex flex-col min-w-0">
@@ -131,10 +149,21 @@ const HabitTracker = () => {
                     )}
                 </div>
 
-                <div className="flex-shrink-0">
+                <div className="flex items-center space-x-4 flex-shrink-0">
                     <span className="text-sm font-medium text-purple-600">
                         {habit.weekCount}/{habit.totalDays} this week
                     </span>
+                    
+                    {/* DELETE BUTTON */}
+                    <button 
+                        onClick={() => {
+                            setHabitToDelete(habit);
+                            setIsDeleteModalOpen(true);
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                        <Trash2 size={18} />
+                    </button>
                 </div>
             </div>
         );
@@ -147,7 +176,6 @@ const HabitTracker = () => {
 
         const handleSave = () => {
             if (!habitTitle.trim()) return;
-
             handleAddHabit(habitTitle, habitDescription);
             setHabitTitle('');
             setHabitDescription('');
@@ -160,7 +188,7 @@ const HabitTracker = () => {
                     placeholder="Enter new habit name"
                     value={habitTitle}
                     onChange={(e) => setHabitTitle(e.target.value)}
-                    className="p-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                    className="p-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 outline-none"
                 />
 
                 <input
@@ -168,7 +196,7 @@ const HabitTracker = () => {
                     placeholder="Optional description"
                     value={habitDescription}
                     onChange={(e) => setHabitDescription(e.target.value)}
-                    className="p-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                    className="p-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 outline-none"
                 />
 
                 <button
@@ -208,12 +236,7 @@ const HabitTracker = () => {
                                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                                     <circle cx="50" cy="50" r="45" fill="transparent" stroke="#E5E7EB" strokeWidth="10" />
                                     <circle
-                                        cx="50"
-                                        cy="50"
-                                        r="45"
-                                        fill="transparent"
-                                        stroke="#10B981"
-                                        strokeWidth="10"
+                                        cx="50" cy="50" r="45" fill="transparent" stroke="#10B981" strokeWidth="10"
                                         strokeDasharray={2 * Math.PI * 45}
                                         strokeDashoffset={2 * Math.PI * 45 * (1 - completionPercentage / 100)}
                                         strokeLinecap="round"
@@ -256,7 +279,6 @@ const HabitTracker = () => {
 
                 {/* DAILY & WEEKLY STATS */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 pb-8">
-
                     {/* DAILY SUMMARY */}
                     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 sm:p-8">
                         <div className="flex items-center space-x-3 mb-6">
@@ -306,7 +328,6 @@ const HabitTracker = () => {
                                 weeklyOverview.map(item => (
                                     <div key={item.date} className="flex items-center justify-between">
                                         <span className="font-medium text-gray-700 w-10">{item.date}</span>
-
                                         <div className="flex items-center space-x-2 w-full max-w-xs">
                                             <div className="bg-gray-200 h-2 rounded-full flex-grow overflow-hidden">
                                                 <div
@@ -320,9 +341,17 @@ const HabitTracker = () => {
                                 ))}
                         </div>
                     </div>
-
                 </div>
             </div>
+
+            {/* MODAL INTEGRATION */}
+            <DeleteConfirmModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Habit?"
+                message={`Are you sure you want to delete "${habitToDelete?.title}"? All progress for this habit will be lost.`}
+            />
         </div>
     );
 };

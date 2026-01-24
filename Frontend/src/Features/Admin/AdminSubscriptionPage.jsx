@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import {
     DollarSign, CreditCard, TrendingUp, Users, Filter,
-    RefreshCw, MoreHorizontal, Plus, X, Settings, Edit3, Trash2
+    RefreshCw, MoreHorizontal, Plus, X, Settings, Edit3, Trash2,
+    Search, ArrowUpRight, ArrowDownLeft
 } from 'lucide-react';
 import { AdminStatCard } from './AdminUserPage';
-import { AdminCreateBundles, AdminCreatePricing, AdminDeleteBundles, AdminFetchBundles, AdminFetchPricing, AdminUpdateBundles } from '../../Redux/AdminRedux/AdminSubscriptionSlice';
+import { 
+    AdminCreateBundles, AdminCreatePricing, AdminDeleteBundles, 
+    AdminFetchBundles, AdminFetchPricing, AdminFetchSubscriptionStats, AdminUpdateBundles 
+} from '../../Redux/AdminRedux/AdminSubscriptionSlice';
 import api from '../../api/axios';
 import { DeleteConfirmModal } from '../../Components/ConfirmDelete';
 
@@ -101,8 +105,6 @@ const BundleModal = ({ isOpen, onClose, onSave, initialData }) => {
                         />
                         <label className="text-sm font-bold text-gray-600">Active (Visible to users)</label>
                     </div>
-                    {/* Hidden Submit for Enter-key support */}
-                    <button type="submit" className="hidden" />
                 </form>
 
                 <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
@@ -124,28 +126,58 @@ export default function SubscriptionManagement() {
     const [isBundleModalOpen, setIsBundleModalOpen] = useState(false);
     const [isRateModalOpen, setIsRateModalOpen] = useState(false);
     const [editingBundle, setEditingBundle] = useState(null);
-    const [deleteBundle, SetDeleteBundle] = useState(null);
+    const [deleteBundle, setDeleteBundle] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [bundleToDelete, setBundleToDelete] = useState(null);
     const [systemRate, setSystemRate] = useState(0);
     const [bundles, setBundles] = useState([]);
 
-    // FETCHING REAL DATA
+    // HISTORY STATES
+    const [history, setHistory] = useState([]);
+    const [stats, setStats] = useState([]);
+    const [historyType, setHistoryType] = useState('purchases'); // 'purchases' or 'usage'
+    const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+
     const fetchData = async () => {
         try {
             const pricing = await dispatch(AdminFetchPricing()).unwrap();
             setSystemRate(pricing.rate_per_credit);
+            
+            const Subscriptionstats = await dispatch(AdminFetchSubscriptionStats()).unwrap();
+            console.log(Subscriptionstats);
+            
+            setStats(Subscriptionstats.stats)
 
             const bundlesData = await dispatch(AdminFetchBundles()).unwrap();
             setBundles(bundlesData);
+            
+            fetchHistory();
         } catch (err) {
             console.error("Failed to load subscription data", err);
+        }
+    };
+
+    const fetchHistory = async () => {
+        setIsHistoryLoading(true);
+        try {
+            const endpoint = historyType === 'purchases' ? 'admin/credit-purchases/' : 'admin/credit-usage/';
+            const response = await api.get(endpoint);
+            console.log(response,'-----------------');
+            
+            setHistory(response.data);
+        } catch (err) {
+            console.error("Failed to fetch history", err);
+        } finally {
+            setIsHistoryLoading(false);
         }
     };
 
     useEffect(() => {
         fetchData();
     }, []);
+
+    useEffect(() => {
+        fetchHistory();
+    }, [historyType]);
 
     const handleUpdateRate = async (newRate) => {
         try {
@@ -204,13 +236,14 @@ export default function SubscriptionManagement() {
             </header>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <AdminStatCard title="Total Revenue" value="₹2,34,456" icon={DollarSign} iconBg="bg-green-50" iconColor="text-green-600" />
+                <AdminStatCard title="Total Revenue" value={stats.total_revenue} icon={DollarSign} iconBg="bg-green-50" iconColor="text-green-600" />
                 <AdminStatCard title="Active Bundles" value={bundles.length} icon={CreditCard} iconBg="bg-purple-50" iconColor="text-purple-600" />
-                <AdminStatCard title="Churn Rate" value="2.3%" icon={TrendingUp} iconBg="bg-indigo-50" iconColor="text-indigo-600" />
-                <AdminStatCard title="Free Users" value="1,613" icon={Users} iconBg="bg-gray-100" iconColor="text-gray-500" />
+                <AdminStatCard title="Total Credits" value={stats.credits_bought} icon={TrendingUp} iconBg="bg-indigo-50" iconColor="text-indigo-600" />
+                <AdminStatCard title="Used Credits" value={stats.credits_used} icon={Users} iconBg="bg-gray-100" iconColor="text-gray-500" />
             </div>
 
-            <section>
+            {/* BUNDLES SECTION */}
+            <section className="mb-12">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-lg font-bold text-gray-800">Pricing Management</h2>
                     <button onClick={() => { setEditingBundle(null); setIsBundleModalOpen(true); }} className="flex items-center gap-2 px-5 py-2.5 bg-[#6366F1] text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-[#4F46E5] transition-all">
@@ -237,7 +270,6 @@ export default function SubscriptionManagement() {
 
                             <p className="text-sm text-gray-400 mt-3 flex-1 italic">{bundle.description}</p>
 
-                            {/* ACTION BUTTONS GRID */}
                             <div className="mt-6 flex gap-2">
                                 <button
                                     onClick={() => { setEditingBundle(bundle); setIsBundleModalOpen(true); }}
@@ -246,17 +278,111 @@ export default function SubscriptionManagement() {
                                     Edit Plan
                                 </button>
                                 <button
-                                    onClick={() => {SetDeleteBundle(bundle),setIsDeleteModalOpen(true)}}
+                                    onClick={() => {setDeleteBundle(bundle); setIsDeleteModalOpen(true);}}
                                     className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all group"
-                                    title="Delete Plan"
                                 >
                                     <Trash2 size={18} />
                                 </button>
                             </div>
                         </div>
                     )) : (
-                        <div className="col-span-3 py-10 text-center text-gray-400 font-medium">No bundles found. Create one to get started.</div>
+                        <div className="col-span-3 py-10 text-center text-gray-400 font-medium italic bg-white rounded-2xl border border-dashed">No bundles found. Create one to get started.</div>
                     )}
+                </div>
+            </section>
+
+            {/* HISTORY SECTION */}
+            
+            <section className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-800">Transaction History</h2>
+                        <p className="text-xs text-gray-400 font-medium">Monitor credit purchases and system usage</p>
+                    </div>
+
+                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                        <button 
+                            onClick={() => setHistoryType('purchases')}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${historyType === 'purchases' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Purchases
+                        </button>
+                        <button 
+                            onClick={() => setHistoryType('usage')}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${historyType === 'usage' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Usage
+                        </button>
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                            <tr>
+                                <th className="px-6 py-4 text-center w-12">Type</th>
+                                <th className="px-6 py-4">User</th>
+                                <th className="px-6 py-4">{historyType === 'purchases' ? 'Bundle / Details' : 'Purpose'}</th>
+                                <th className="px-6 py-4">Amount / Units</th>
+                                <th className="px-6 py-4">Date</th>
+                                <th className="px-6 py-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {isHistoryLoading ? (
+                                <tr><td colSpan="6" className="py-20 text-center text-gray-400 animate-pulse font-medium">Loading transaction logs...</td></tr>
+                            ) : history.length > 0 ? history.map((item, idx) => (
+                                <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                    <td className="px-6 py-4">
+                                        {historyType === 'purchases' ? (
+                                            <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center">
+                                                <ArrowDownLeft size={16} />
+                                            </div>
+                                        ) : (
+                                            <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                                                <ArrowUpRight size={16} />
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-gray-800">{item.user_email || 'System User'}</span>
+                                            <span className="text-[10px] text-gray-400 font-medium">ID: {item.user}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="text-sm font-semibold text-gray-700">
+                                            {historyType === 'purchases' ? (item.bundle_name || `${item.credits_purchased} Credits`) : (item.purpose || 'Transcription')}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`text-sm font-black ${historyType === 'purchases' ? 'text-gray-900' : 'text-red-500'}`}>
+                                            {historyType === 'purchases' ? `₹${item.total_amount}` : `-${item.credits_used} `}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-500 font-medium">
+                                        {new Date(item.created_at).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase 
+                                            ${(item.status === 'success' || !item.status) ? 'bg-green-100 text-green-600' : 
+                                              item.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
+                                              'bg-red-100 text-red-600'}`}>
+                                            {item.status || 'Success'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr><td colSpan="6" className="py-20 text-center text-gray-400 font-medium italic">No activity found for this category.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="p-4 bg-gray-50/50 border-t border-gray-50 flex justify-center">
+                    <button onClick={fetchHistory} className="text-xs font-bold text-purple-600 flex items-center gap-2 hover:scale-105 transition-transform">
+                        <RefreshCw size={14} /> Refresh Logs
+                    </button>
                 </div>
             </section>
 

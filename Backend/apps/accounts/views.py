@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
-from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, VerifyAccountSerializer, UpdateProfileSerializer, WalletSerializer,UpdatePasswordSerializer, SettingsSerializer, UpdateProfileImageSerializer, UserCreditsSerializer, UserNotificationSerializer
+from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, VerifyAccountSerializer, UpdateProfileSerializer, WalletSerializer,UpdatePasswordSerializer, SettingsSerializer, UpdateProfileImageSerializer, UserCreditsSerializer, UserNotificationSerializer, VerifyOtpEmailSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from .models import TempUser, Wallet, WalletHistory,Settings, UserCredits
 from apps.admin_panel.models import Notification
@@ -27,9 +27,10 @@ from google.auth.transport import requests as google_requests
 from rest_framework.parsers import MultiPartParser, FormParser
 from decimal import Decimal
 from django.contrib.auth import login
-
-
-
+from rest_framework.decorators import api_view
+import razorpay
+from django.db import transaction
+from django.contrib.auth.models import update_last_login
 
 
 logger = logging.getLogger(__name__)
@@ -77,6 +78,8 @@ class GoogleLoginView(SocialLoginView):
                 user.set_unusable_password()
                 user.save()
                 logger.info(f"New user created: {email}")
+
+            update_last_login(None, user)
 
             # Save profile picture if not exists
             if picture_url and not user.profile_pic:
@@ -201,7 +204,6 @@ class GenerateOtpView(APIView):
             email = serializer.validated_data['email']
             user = User.objects.get(email=email)
             
-            # Generate OTP
             otp = str(random.randint(100000, 999999))
             print("generated otp for reset password = ",otp)
 
@@ -214,11 +216,22 @@ class GenerateOtpView(APIView):
                 }
             )
 
-            sent_otp_email(email, otp,'Your OTP Code for EduFlow. For email Verification.')
+            try:
+                sent_otp_email(email, otp, 'Your OTP Code for EduFlow Password Reset.')
+                return Response({
+                    "email": email, 
+                    "message": "OTP sent successfully",
+                    "created_at": temp_user.otp_created_at.isoformat()
+                }, status=status.HTTP_200_OK)
+            except Exception:
+                return Response(
+                    {"message": "Failed to send email. Please try again later."}, 
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
 
-            return Response({"email": email, "message": "OTP sent successfully",'created_time':temp_user.otp_created_at}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        # return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyOtp(APIView):
     def post(self, request):
@@ -228,6 +241,14 @@ class VerifyOtp(APIView):
             if register:
                 user = serializer.save()
                 return Response({"message": "User verified and registered successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "User verified "}, status=status.HTTP_201_CREATED)
+        return Response({"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+class VerifyOtpEmailView(APIView):
+    def post(self, request):
+        serializer = VerifyOtpEmailSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.delete()
             return Response({"message": "User verified "}, status=status.HTTP_201_CREATED)
         return Response({"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -262,7 +283,6 @@ class LoginView(APIView):
                 'refresh': refreshToken,
             })
 
-            # Set cookies
             response.set_cookie(
                 key='access',
                 value=accessToken,
@@ -282,6 +302,38 @@ class LoginView(APIView):
             return response
 
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+class DeleteUser(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh')
+
+        if not refresh_token:
+            return Response({"error": "No refresh token found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # 1. Blacklist the current refresh token
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except TokenError:
+            return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 2. Capture the user instance before deletion
+        user = request.user
+        user.delete()
+
+        # 3. Create the response
+        response = Response(
+            {"message": "Account deleted successfully"}, 
+            status=status.HTTP_200_OK
+        )
+
+        # 4. Clear the cookies on the SAME response object being returned
+        response.delete_cookie('access')
+        response.delete_cookie('refresh')
+        
+        return response
     
 class ResetPassword(APIView):
     def post(self, request):
@@ -341,19 +393,14 @@ class UpdatePasswordView(APIView):
         old_password = serializer.validated_data["old_password"]
         new_password = serializer.validated_data["new_password"]
 
-        # CHECK OLD PASSWORD
         if not user.check_password(old_password):
             return Response(
                 {"error": "Old password is incorrect."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # UPDATE PASSWORD
         user.set_password(new_password)
         user.save()
-
-        # IMPORTANT: keep user logged in
-        # update_session_auth_hash(request, user)
 
         return Response(
             {"message": "Password updated successfully"},
@@ -371,7 +418,7 @@ class UpdateProfileImageView(APIView):
             serializer.save()
             return Response({
                 "message": "Profile picture updated successfully",
-                "profilePic": serializer.data["profile_pic"]
+                "profilePic": request.build_absolute_uri(serializer.data["profile_pic"])
             })
         return Response({"errors": serializer.errors}, status=400)
 
@@ -409,33 +456,148 @@ class WalletDepositeView(APIView):
             "balance": wallet.balance
         }, status=200)
     
-class WalletWithdrawView(APIView):
+class GenerateOtpEmailView(APIView):
+    permission_classes = [IsAuthenticated] 
+
+    def post(self, request):
+        email = request.data.get('email')
+        
+        if not email:
+            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if User.objects.filter(email = email).exists():
+            return Response({"error": "Email already exists. Please use another email."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = request.user
+            
+            otp = str(random.randint(100000, 999999))
+            print(otp)
+            
+            temp_user, created = TempUser.objects.update_or_create(
+                email=email,
+                defaults={
+                    'username': user.username, 
+                    'otp': otp,
+                    'otp_created_at': timezone.now()
+                }
+            )
+            
+            sent_otp_email(email, otp, 'Your OTP Code for EduFlow Password Reset.')
+            
+            return Response({
+                "email": email, 
+                "message": "OTP sent successfully",
+            }, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+
+            return Response({"error": "User with this email does not exist."}, status=status.HTTP_404_NOT_FOUND)
+            
+        except Exception as e:
+            print(f"Error: {e}")
+            return Response(
+                {"message": "Failed to send email."}, 
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+ 
+# class WalletWithdrawView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         amount = request.data.get('amount')
+#         if not amount:
+#             return Response({"error": "Amount is required"}, status=400)
+#         wallet = Wallet.objects.get(user=request.user)
+#         amount = Decimal(amount)
+#         if amount <= 0:
+#             return Response({"error": "Amount must be positive"}, status=400)
+#         if amount > wallet.balance:
+#             return Response({"error": "inefficient balance."}, status=400)
+#         wallet.balance -= amount
+#         wallet.save()
+#         WalletHistory.objects.create(
+#             wallet = wallet,
+#             user = request.user,
+#             transaction_type = 'debit',
+#             amount = amount,
+#             purpose = 'withdraw',
+#             status = 'success'
+#         )
+#         return Response({
+#             "message": "withdraw successful",
+#             "balance": wallet.balance
+#         }, status=200)
+    
+client = razorpay.Client(auth=(settings.RZP_KEY_ID, settings.RZP_KEY_SECRET))
+
+class CreateRazorpayOrderView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         amount = request.data.get('amount')
         if not amount:
             return Response({"error": "Amount is required"}, status=400)
-        wallet = Wallet.objects.get(user=request.user)
-        amount = Decimal(amount)
-        if amount <= 0:
-            return Response({"error": "Amount must be positive"}, status=400)
-        if amount > wallet.balance:
-            return Response({"error": "inefficient balance."}, status=400)
-        wallet.balance -= amount
-        wallet.save()
-        WalletHistory.objects.create(
-            wallet = wallet,
-            user = request.user,
-            transaction_type = 'debit',
-            amount = amount,
-            purpose = 'withdraw',
-            status = 'success'
-        )
-        return Response({
-            "message": "withdraw successful",
-            "balance": wallet.balance
-        }, status=200)
+        
+        amount_in_paise = int(Decimal(amount) * 100)
+
+        data = {
+            "amount": amount_in_paise,
+            "currency": "INR",
+            "payment_capture": "1"
+        }
+
+        try:
+            order = client.order.create(data=data)
+            return Response({
+                "order_id": order['id'],
+                "amount": order['amount'],
+                "currency": order['currency'],
+                "key_id": settings.RZP_KEY_ID
+            }, status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+class VerifyRazorpayPaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        razorpay_order_id = request.data.get('razorpay_order_id')
+        razorpay_payment_id = request.data.get('razorpay_payment_id')
+        razorpay_signature = request.data.get('razorpay_signature')
+
+        try:
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            }
+            client.utility.verify_payment_signature(params_dict)
+
+            order_details = client.order.fetch(razorpay_order_id)
+            amount = Decimal(order_details['amount']) / 100
+
+            with transaction.atomic():
+                wallet = Wallet.objects.select_for_update().get(user=request.user)
+                wallet.balance += amount
+                wallet.save()
+
+                WalletHistory.objects.create(
+                    wallet=wallet,
+                    user=request.user,
+                    transaction_type='credit',
+                    amount=amount,
+                    purpose='top-up',
+                    reference_id=razorpay_payment_id,
+                    status='success'
+                )
+
+            return Response({"message": "Payment verified and wallet updated", "balance": wallet.balance}, status=200)
+
+        except razorpay.errors.SignatureVerificationError:
+            return Response({"error": "Invalid signature. Payment verification failed."}, status=400)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
 
 class SettingsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -449,7 +611,6 @@ class SubscriptionPlanView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # get_or_create ensures the logic doesn't break for new users
         credits, created = UserCredits.objects.get_or_create(user=request.user)
         serializer = UserCreditsSerializer(credits)
         return Response(serializer.data)
@@ -458,7 +619,6 @@ class NotificationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Fetch only notifications for the logged-in user
         notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
         serializer = UserNotificationSerializer(notifications, many=True)
         return Response(serializer.data)

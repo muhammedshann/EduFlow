@@ -7,19 +7,22 @@ import { Store } from './Redux/Store.js'
 import { UserProvider } from './Context/UserContext'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { SidebarProvider } from './Context/SideBarContext.jsx'
+import { ThemeProvider } from './Context/ThemeContext.jsx'
 
 const clientId = import.meta.env.VITE_CLIENT_ID;
 
 createRoot(document.getElementById('root')).render(
   <GoogleOAuthProvider clientId={clientId}>
     <SidebarProvider >
-      <Provider store={Store}>
-        <UserProvider>
-          <StrictMode>
-            <App />
-          </StrictMode>
-        </UserProvider>
-      </Provider>
+      <ThemeProvider >
+        <Provider store={Store}>
+          <UserProvider>
+            <StrictMode>
+              <App />
+            </StrictMode>
+          </UserProvider>
+        </Provider>
+      </ThemeProvider>
     </SidebarProvider>
-  </GoogleOAuthProvider>
+  </GoogleOAuthProvider >
 )

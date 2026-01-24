@@ -67,8 +67,9 @@ export default function LiveTranscriptionPage() {
         const types = [
             "audio/webm;codecs=opus",
             "audio/webm",
+            "audio/mp4", // Add this for Safari/iOS
+            "audio/aac", // Backup for some mobile browsers
             "audio/ogg;codecs=opus",
-            "audio/ogg",
         ];
         return types.find((t) => MediaRecorder.isTypeSupported(t)) || null;
     };

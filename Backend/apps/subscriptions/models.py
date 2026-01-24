@@ -51,6 +51,10 @@ class CreditPurchase(models.Model):
         ('failed', 'Failed'),
         ('refunded', 'Refunded'),
     ]
+    PAYMENT_METHOD = [
+        ('online', 'Online'),
+        ('wallet', 'Wallet'),
+    ]
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
@@ -58,10 +62,17 @@ class CreditPurchase(models.Model):
         related_name='credit_purchases'
     )
     payment_id = models.CharField(max_length=255, null=True, blank=True) 
-    Credit_bundle_id = models.ForeignKey(CreditBundle, on_delete=models.SET_NULL,null=True, blank=True,related_name='purchases')
+    credit_bundle = models.ForeignKey(
+        CreditBundle, 
+        on_delete=models.SET_NULL,
+        null=True, 
+        blank=True,
+        related_name='purchases'
+    )
     credits_purchased = models.IntegerField()
     rate_per_credit = models.DecimalField(max_digits=10, decimal_places=2)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    method = models.CharField(max_length=20, choices=PAYMENT_METHOD,db_index=True, default='online')
     status = models.CharField(
         max_length=20, 
         choices=STATUS_CHOICES, 

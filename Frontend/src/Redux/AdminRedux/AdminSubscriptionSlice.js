@@ -15,6 +15,20 @@ export const AdminFetchPricing= createAsyncThunk(
     }
 )
 
+export const AdminFetchSubscriptionStats= createAsyncThunk(
+    'admin/AdminFetchSubscriptionStats',
+    async(_,{rejectWithValue}) => {
+        try {
+            const response = await api.get('/admin/subscription-stats/');
+            console.log(response.data);
+            return response.data
+        } catch(err) {
+            console.log(err);
+            return rejectWithValue(err.response?.data || "fetch failed")
+        }
+    }
+)
+
 export const AdminFetchBundles= createAsyncThunk(
     'admin/AdminFetchBundles',
     async(_,{rejectWithValue}) => {

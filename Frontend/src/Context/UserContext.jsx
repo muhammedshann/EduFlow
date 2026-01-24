@@ -33,8 +33,12 @@ export const UserProvider = ({ children }) => {
         fetchUser();
     }, []);
 
-    const updateUser = (updatedFields) => {
-        setUser(prev => ({ ...prev, ...updatedFields }));
+    const updateUser = (data) => {
+        if (data === null) {
+            setUser(null);
+        } else {
+            setUser(prev => ({ ...prev, ...data }));
+        }
     };
 
     const logout = async () => {

@@ -23,7 +23,7 @@ const NoteRow = ({ note, onViewNote }) => {
             <div className="flex items-center flex-1 min-w-0">
 
                 {/* Main Info Columns */}
-                <div className="grid grid-cols-4 w-full gap-4 items-center min-w-0">
+                <div className="grid grid-cols-3 w-full gap-4 items-center min-w-0">
                     <div className="flex flex-col min-w-0">
                         <p className="text-xs text-gray-400 font-bold uppercase">User</p>
                         <p className="text-base font-semibold text-gray-800 truncate">{note.user}</p>
@@ -39,10 +39,10 @@ const NoteRow = ({ note, onViewNote }) => {
                         <p className="text-sm text-gray-800 font-bold truncate">{note.title || "Untitled"}</p>
                     </div>
 
-                    <div className="flex flex-col min-w-0">
+                    {/* <div className="flex flex-col min-w-0">
                         <p className="text-xs text-gray-400 font-bold uppercase">Credits</p>
                         <p className="text-sm font-mono font-bold text-purple-600">{note.credits_used}</p>
-                    </div>
+                    </div> */}
                 </div>
             </div>
 
@@ -117,7 +117,7 @@ export default function NotesManagement() {
             </header>
 
             {/* Reusing your StatCard design and grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-10">
                 <AdminStatCard
                     title="Total Notes"
                     value={stats.totalNotes}
@@ -139,7 +139,7 @@ export default function NotesManagement() {
                     valueColor="text-gray-800"
                     changeColor="text-green-600"
                 />
-
+{/* 
                 <AdminStatCard
                     title="Credits Spent"
                     value={stats.creditsSpent}
@@ -160,7 +160,7 @@ export default function NotesManagement() {
                     iconColor="text-purple-600"
                     valueColor="text-gray-800"
                     changeColor="text-gray-500"
-                />
+                /> */}
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">

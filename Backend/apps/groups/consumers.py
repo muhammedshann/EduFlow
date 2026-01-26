@@ -14,6 +14,22 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name = f"chat_{self.group_id}"
         self.user = self.scope["user"]
 
+        if not self.user.is_authenticated:
+            print(f"WS Connection Rejected: User not authenticated")
+            await self.close()
+            return
+
+        if not await self.group_exists():
+            print(f"WS Connection Rejected: Group {self.group_id} does not exist")
+            await self.close()
+            return
+
+        # If this fails, the user is joined via API but the WS doesn't know yet
+        if not await self.is_member():
+            print(f"WS Connection Rejected: User {self.user.username} is not a member of {self.group_id}")
+            await self.close()
+            return
+
         print("WS USER:", self.user)
 
         if not await self.group_exists():

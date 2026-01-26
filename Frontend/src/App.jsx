@@ -36,9 +36,16 @@ import ChatBotPage from './Features/ChatBot/ChatBot';
 import AdminReviewManagement from './Features/Admin/AdminReviewPage';
 import LiveTranscriptionManagement from './Features/Admin/AdminLiveTranscription';
 import ChatBotManagement from './Features/Admin/AdminChatBotPage';
+import SubscriptionManagement from './Features/Admin/AdminSubscriptionPage';
+import SubscriptionPlansPage from './Features/Subscriptions/SubscriptionPlansPage';
+import CheckoutPage from './Features/Subscriptions/CheckoutPage';
+import UploadTranscriptionManagement from './Features/Admin/AdminUploadTranscription';
+import NotificationManagement from './Features/Admin/AdminNotificationPage';
+import AdminPublicRoute from './Routes/AdminPublicRoute';
 
 function App() {
   return (
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
     <BrowserRouter>
       <Notification />
       <Routes>
@@ -118,7 +125,7 @@ function App() {
           />
 
           <Route
-            path='/live-transcription/'
+            path='/smart-note/'
             element={
               <ProtectedRoute>
                 <LiveTranscriptionPage />
@@ -148,6 +155,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <ChatBotPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/subscription-plans/'
+            element={
+              <ProtectedRoute>
+                <SubscriptionPlansPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/checkout/'
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
               </ProtectedRoute>
             }
           />
@@ -182,7 +207,9 @@ function App() {
 
         {/* admin side */}
         <Route path='/admin/login/' element={
-          <AdminLoginPage />
+          <AdminPublicRoute>
+            <AdminLoginPage />
+          </AdminPublicRoute>
         } />
 
         <Route element={<AdminLayout />}>
@@ -239,10 +266,26 @@ function App() {
               <LiveTranscriptionManagement />
             </AdminProtectedRoute>
           } />
+          <Route path='/admin/upload-transcription/' element={
+            <AdminProtectedRoute>
+              <UploadTranscriptionManagement />
+            </AdminProtectedRoute>
+          } />
 
           <Route path='/admin/chat-bot/' element={
             <AdminProtectedRoute>
               <ChatBotManagement />
+            </AdminProtectedRoute>
+          } />
+
+          <Route path='/admin/subscriptions/' element={
+            <AdminProtectedRoute>
+              <SubscriptionManagement />
+            </AdminProtectedRoute>
+          } />
+          <Route path='/admin/notification/' element={
+            <AdminProtectedRoute>
+              <NotificationManagement />
             </AdminProtectedRoute>
           } />
         </Route>
@@ -250,6 +293,7 @@ function App() {
         <Route path='*' element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
+    </div>
   );
 }
 

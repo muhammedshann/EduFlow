@@ -1,589 +1,500 @@
+import React, { useEffect, useRef, useState } from "react";
 import {
-    User,
-    Bell,
-    Shield,
-    CreditCard,
-    Moon,
-    Globe,
-    Download,
-    Trash2,
-    Crown,
-    Eye,
-    EyeOff
+    User, Bell, Shield, CreditCard, Moon, Globe, Download,
+    Trash2, Crown, Eye, EyeOff, PlusCircle, ShieldCheck,
+    Key, Timer, X
 } from "lucide-react";
 import { useUser } from "../../Context/UserContext";
-import { useEffect, useRef, useState } from "react";
-import Sidebar from "../../Components/SideBar";
-import { useDispatch } from "react-redux";
-import { updateProfile, updateProfileImage, updatePassword } from "../../Redux/UserSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { updateProfile, updateProfileImage, updatePassword, FetchUserSubscription } from "../../Redux/UserSlice";
 import { useNavigate } from "react-router-dom";
 import { showNotification } from "../../Redux/NotificationSlice";
-import api from "../../api/axios";
+import { fetchWallet } from "../../Redux/WalletSlice"; // Kept import if needed, though unused in render
+import { deleteUserAccount, generateOtpEmail, verifyOtpEmail } from "../../Redux/AuthSlice";
+import { DeleteConfirmModal } from "../../Components/ConfirmDelete";
+import { useTheme } from "../../Context/ThemeContext";
 
+// --- Verification Modal Component ---
+const VerificationModal = ({ isOpen, onClose, email, otp, setOtp, timeLeft, formatTime, handleVerify, handleResend, isLoading, alert }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
+            <div className="relative w-full max-w-md transform transition-all animate-in fade-in zoom-in duration-300">
+                {alert.show && (
+                    <div className={`absolute -top-16 left-0 right-0 p-4 rounded-xl shadow-2xl z-50 transition-all ${alert.type === "success" ? "bg-green-500" : "bg-red-500"} text-white`}>
+                        <div className="flex items-center gap-3">
+                            <ShieldCheck className="w-5 h-5" />
+                            <p className="text-sm font-medium">{alert.message}</p>
+                        </div>
+                    </div>
+                )}
+                <button onClick={onClose} className="absolute -top-2 -right-2 bg-white rounded-full p-2 shadow-lg text-gray-400 hover:text-red-500 transition-colors z-10">
+                    <X className="w-5 h-5" />
+                </button>
+                <div className="bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden">
+                    <div className="p-8 space-y-6">
+                        <div className="text-center">
+                            <h2 className="text-2xl font-bold text-gray-800">Verify your Email</h2>
+                            <p className="text-gray-500 text-sm mt-1">Code sent to <span className="font-semibold text-purple-600">{email}</span></p>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="relative group">
+                                <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-purple-600 transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Enter 6-digit code"
+                                    maxLength={6}
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-100 rounded-2xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 outline-none transition-all duration-300 text-lg tracking-[0.5em] font-mono text-center"
+                                />
+                            </div>
+                            <div className="flex items-center justify-center gap-2 py-1">
+                                <Timer className={`w-4 h-4 ${timeLeft > 0 ? "text-blue-500 animate-pulse" : "text-red-500"}`} />
+                                <span className={`text-sm font-bold ${timeLeft > 0 ? "text-blue-600" : "text-red-600"}`}>
+                                    {timeLeft > 0 ? `Expires in ${formatTime(timeLeft)}` : "Code Expired"}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="space-y-3">
+                            <button
+                                type="button" 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleVerify();
+                                }}
+                                disabled={isLoading || timeLeft === 0 || otp.length !== 6}
+                                className="group w-full bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 text-white px-6 py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isLoading ? (
+                                    <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <span>Verify and Update</span>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Main Settings Component ---
 export default function Settings() {
-    const [showPassword, setShowPassword] = useState(false);
-    const ProfileInputRef = useRef(null);
-    const [settings, setSettings] = useState({
-        email_notification: false,
-        pomodoro_alert: false,
-        habit_reminder: false,
-        group_messages: false,
-        dark_mode: false
-    });
-    const { user, setUser } = useUser();
+    const { isDarkMode, toggleTheme } = useTheme();
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { user, setUser } = useUser();
+    const ProfileInputRef = useRef(null);
+    
+    // -- App States --
+    const [loading, setLoading] = useState(true);
+    const [plan, setPlan] = useState(null);
+    const { balance } = useSelector(state => state.wallet);
+    const [showPassword, setShowPassword] = useState(false);
+
+    // -- Form States --
     const [formData, setFormData] = useState({
-        first_name: user.firstname,
-        last_name: user.lastname,
-        username: user.username,
-        email: user.email
+        first_name: user?.firstname || "",
+        last_name: user?.lastname || "",
+        username: user?.username || "",
+        email: user?.email || ""
     });
     const [PasswordData, setPasswordData] = useState({
         current_password: '',
         new_password: '',
         confirm_password: '',
     });
-    const handleInputChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            [e.target.name]: e.target.value
-        }));
-    }
 
+    // -- OTP / Verification States --
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isConfimrModalOpen, setConfimrModalOpen] = useState(false);
+    const [otp, setOtp] = useState("");
+    const [timeLeft, setTimeLeft] = useState(0);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [verificationAlert, setVerificationAlert] = useState({ show: false, message: "", type: "" });
+
+    // -- Effects --
     useEffect(() => {
-        const fetchSettings = async () => {
+        const fetchData = async () => {
             try {
-                const response = await api.get('/accounts/settings/');
-                console.log(response.data);
-
-                setSettings(response.data);  // VERY IMPORTANT
-                console.log(settings);
-
+                const PlanResponse = await dispatch(FetchUserSubscription());
+                setPlan(PlanResponse.payload);
             } catch (err) {
-                console.log("Settings fetch error:", err);
+                console.error("Settings fetch error:", err);
+            } finally {
+                setLoading(false);
             }
         };
+        fetchData();
+    }, [dispatch]);
 
-        fetchSettings();
-    }, []);
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const firstname = formData.first_name || "";
-            const lastname = formData.last_name || "";
-            const username = formData.username || "";
-            const email = formData.email || "";
-
-            // FIRSTNAME & LASTNAME VALIDATION
-            const cleanNameRegex = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
-
-            // Firstname: No start/end space
-            if (firstname.trim() !== firstname) {
-                dispatch(showNotification({
-                    message: "Firstname cannot start or end with spaces.",
-                    type: "error"
-                }));
-                return;
-            }
-
-            // Firstname: Only alphabets
-            if (!cleanNameRegex.test(firstname)) {
-                dispatch(showNotification({
-                    message: "Firstname can only contain alphabets. No numbers, symbols, or extra spaces.",
-                    type: "error"
-                }));
-                return;
-            }
-
-            // Lastname: No start/end space
-            if (lastname.trim() !== lastname) {
-                dispatch(showNotification({
-                    message: "Lastname cannot start or end with spaces.",
-                    type: "error"
-                }));
-                return;
-            }
-
-            // Lastname: Only alphabets
-            if (!cleanNameRegex.test(lastname)) {
-                dispatch(showNotification({
-                    message: "Lastname can only contain alphabets. No numbers, symbols, or extra spaces.",
-                    type: "error"
-                }));
-                return;
-            }
-
-            // USERNAME VALIDATION
-            const allowedUsername = /^[a-zA-Z0-9._-]+$/;
-
-            if (username.includes(" ")) {
-                dispatch(showNotification({
-                    message: "Username cannot contain spaces.",
-                    type: "error"
-                }));
-                return;
-            }
-
-            if (username.includes("*")) {
-                dispatch(showNotification({
-                    message: "Username cannot contain '*' symbol.",
-                    type: "error"
-                }));
-                return;
-            }
-
-            if (!allowedUsername.test(username)) {
-                dispatch(showNotification({
-                    message: "Username can only contain letters, numbers, '.', '_' and '-'.",
-                    type: "error"
-                }));
-                return;
-            }
-
-            // EMAIL VALIDATION
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            if (!emailRegex.test(email)) {
-                dispatch(showNotification({
-                    message: "Invalid email format.",
-                    type: "error"
-                }));
-                return;
-            }
-            const result = await dispatch(updateProfile(formData))
-        } catch (err) {
-            console.log(err);
+    useEffect(() => {
+        if (timeLeft > 0) {
+            const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+            return () => clearTimeout(timer);
         }
-    }
+    }, [timeLeft]);
+
+    // -- Handlers --
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     const handlePasswordInput = (e) => {
         const { name, value } = e.target;
+        setPasswordData(prev => ({ ...prev, [name]: value }));
+    };
 
-        setPasswordData(prev => ({
-            ...prev,
-            [name]: value,
-        }));
+    // -- Finalize Update Logic --
+    const finalizeUpdate = async () => {
+        try {
+            await dispatch(updateProfile(formData)).unwrap();
+            setUser(prev => ({ ...prev, ...formData }));
+            dispatch(showNotification({ message: "Profile updated successfully", type: "success" }));
+            return true;
+        } catch (err) {
+            dispatch(showNotification({ message: "Update failed", type: "error" }));
+            return false;
+        }
+    };
+
+    // -- Submit Profile --
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const cleanNameRegex = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+        if (!cleanNameRegex.test(formData.first_name) || !cleanNameRegex.test(formData.last_name)) {
+            dispatch(showNotification({ message: "Invalid name format", type: "error" }));
+            return;
+        }
+
+        if (formData.email !== user.email) {
+            handleSendOTP();
+        } else {
+            finalizeUpdate();
+        }
+    };
+
+    const handleSendOTP = async () => {
+        setIsVerifying(true);
+        try {
+            await dispatch(generateOtpEmail(formData.email)).unwrap()
+            setTimeLeft(300); // 5 mins
+            setIsModalOpen(true);
+            dispatch(showNotification({ message: "Verification code sent", type: "success" }));
+        } catch (err) {
+            dispatch(showNotification({ message: err, type: "error" }));
+        } finally {
+            setIsVerifying(false);
+        }
+    };
+
+    const handleVerifyAndSave = async () => {
+        setIsVerifying(true);
+        try {
+            await dispatch(verifyOtpEmail({ email: formData.email, otp: otp }))
+            const success = await finalizeUpdate();
+            if (success) {
+                setIsModalOpen(false);
+                setOtp("");
+            }
+        } catch (err) {
+            setVerificationAlert({ show: true, message: "Invalid or Expired OTP", type: "error" });
+        } finally {
+            setIsVerifying(false);
+        }
     };
 
     const HandlePassword = async (e) => {
         e.preventDefault();
-
-        const { current_password, new_password, confirm_password } = PasswordData;
-
-        // 1️⃣ Password match check
-        if (new_password !== confirm_password) {
-            dispatch(showNotification({
-                message: "Passwords do not match",
-                type: "error",
-            }));
+        if (PasswordData.new_password !== PasswordData.confirm_password) {
+            dispatch(showNotification({ message: "Passwords do not match", type: "error" }));
             return;
         }
-
-        // 2️⃣ Space validation
-        if (new_password.includes(" ")) {
-            dispatch(showNotification({
-                message: "Password cannot contain spaces.",
-                type: "error",
-            }));
-            return;
-        }
-
-        // 3️⃣ Symbol validation
-        if (new_password.includes("*")) {
-            dispatch(showNotification({
-                message: "Password cannot contain '*' symbol.",
-                type: "error",
-            }));
-            return;
-        }
-
         try {
-            await dispatch(
-                updatePassword({
-                    old_password: current_password,
-                    new_password: new_password,
-                })
-            ).unwrap();
-
-            dispatch(showNotification({
-                message: "Password updated successfully",
-                type: "success",
-            }));
-
-            setPasswordData({
-                current_password: "",
-                new_password: "",
-                confirm_password: "",
-            });
-
+            await dispatch(updatePassword({ old_password: PasswordData.current_password, new_password: PasswordData.new_password })).unwrap();
+            dispatch(showNotification({ message: "Password updated successfully", type: "success" }));
+            setPasswordData({ current_password: "", new_password: "", confirm_password: "" });
         } catch (err) {
-            dispatch(showNotification({
-                message: err?.message || "Failed to update password",
-                type: "error",
-            }));
-        } 
-    };
-
-    const openFileExplorer = () => {
-        ProfileInputRef.current.click();
+            dispatch(showNotification({ message: err?.message || "Failed to update password", type: "error" }));
+        }
     };
 
     const handleProfileImage = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        console.log(file);
-        const formData = new FormData();
-        formData.append('profile_pic', file)
+
+        const localPreview = URL.createObjectURL(file);
+        setUser({ profilePic: localPreview });
+
+        const imgFormData = new FormData();
+        imgFormData.append('profile_pic', file);
         try {
-            const result = await dispatch(updateProfileImage(formData));
-            console.log(result);
-            setUser(prev => ({
-                ...prev,
-                profilePic: result.payload.profilePic   // camelCase
-            }));
-        } catch (err) {
-            console.log(err);
-        }
+            const result = await dispatch(updateProfileImage(imgFormData)).unwrap();
+            const serverUrl = result.profilePic || result.profile_pic;
+        
+            setUser({ profilePic: serverUrl });
+            dispatch(showNotification({ message: "Avatar updated!", type: "success" }));
+        } catch (err) { console.error(err); }
+    };
+
+    const HandleDeleteOpen = () => {
+        setConfimrModalOpen(true)
     }
 
-    return (
-        <div className="min-h-screen bg-[#FAFAFA] flex justify-center py-12 px-4 relative ">
-            {/* Top-left Arrow Button */}
-            {/* <button
-                className="absolute top-6 left-6 p-2 text-indigo-600 hover:text-indigo-800 focus:outline-none"
-                onClick={() => window.history.back()}
-                aria-label="Back"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-            </button> */}
+    const handleDeleteUser = async () => {
+        await dispatch(deleteUserAccount());
+        setUser(null);
+        navigate('/auth/');
+    };
 
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] text-black dark:bg-[#0F172A] dark:text-white transition-colors duration-300">
+            Loading...
+        </div>
+    );
+
+    const purchaseDate = plan?.last_purchase_date ? new Date(plan.last_purchase_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "—";
+
+    return (
+        <div className="min-h-screen flex justify-center py-12 px-4 relative transition-colors duration-300 bg-[#FAFAFA] dark:bg-[#0F172A]">
             <div className="w-full max-w-4xl space-y-10">
-                {/* Wallet Balance (Top-Right Corner) */}
-                <div className="absolute top-8 right-8 bg-white shadow-md rounded-xl px-5 py-3 flex items-center gap-3 border border-gray-100 cursor-pointer" onClick={() => navigate('/wallet/')}>
+                {/* Wallet Balance */}
+                <div 
+                    className="absolute top-8 right-8 shadow-md rounded-xl px-5 py-3 flex items-center gap-3 border cursor-pointer transition-colors duration-300 bg-white border-gray-100 dark:bg-[#1E293B] dark:border-slate-700" 
+                    onClick={() => navigate('/wallet/')}
+                >
                     <CreditCard className="w-5 h-5 text-indigo-500" />
                     <div className="flex flex-col leading-tight">
-                        <span className="text-xs text-gray-400 font-medium">Wallet Balance</span>
-                        <span className="text-base font-semibold text-gray-800">
-                            ${user.walletBalance || 0}
-                        </span>
+                        <span className="text-xs font-medium text-gray-400 dark:text-slate-400">Wallet Balance</span>
+                        <span className="text-base font-semibold text-gray-800 dark:text-slate-100">${balance || 0}</span>
                     </div>
                 </div>
-                {/* Header */}
+
                 <header className="text-center max-w-2xl mx-auto space-y-2">
-                    <h1 className="text-4xl font-extrabold text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text">
-                        Settings
-                    </h1>
-                    <p className="text-gray-500 font-medium">
-                        Manage your account preferences and application settings
-                    </p>
+                    <h1 className="text-4xl font-extrabold text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text">Settings</h1>
+                    <p className="font-medium text-gray-500 dark:text-slate-400">Manage your account preferences</p>
                 </header>
 
                 {/* Profile Section */}
-                <section className="bg-white rounded-2xl p-8 shadow-sm flex gap-8 items-start">
-                    <div
-                        className="w-16 h-16 rounded-full overflow-hidden cursor-pointer"
-                    >
-                        {user.profilePic ? (
-                            <img
-                                src={user.profilePic}
-                                alt={`${user.firstname} ${user.lastname}`}
-                                className="w-full h-full object-cover rounded-full"
-                            />
+                <section className="rounded-2xl p-8 shadow-sm flex gap-8 items-start transition-colors duration-300 bg-white dark:bg-[#1E293B]">
+                    <div className="w-16 h-16 rounded-full overflow-hidden cursor-pointer" onClick={() => ProfileInputRef.current.click()}>
+                        {user?.profilePic ? (
+                            <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                            <div className="bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white text-lg font-bold w-full h-full rounded-full">
-                                {`${user.firstname?.[0] || ""}${user.lastname?.[0] || ""}`.toUpperCase()}
+                            <div className="bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white text-lg font-bold w-full h-full">
+                                {user?.firstname?.[0]?.toUpperCase()}
                             </div>
                         )}
                     </div>
                     <div className="flex-1 space-y-6">
-                        <div>
-                            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700 mb-4">
-                                <User className="text-indigo-500 w-5 h-5" /> Profile Information
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="text-sm text-gray-500 mb-1 block">First Name</label>
-                                    <input
-                                        name='first_name'
-                                        onChange={handleInputChange}
-                                        className="w-full rounded-lg border border-gray-200 p-3 focus:outline-indigo-400 focus:ring focus:ring-indigo-200"
-                                        defaultValue={formData.first_name}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm text-gray-500 mb-1 block">Last Name</label>
-                                    <input
-                                        name='last_name'
-                                        onChange={handleInputChange}
-                                        className="w-full rounded-lg border border-gray-200 p-3 focus:outline-indigo-400 focus:ring focus:ring-indigo-200"
-                                        defaultValue={formData.last_name}
-                                    />
-                                </div>
-                                <div className="sm:col-span-2">
-                                    <label className="text-sm text-gray-500 mb-1 block">Username</label>
-                                    <input
-                                        name='username'
-                                        onChange={handleInputChange}
-                                        className="w-full rounded-lg border border-gray-200 p-3 focus:outline-indigo-400 focus:ring focus:ring-indigo-200"
-                                        defaultValue={formData.username}
-                                    />
-                                </div>
-                                <div className="sm:col-span-2">
-                                    <label className="text-sm text-gray-500 mb-1 block">Email Address</label>
-                                    <input
-                                        name='email'
-                                        onChange={handleInputChange}
-                                        type="email"
-                                        className="w-full rounded-lg border border-gray-200 p-3 focus:outline-indigo-400 focus:ring focus:ring-indigo-200"
-                                        defaultValue={formData.email}
-                                    />
-                                </div>
+                        <h2 className="flex items-center gap-2 text-lg font-semibold mb-4 text-gray-700 dark:text-slate-100">
+                            <User className="text-indigo-500 w-5 h-5" /> Profile Information
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label className="text-sm mb-1 block text-gray-500 dark:text-slate-400">First Name</label>
+                                <input 
+                                    name='first_name' 
+                                    value={formData.first_name} 
+                                    onChange={handleInputChange} 
+                                    className="w-full rounded-lg border p-3 transition-colors duration-300 border-gray-200 bg-white dark:bg-[#0F172A] dark:border-slate-700 dark:text-white focus:border-indigo-500" 
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm mb-1 block text-gray-500 dark:text-slate-400">Last Name</label>
+                                <input 
+                                    name='last_name' 
+                                    value={formData.last_name} 
+                                    onChange={handleInputChange} 
+                                    className="w-full rounded-lg border p-3 transition-colors duration-300 border-gray-200 bg-white dark:bg-[#0F172A] dark:border-slate-700 dark:text-white focus:border-indigo-500" 
+                                />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <label className="text-sm mb-1 block text-gray-500 dark:text-slate-400">Username</label>
+                                <input 
+                                    name='username' 
+                                    value={formData.username} 
+                                    onChange={handleInputChange} 
+                                    className="w-full rounded-lg border p-3 transition-colors duration-300 border-gray-200 bg-white dark:bg-[#0F172A] dark:border-slate-700 dark:text-white focus:border-indigo-500" 
+                                />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <label className="text-sm mb-1 block text-gray-500 dark:text-slate-400">Email Address</label>
+                                <input 
+                                    name='email' 
+                                    value={formData.email} 
+                                    onChange={handleInputChange} 
+                                    type="email" 
+                                    className="w-full rounded-lg border p-3 transition-colors duration-300 border-gray-200 bg-white dark:bg-[#0F172A] dark:border-slate-700 dark:text-white focus:border-indigo-500" 
+                                />
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <button onClick={handleSubmit} className="flex-1 bg-indigo-600 text-white py-2.5 rounded-lg text-base font-semibold hover:bg-indigo-700 transition">
-                                Save Changes
-                            </button>
-                            <button
-                                className="flex-1 border border-gray-300 py-2.5 rounded-lg text-base font-semibold hover:bg-gray-100 transition"
-                                onClick={openFileExplorer}
+                            <button onClick={handleSubmit} className="flex-1 bg-indigo-600 text-white py-2.5 rounded-lg text-base font-semibold hover:bg-indigo-700 transition">Save Changes</button>
+                            <button 
+                                onClick={() => ProfileInputRef.current.click()} 
+                                className="flex-1 border py-2.5 rounded-lg text-base font-semibold transition border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
                             >
                                 Change Avatar
                             </button>
-
-                            <input
-                                type="file"
-                                accept="image/*"
-                                ref={ProfileInputRef}
-                                onChange={handleProfileImage}
-                                className="hidden"
-                            />
-
+                            <input type="file" accept="image/*" ref={ProfileInputRef} onChange={handleProfileImage} className="hidden" />
                         </div>
                     </div>
                 </section>
 
-                {/* Subscription */}
-                <section className="bg-white rounded-2xl p-8 shadow-sm">
+                {/* Subscription Section */}
+                <section className="rounded-2xl p-8 shadow-sm transition-colors duration-300 bg-white dark:bg-[#1E293B]">
                     <div className="flex justify-between items-center mb-8">
-                        <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
-                            <Crown className="w-5 h-5 text-yellow-400" />
-                            Subscription
+                        <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700 dark:text-slate-100">
+                            <Crown className="w-5 h-5 text-yellow-400" /> Subscription Balance
                         </h2>
-                        <span className="inline-block bg-purple-50 text-purple-600 px-4 py-1.5 rounded-full font-bold text-sm">
-                            Pro Plan
-                        </span>
                     </div>
-                    <div className="grid grid-cols-3 text-center gap-6 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 text-center gap-6 mb-8">
                         <div>
-                            <p className="text-xs text-gray-400">Credits Used</p>
-                            <p className="mt-1 font-bold text-lg text-gray-700">63</p>
-                            <p className="text-sm text-gray-400 mt-1">$24.99/one-time</p>
+                            <p className="text-xs uppercase font-semibold text-gray-400 dark:text-slate-400">Remaining</p>
+                            <p className="mt-1 font-extrabold text-4xl text-indigo-600">{plan?.remaining_credits || 0}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400">Credits Remaining</p>
-                            <p className="mt-1 font-bold text-3xl text-indigo-600">247</p>
-                            {/* <p className="text-xs text-gray-400 mt-1">Resets in 12 days</p> */}
+                            <p className="text-xs uppercase font-semibold text-gray-400 dark:text-slate-400">Used</p>
+                            <p className="mt-1 font-bold text-2xl text-gray-800 dark:text-slate-200">{plan?.used_credits || 0}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400">Purchased Date</p>
-                            <p className="mt-1 font-bold text-lg text-gray-700">Dec 15</p>
-                            <p className="text-xs text-gray-400 mt-1">2024</p>
+                            <p className="text-xs uppercase font-semibold text-gray-400 dark:text-slate-400">Last Top-up</p>
+                            <p className="mt-1 font-bold text-2xl text-gray-800 dark:text-slate-200">{purchaseDate}</p>
                         </div>
                     </div>
-                    <div className="flex gap-4 justify-center sm:justify-start">
-                        <button className="border border-red-500 text-red-500 rounded-lg px-6 py-2 ml-8 hover:bg-red-50 transition">
-                            Add Credits
-                        </button>
-                    </div>
+                    <button onClick={() => navigate('/subscription-plans/')} className="w-full sm:w-auto bg-indigo-600 text-white rounded-xl px-10 py-3 font-bold flex items-center justify-center gap-2">
+                        <PlusCircle className="w-5 h-5" /> Add Credits
+                    </button>
                 </section>
 
-                {/* Notifications */}
-                <section className="bg-white rounded-2xl p-8 shadow-sm">
-                    <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700 mb-6">
-                        <Bell className="w-5 h-5 text-indigo-500" />
-                        Notifications
-                    </h2>
-                    {[
-                        { name: "Email Notifications", description: "Receive updates via email", key: 'email_notification' },
-                        { name: "Pomodoro Alerts", description: "Sound alerts for timer completion", key: 'pomodoro_alert' },
-                        { name: "Habit Reminders", description: "Daily reminders for uncompleted habits", key: 'habit_reminder' },
-                        { name: "Group Messages", description: "Notifications for group chat messages", key: 'group_messages' }
-                    ].map(({ name, description, key }, i) => (
-                        <div key={i} className="flex justify-between items-center border-b border-gray-100 last:border-b-0 py-3">
-                            <div>
-                                <p className="font-semibold text-gray-600">{name}</p>
-                                <p className="text-xs text-gray-400">{description}</p>
-                            </div>
-                            <input
-                                type="checkbox"
-                                checked={!!settings[key]}
-                                className="accent-indigo-500 w-5 h-5 rounded cursor-pointer"
-                            />
-                        </div>
-                    ))}
-                </section>
-
-                {/* Preferences */}
-                <section className="bg-white rounded-2xl p-8 shadow-sm">
-                    <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700 mb-6">
+                {/* Preferences Section */}
+                <section className="rounded-2xl p-8 shadow-sm transition-colors duration-300 bg-white dark:bg-[#1E293B]">
+                    <h2 className="flex items-center gap-2 text-lg font-semibold mb-6 text-gray-700 dark:text-slate-100">
                         <Moon className="w-5 h-5 text-indigo-500" />
                         Preferences
                     </h2>
                     {[
                         { name: "Dark Mode", desc: "Use dark theme across the application", key: 'dark_mode' },
-                        // { name: "Sound Effects", desc: "Play sounds for interactions and alerts", checked: true }
                     ].map(({ name, desc, key }, i) => (
-                        <div key={i} className="flex justify-between items-center border-b border-gray-100 last:border-b-0 py-3">
+                        <div key={i} className="flex justify-between items-center border-b last:border-b-0 py-3 border-gray-100 dark:border-slate-700">
                             <div>
-                                <p className="font-semibold text-gray-600">{name}</p>
-                                <p className="text-xs text-gray-400">{desc}</p>
+                                <p className="font-semibold text-gray-600 dark:text-slate-200">{name}</p>
+                                <p className="text-xs text-gray-400 dark:text-slate-400">{desc}</p>
                             </div>
                             <input
                                 type="checkbox"
-                                checked={settings[key]}
+                                checked={isDarkMode}
+                                onChange={toggleTheme}
                                 className="accent-indigo-500 w-5 h-5 rounded cursor-pointer"
                             />
                         </div>
                     ))}
-
-                    {/* <hr className="my-6 border-gray-200" /> */}
-
-                    <div className="mt-8 flex items-center gap-2 text-gray-600 font-semibold">
+                    <div className="mt-8 flex items-center gap-2 font-semibold text-gray-600 dark:text-slate-400">
                         <Globe className="w-4 h-4" />
                         <span>English (US)</span>
                     </div>
                 </section>
 
-                {/* Security */}
-                <section className="bg-white rounded-2xl p-8 shadow-sm">
-                    <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700 mb-6">
-                        <Shield className="w-5 h-5 text-indigo-500" />
-                        Security
+                {/* Security Section */}
+                <section className="rounded-2xl p-8 shadow-sm transition-colors duration-300 bg-white dark:bg-[#1E293B]">
+                    <h2 className="flex items-center gap-2 text-lg font-semibold mb-6 text-gray-700 dark:text-slate-100">
+                        <Shield className="w-5 h-5 text-indigo-500" /> Security
                     </h2>
-
-                    <div className="space-y-5 max-w-3xl relative">
-
-                        {/* SINGLE SHOW/HIDE BUTTON FOR ALL */}
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-0 top-0 text-gray-500 hover:text-purple-600 transition"
-                        >
-                            {showPassword ? (
-                                <div className="flex items-center gap-1 text-sm font-medium">
-                                    <EyeOff className="h-4 w-4" /> Hide
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-1 text-sm font-medium">
-                                    <Eye className="h-4 w-4" /> Show
-                                </div>
-                            )}
+                    <div className="space-y-5 relative">
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-0 top-0 transition text-gray-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400">
+                            {showPassword ? <div className="flex items-center gap-1 text-sm font-medium"><EyeOff className="h-4 w-4" /> Hide</div> : <div className="flex items-center gap-1 text-sm font-medium"><Eye className="h-4 w-4" /> Show</div>}
                         </button>
-
-                        {/* CURRENT PASSWORD */}
                         <div>
-                            <label className="block mb-2 font-semibold text-gray-700 text-sm">
-                                Current Password
-                            </label>
-
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                value={PasswordData.current_password}
-                                name="current_password"
-                                onChange={handlePasswordInput}
-                                placeholder="Enter current password"
-                                className="w-full rounded-lg border border-gray-200 p-3 
-                focus:outline-indigo-400 focus:ring-indigo-200"
+                            <label className="block mb-2 font-semibold text-sm text-gray-700 dark:text-slate-300">Current Password</label>
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                value={PasswordData.current_password} 
+                                name="current_password" 
+                                onChange={handlePasswordInput} 
+                                className="w-full rounded-lg border p-3 transition-colors duration-300 border-gray-200 bg-white dark:bg-[#0F172A] dark:border-slate-700 dark:text-white focus:border-indigo-500" 
                             />
                         </div>
-
-                        {/* NEW PASSWORD */}
                         <div>
-                            <label className="block mb-2 font-semibold text-gray-700 text-sm">
-                                New Password
-                            </label>
-
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                value={PasswordData.new_password}
-                                name="new_password"
-                                onChange={handlePasswordInput}
-                                placeholder="Enter new password"
-                                className="w-full rounded-lg border border-gray-200 p-3 
-                focus:outline-indigo-400 focus:ring-indigo-200"
+                            <label className="block mb-2 font-semibold text-sm text-gray-700 dark:text-slate-300">New Password</label>
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                value={PasswordData.new_password} 
+                                name="new_password" 
+                                onChange={handlePasswordInput} 
+                                className="w-full rounded-lg border p-3 transition-colors duration-300 border-gray-200 bg-white dark:bg-[#0F172A] dark:border-slate-700 dark:text-white focus:border-indigo-500" 
                             />
                         </div>
-
-                        {/* CONFIRM PASSWORD */}
                         <div>
-                            <label className="block mb-2 font-semibold text-gray-700 text-sm">
-                                Confirm Password
-                            </label>
-
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                value={PasswordData.confirm_password}
-                                name="confirm_password"
-                                onChange={handlePasswordInput}
-                                placeholder="Confirm new password"
-                                className="w-full rounded-lg border border-gray-200 p-3 
-                focus:outline-indigo-400 focus:ring-indigo-200"
+                            <label className="block mb-2 font-semibold text-sm text-gray-700 dark:text-slate-300">Confirm Password</label>
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                value={PasswordData.confirm_password} 
+                                name="confirm_password" 
+                                onChange={handlePasswordInput} 
+                                className="w-full rounded-lg border p-3 transition-colors duration-300 border-gray-200 bg-white dark:bg-[#0F172A] dark:border-slate-700 dark:text-white focus:border-indigo-500" 
                             />
                         </div>
                     </div>
-
-                    <div className="mt-8 flex gap-4 max-w-3xl">
-                        <button
-                            onClick={HandlePassword}
-                            className="flex-1 rounded-lg bg-indigo-600 py-2.5 text-white font-semibold hover:bg-indigo-700 transition"
-                        >
-                            Update Password
-                        </button>
-                    </div>
+                    <button onClick={HandlePassword} className="mt-8 w-full rounded-lg bg-indigo-600 py-2.5 text-white font-semibold hover:bg-indigo-700 transition">Update Password</button>
                 </section>
 
-
-                {/* Data Management */}
-                <section className="bg-white rounded-2xl p-8 shadow-sm">
-                    <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700 mb-6">
-                        <Download className="w-5 h-5 text-indigo-500" />
-                        Data Management
+                {/* Data Management Section */}
+                <section className="rounded-2xl p-8 shadow-sm transition-colors duration-300 bg-white dark:bg-[#1E293B]">
+                    <h2 className="flex items-center gap-2 text-lg font-semibold mb-6 text-gray-700 dark:text-slate-100">
+                        <Download className="w-5 h-5 text-indigo-500" /> Data Management
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                        <div className="bg-gray-50 rounded-lg p-6 flex flex-col justify-between">
-                            <div>
-                                <h3 className="font-semibold text-gray-700 mb-2 text-base">
-                                    Export Data
-                                </h3>
-                                <p className="text-xs text-gray-400">
-                                    Download all your transcripts, habits, and settings
-                                </p>
-                            </div>
-                            <button className="w-full mt-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition font-semibold">
-                                <Download className="inline-block w-4 h-4 mr-2" />
-                                Export
-                            </button>
+                        <div className="rounded-lg p-6 flex flex-col justify-between transition-colors duration-300 bg-gray-50 dark:bg-[#0F172A]">
+                            <h3 className="font-semibold mb-2 text-gray-700 dark:text-slate-200">Export Data</h3>
+                            <button className="w-full mt-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold"><Download className="inline-block w-4 h-4 mr-2" /> Export</button>
                         </div>
-                        <div className="bg-red-50 rounded-lg p-6 flex flex-col justify-between">
-                            <div>
-                                <h3 className="font-semibold text-red-600 mb-2 text-base">
-                                    Delete Account
-                                </h3>
-                                <p className="text-xs text-gray-400">
-                                    Permanently delete your account and all data
-                                </p>
-                            </div>
-                            <button className="w-full mt-4 py-2 rounded-lg border border-red-500 text-red-600 hover:bg-red-100 transition font-semibold">
-                                <Trash2 className="inline-block w-4 h-4 mr-2" />
-                                Delete Account
+                        <div className="rounded-lg p-6 flex flex-col justify-between transition-colors duration-300 bg-red-50 dark:bg-red-900/10">
+                            <h3 className="font-semibold text-red-600 mb-2">Delete Account</h3>
+                            <button 
+                                onClick={HandleDeleteOpen} 
+                                className="w-full mt-4 py-2 rounded-lg border font-semibold transition border-red-500 text-red-600 hover:bg-red-50 dark:border-red-500/50 dark:text-red-400 dark:hover:bg-red-900/20"
+                            >
+                                <Trash2 className="inline-block w-4 h-4 mr-2" /> Delete Account
                             </button>
                         </div>
                     </div>
                 </section>
             </div>
+
+            {/* Verification Modal for Email Change */}
+            <VerificationModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                email={formData.email}
+                otp={otp}
+                setOtp={setOtp}
+                timeLeft={timeLeft}
+                formatTime={formatTime}
+                handleVerify={handleVerifyAndSave}
+                handleResend={handleSendOTP}
+                isLoading={isVerifying}
+                alert={verificationAlert}
+            />
+
+            <DeleteConfirmModal
+                isOpen={isConfimrModalOpen}
+                onClose={() => setConfimrModalOpen(false)}
+                onConfirm={handleDeleteUser}
+                title="Delete this Account?"
+                message={`Are you sure you want to delete this Account?.`}
+            />
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/axios";
 
-export const FetchWallet = createAsyncThunk(
+export const AdminFetchWallet = createAsyncThunk(
     'admin/FetchWallet',
     async(_,{rejectWithValue}) => {
         try {

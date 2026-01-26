@@ -97,53 +97,44 @@ class WalletHistory(models.Model):
         return f"{self.transaction_type} - {self.amount} ({self.status})"
 
 
-class SubscriptionPlan(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    features = models.JSONField()
-    duration_days = models.PositiveIntegerField()
-    credits = models.PositiveIntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
+class UserCredits(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='credits'
+    )
+    total_credits = models.IntegerField(default=0)
+    used_credits = models.IntegerField(default=0)
+    remaining_credits = models.IntegerField(default=0)
+    last_purchase_date = models.DateField(auto_now=True)    
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        db_table = 'user_credits'
+        verbose_name_plural = "User Credits"
 
-
-class UserSubscription(models.Model):
-    STATUS_CHOICES = [
-        ('active', 'Active'),
-        ('expired', 'Expired'),
-        ('cancelled', 'Cancelled'),
-    ]
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
-    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.CASCADE, related_name='user_subscriptions')
-    start_date = models.DateField()
-    end_date = models.DateField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
-    added_credits = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
+    def save(self, *args, **kwargs):
+        # Automatically calculate remaining credits before saving
+        self.remaining_credits = self.total_credits - self.used_credits
+        super(UserCredits, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.user.username} - {self.plan.name} ({self.status})"
+        return f"{self.user.email} - Balance: {self.remaining_credits}"
 
 
-class SubscriptionHistory(models.Model):
-    STATUS_CHOICES = UserSubscription.STATUS_CHOICES
+# class SubscriptionHistory(models.Model):
+#     STATUS_CHOICES = UserSubscription.STATUS_CHOICES
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscription_histories')
-    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.CASCADE, related_name='subscription_histories')
-    added_credits = models.IntegerField(default=0)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscription_histories')
+#     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.CASCADE, related_name='subscription_histories')
+#     added_credits = models.IntegerField(default=0)
+#     start_date = models.DateField()
+#     end_date = models.DateField()
+#     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
 
-    def __str__(self):
-        return f"{self.user.username} - {self.plan.name} ({self.status})"
+#     def __str__(self):
+#         return f"{self.user.username} - {self.plan.name} ({self.status})"
 
 
 class Settings(models.Model):

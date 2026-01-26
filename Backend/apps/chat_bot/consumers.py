@@ -1,88 +1,97 @@
 import json
-from datetime import date
+from django.utils import timezone
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from .models import ChatBot, ChatBotMessage
 from .gemini_service import call_gemini
+from apps.accounts.models import UserCredits
+from apps.subscriptions.models import CreditUsageHistory
+from django.db import models
 
 class ChatConsumer(AsyncWebsocketConsumer):
-
     async def connect(self):
         self.user = self.scope["user"]
-
         if not self.user.is_authenticated:
             await self.close()
             return
-
         await self.accept()
-        print("✅ WebSocket Connected")
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-
         message = data.get("message")
-        context = data.get("context")
-        note_title = data.get("note_title")
+        context = data.get("context", "")
+        note_title = data.get("note_title", "")
 
         if not message:
             return
+        
+        check_result = await self.check_can_ask()
+        
+        if not check_result['allowed']:
+            await self.send(text_data=json.dumps({
+                "type": "limit_reached",
+                "message": "Daily limit reached. Please purchase credits."
+            }))
+            return
 
-        # ✅ GET TODAY CHATBOT ROW + INCREMENT COUNT
-        self.chatbot_obj = await self.get_or_create_today_chatbot()
+        prompt = f"Note: {note_title}\nContext: {context}\nQuestion: {message}" if context else message
+        
+        reply = await sync_to_async(call_gemini, thread_sensitive=False)(prompt)
 
-        # 🔑 BUILD PROMPT
-        if context:
-            final_prompt = f"""
-You are a helpful AI assistant.
+        if "❌" not in reply and "⚠️" not in reply:
+            self.chatbot_obj = await self.finalise_transaction(check_result['mode'])
+            
+            await self.save_request_reply(message, reply)
 
-Use the following note titled "{note_title}" to answer the user's question.
-Answer clearly and simply.
-If the answer is not in the note, say you cannot find it in the note.
-
-NOTE CONTENT:
-{context}
-
-USER QUESTION:
-{message}
-"""
+            await self.send(text_data=json.dumps({
+                "reply": reply,
+                "mode": check_result['mode']
+            }))
         else:
-            final_prompt = message
+            await self.send(text_data=json.dumps({
+                "type": "error",
+                "message": reply 
+            }))
 
-        # 🤖 CALL GEMINI
-        reply = await sync_to_async(
-            call_gemini,
-            thread_sensitive=False
-        )(final_prompt)
 
-        # 💾 SAVE REQUEST + REPLY
-        await self.save_request_reply(message, reply)
-
-        # 📤 SEND RESPONSE
-        await self.send(text_data=json.dumps({
-            "reply": reply
-        }))
-
-    # ================= DAILY CHATBOT =================
     @sync_to_async
-    def get_or_create_today_chatbot(self):
-        today = date.today()
+    def check_can_ask(self):
+        """ Checks if the user has a right to ask a question. """
+        today = timezone.now().date()
+        obj, _ = ChatBot.objects.get_or_create(user=self.user, created_at__date=today)
 
-        obj = ChatBot.objects.filter(
-            user=self.user,
-            created_at__date=today
-        ).first()
+        if obj.request_count < 5:
+            return {'allowed': True, 'mode': 'free'}
 
-        if obj:
-            obj.request_count += 1
-            obj.save(update_fields=["request_count"])
-            return obj
+        try:
+            credits_obj = UserCredits.objects.get(user=self.user)
+            if credits_obj.remaining_credits > 0:
+                return {'allowed': True, 'mode': 'paid'}
+        except UserCredits.DoesNotExist:
+            pass
 
-        return ChatBot.objects.create(
-            user=self.user,
-            request_count=1
-        )
+        return {'allowed': False, 'mode': 'blocked'}
 
-    # ================= SAVE MESSAGE =================
+    @sync_to_async
+    def finalise_transaction(self, mode):
+        """ Deducts credits and increments count ONLY on AI success. """
+        today = timezone.now().date()
+        obj = ChatBot.objects.get(user=self.user, created_at__date=today)
+        
+        if mode == 'paid':
+            credits_obj = UserCredits.objects.get(user=self.user)
+            credits_obj.used_credits += 1
+            credits_obj.save()
+            credit_usage = CreditUsageHistory.objects.create(
+                user = self.user,
+                credits_used = 1,
+                purpose = 'chat_bot'
+            )
+        
+        obj.request_count += 1
+        obj.save(update_fields=["request_count"])
+        return obj
+
     @sync_to_async
     def save_request_reply(self, request_text, reply_text):
         ChatBotMessage.objects.create(

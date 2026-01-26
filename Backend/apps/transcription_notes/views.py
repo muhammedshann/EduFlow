@@ -5,9 +5,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
+from rest_framework.parsers import MultiPartParser, FormParser
+from .tasks import transcribe_media
 
-from .models import Notes,LiveTranscription
-from .serializers import TranscriptionCreateSerializer, NotesSerializer
+from .models import Notes,LiveTranscription, UploadTranscription
+from .serializers import TranscriptionCreateSerializer, NotesSerializer, MediaUploadSerializer, NoteCreateSerializer
 
 
 class LiveTranscriptionView(APIView):
@@ -34,44 +36,34 @@ class NoteCreateView(APIView):
 
     def post(self, request):
         note_title = request.data.get("title")
+        note_type = request.data.get("type")
 
         if not note_title:
             return Response(
-                {"error": "note title is empty"},
+                {"error": "Note title is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # ✅ SAFE duplicate check
-        already_saved = Notes.objects.filter(
-            user=request.user,
-            type="live",
-            title=note_title
-        ).exists()
-
-        if already_saved:
+        # ✅ duplicate check scoped to user, type, and title
+        if Notes.objects.filter(user=request.user, type=note_type, title=note_title).exists():
             return Response(
-                {"error": "This title is already saved"},
+                {"error": "A note with this title already exists in your records"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = TranscriptionCreateSerializer(
+        serializer = NoteCreateSerializer(
             data=request.data,
             context={"request": request}
         )
 
-        if not serializer.is_valid():
-            print(serializer.errors)
+        if serializer.is_valid():
+            note = serializer.save()
             return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
+                {"id": note.id, "message": "Note saved successfully"},
+                status=status.HTTP_201_CREATED
             )
-
-        transcription = serializer.save()
-
-        return Response(
-            {"id": transcription.id},
-            status=status.HTTP_201_CREATED
-        )
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class NotesView(APIView):
     permission_classes = [IsAuthenticated]
@@ -110,3 +102,20 @@ class NoteUpdateView(RetrieveUpdateAPIView):
 
     def get_queryset(self):
         return Notes.objects.filter(user=self.request.user)
+    
+class MediaUploadView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request):
+        serializer = MediaUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            print('its inside of view it is valid')
+            media = serializer.save(user=request.user)
+            transcribe_media.delay(media.id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class MediaDetailView(APIView):
+    def get(self, request, pk):
+        media = UploadTranscription.objects.get(pk=pk)
+        return Response(MediaUploadSerializer(media).data)

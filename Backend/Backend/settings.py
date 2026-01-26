@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',        # required by allauth
     'corsheaders',                 # if using django-cors-headers
     'channels',
+    'django_celery_results',
 
     'allauth',
     'allauth.account',
@@ -62,6 +63,7 @@ INSTALLED_APPS = [
 
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'django_extensions',
 
     'apps.accounts',
     'apps.admin_panel',
@@ -70,7 +72,8 @@ INSTALLED_APPS = [
     'apps.groups',
     'apps.review',
     'apps.transcription_notes',
-    'apps.chat_bot'
+    'apps.chat_bot',
+    'apps.subscriptions'
 ]
 
 MIDDLEWARE = [
@@ -171,7 +174,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",  # your React dev server
-    "http://127.0.0.1:5173",  # optional
+    "http://127.0.0.1:5173",
 ]
 
 # Allow credentials if needed
@@ -285,3 +288,14 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Razorpay
+
+RZP_KEY_ID=config('RZP_KEY_ID')
+RZP_KEY_SECRET=config('RZP_KEY_SECRET')
+
+# whisper transcription
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_BACKEND = "django-db"

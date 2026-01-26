@@ -7,6 +7,8 @@ from django.utils.timezone import now
 from django.utils import timezone
 from.serializer import HabitSerializer, AddHabitSerializer, ToggleHabitSerializer
 from datetime import timedelta
+from django.shortcuts import get_object_or_404
+
 
 
 from .models import Habit, HabitLog
@@ -29,36 +31,52 @@ class AddHabitView(APIView):
     
 class ToggleHabitView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self,request):
-        serializer = ToggleHabitSerializer(data = request.data, context={'request': request})
+
+    def post(self, request):
+        serializer = ToggleHabitSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
         
         habit_id = serializer.validated_data['habit_id']
         completed = serializer.validated_data['completed']
 
-        habit = Habit.objects.get(id=habit_id,user = request.user)
+        try:
+            habit = Habit.objects.get(id=habit_id, user=request.user)
+        except Habit.DoesNotExist:
+            return Response({"error": "Habit not found"}, status=404)
+
         today = timezone.now().date()
 
+        # defaults should be a dict: {'completed': completed}
         log, created = HabitLog.objects.get_or_create(
-            habit = habit,
-            date = today,
-            defaults=False
+            habit=habit,
+            date=today,
+            defaults={'completed': completed}
         )
 
+        # If it wasn't created (it already existed), update the status
         if not created:
             log.completed = completed
             log.save()
         
-        message = "Task completed" if completed else "Task not completed"
-
         return Response({
-            "message": message,
+            "message": "Status updated",
             "habit_id": str(habit.id),
             "completed": log.completed,
             "date": str(today),
         }, status=200)
 
+class DeleteHabitView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        # Ensure the habit belongs to the user requesting the delete
+        habit = get_object_or_404(Habit, id=pk, user=request.user)
+        habit.delete()
+        return Response(
+            {"message": "Habit deleted successfully"}, 
+            status=204
+        )
 
 class WeeklyStatsView(APIView):
     permission_classes = [IsAuthenticated]

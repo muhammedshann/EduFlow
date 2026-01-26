@@ -1,151 +1,121 @@
-import { Users, CheckCircle, Zap, Target } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Crown, Star, Zap, Check } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { AdminFetchBundles } from '../Redux/AdminRedux/AdminSubscriptionSlice';
+import { useNavigate } from 'react-router-dom';
 
 const Pricing = () => {
-    return (
-        <section id="pricing" className="py-20 bg-gradient-to-br from-gray-50 to-purple-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h2>
-            <p className="text-xl text-gray-600 mb-8">Select the perfect plan for your team's needs</p>
-            
-            {/* Billing Toggle */}
-            {/* <div className="inline-flex items-center bg-white rounded-full p-1 shadow-lg">
-              <button className="px-6 py-2 rounded-full bg-gray-100 text-gray-600 font-medium transition-all">
-                Monthly
-              </button>
-              <button className="px-6 py-2 rounded-full bg-purple-600 text-white font-medium transition-all">
-                Yearly
-              </button>
-              <button className="px-6 py-2 rounded-full text-gray-600 font-medium transition-all">
-                Enterprise
-              </button>
-            </div> */}
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Basic Plan */}
-            <div className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gray-400 to-gray-600"></div>
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Users className="w-8 h-8 text-gray-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Basic</h3>
-                <p className="text-gray-600">Perfect for personal use or trying out EchoNote</p>
-              </div>
-              
-              <div className="text-center mb-8">
-                <div className="text-4xl font-bold text-gray-900">$9.99</div>
-                <div className="text-gray-500">/month</div>
-              </div>
-              
-              <ul className="space-y-4 mb-8">
-                {[
-                  "Up to 10 hours of transcription per month",
-                  "Basic accuracy",
-                  "Export transcripts",
-                  "Email support",
-                  "Basic integrations"
-                ].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              
-              <button className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-purple-300 hover:text-purple-600 transition-all group-hover:scale-105">
-                Select Basic
-              </button>
-            </div>
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [bundles, setBundles] = useState([]);
 
-            {/* Pro Plan - Featured */}
-            <div className="group bg-white rounded-2xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-300 relative overflow-hidden scale-105 border-2 border-purple-200">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-600 to-blue-600"></div>
-              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white pt-2 px-6 py-1 rounded-full text-sm font-medium">
+  // Fetch bundles on mount
+  const fetchBundles = async () => {
+    try {
+      const response = await dispatch(AdminFetchBundles()).unwrap();
+      setBundles(response);
+    } catch (err) {
+      console.error("Failed to fetch bundles:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchBundles();
+  }, []);
+
+  // Handle Redirection to Checkout
+  const handlePurchase = (bundle) => {
+    navigate('/checkout', { state: { bundle: bundle } });
+  };
+
+  return (
+    <section className="w-full max-w-6xl mx-auto px-4 transition-colors duration-300">
+      {/* Grid Layout copied from SubscriptionPlans */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pb-8 max-w-5xl mx-auto">
+        {bundles.map((bundle) => {
+          // Business Logic for Icons and Styling
+          const isPro = bundle.id === 7; // Adjust ID based on your actual data
+          const isPremium = bundle.id === 8;
+          const Icon = isPremium ? Crown : isPro ? Star : Zap;
+
+          return (
+            <div
+              key={bundle.id}
+              className={`group relative p-6 rounded-[24px] border-2 transition-all duration-300 flex flex-col h-full 
+              bg-white dark:bg-slate-800 
+              hover:border-purple-600 hover:shadow-2xl hover:-translate-y-2 hover:z-20
+              ${isPro ? 'border-purple-600 shadow-xl z-10' : 'border-gray-100 dark:border-slate-700'}`}
+            >
+              {/* Popular Badge */}
+              {isPro && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-md z-30">
                   Most Popular
                 </div>
-              </div>
-              
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Zap className="w-8 h-8 text-purple-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
-                <p className="text-gray-600">Ideal for professionals and growing teams</p>
-              </div>
-              
-              <div className="text-center mb-8">
-                <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  $24.99
-                </div>
-                <div className="text-gray-500">/month</div>
-              </div>
-              
-              <ul className="space-y-4 mb-8">
-                {[
-                  "Up to 50 hours of transcription per month",
-                  "Advanced AI accuracy",
-                  "Priority support",
-                  "Advanced export formats",
-                  "Team collaboration",
-                  "Speaker identification",
-                  "Custom vocabulary"
-                ].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0" />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              
-              <button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all group-hover:scale-105">
-                Select Pro
-              </button>
-            </div>
+              )}
 
-            {/* Premium Plan */}
-            <div className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 to-orange-500"></div>
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Target className="w-8 h-8 text-orange-600" />
+              <div className="flex flex-col items-center text-center">
+                {/* Icon Container */}
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300
+                  ${isPro 
+                      ? 'bg-purple-600 text-white' 
+                      : 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 group-hover:bg-purple-600 group-hover:text-white'
+                  }`}
+                >
+                  <Icon size={24} />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Premium</h3>
-                <p className="text-gray-600">For large teams and enterprise needs</p>
+
+                <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-1 capitalize">
+                  {bundle.name}
+                </h3>
+
+                <p className="text-gray-400 dark:text-slate-400 text-[11px] font-medium mb-3 h-10 leading-tight overflow-hidden">
+                  {bundle.description}
+                </p>
+
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-3xl font-black text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    ₹{parseInt(bundle.price)}
+                  </span>
+                  <span className="text-gray-400 dark:text-slate-500 text-[10px] font-bold">/one-time</span>
+                </div>
               </div>
-              
-              <div className="text-center mb-8">
-                <div className="text-4xl font-bold text-gray-900">$49.99</div>
-                <div className="text-gray-500">/month</div>
-              </div>
-              
-              <ul className="space-y-4 mb-8">
-                {[
-                  "Unlimited transcription",
-                  "Real-time processing",
-                  "24/7 dedicated support",
-                  "Advanced integrations",
-                  "Custom branding",
-                  "Advanced speaker identification",
-                  "Priority processing & training",
-                  "API access"
-                ].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
+
+              <ul className="space-y-2.5 mb-8 flex-1">
+                <li className="flex items-start gap-2.5 text-gray-700 dark:text-slate-300 text-[11px] font-bold leading-tight">
+                  <div className="w-4 h-4 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="text-purple-600 dark:text-purple-400" size={10} />
+                  </div>
+                  {bundle.credits} Total Credits
+                </li>
+                <li className="flex items-start gap-2.5 text-gray-500 dark:text-slate-400 text-[11px] font-semibold leading-tight">
+                  <div className="w-4 h-4 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="text-purple-600 dark:text-purple-400" size={10} />
+                  </div>
+                  Full Feature Access
+                </li>
+                <li className="flex items-start gap-2.5 text-gray-500 dark:text-slate-400 text-[11px] font-semibold leading-tight">
+                  <div className="w-4 h-4 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="text-purple-600 dark:text-purple-400" size={10} />
+                  </div>
+                  Priority Support
+                </li>
               </ul>
-              
-              <button className="w-full border-2 border-orange-300 text-orange-600 py-3 rounded-xl font-semibold hover:bg-orange-50 transition-all group-hover:scale-105">
-                Select Premium
+
+              <button
+                onClick={() => handlePurchase(bundle)}
+                className={`w-full py-3 rounded-xl text-xs font-black transition-all active:scale-95 duration-300
+                ${isPro
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 dark:shadow-none hover:bg-purple-700'
+                    : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-slate-200 group-hover:bg-purple-600 group-hover:text-white group-hover:border-purple-600 group-hover:shadow-lg group-hover:shadow-purple-200 dark:group-hover:shadow-none'}`}
+              >
+                Buy {bundle.credits} Credits
               </button>
             </div>
-          </div>
-        </div>
-      </section>
-    )
-}
+          );
+        })}
+      </div>
+    </section>
+  );
+};
+
 export default Pricing;

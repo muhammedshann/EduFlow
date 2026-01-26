@@ -4,7 +4,8 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
-from .models import TempUser, Wallet, WalletHistory, Settings, UserSubscription, SubscriptionPlan
+from .models import TempUser, Wallet, WalletHistory, Settings, UserCredits
+from apps.admin_panel.models import Notification
 from django.contrib.auth.hashers import make_password
 import random
 from .utils import sent_otp_email
@@ -104,7 +105,7 @@ class TempRegisterSerializer(serializers.ModelSerializer):
         )
 
         # Send OTP
-        sent_otp_email(temp_user.email, otp)
+        sent_otp_email(temp_user.email, otp,'Verification for EduFlow registration')
 
         return temp_user
 
@@ -186,6 +187,31 @@ class VerifyAccountSerializer(serializers.Serializer):
         self.temp_user.delete()
         return user 
 
+class VerifyOtpEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        otp = attrs.get('otp')
+
+        try :
+            self.temp_user = TempUser.objects.get(email=email)
+        except TempUser.DoesNotExist:
+            raise serializers.ValidationError('User not found. Please register again.')
+
+        if self.temp_user.is_expired():
+            self.temp_user.delete()
+            raise serializers.ValidationError('OTP has expired. Please register again.')
+        
+        if self.temp_user.otp != otp:
+            raise serializers.ValidationError('Invalid OTP.')
+        
+        return attrs
+    
+    def delete(self):
+        self.temp_user.delete()
+
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -213,7 +239,7 @@ class LoginSerializer(serializers.Serializer):
 
 class ResetPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, validators=[validate_password], required=True)
-    email = serializers.CharField()
+    email = serializers.EmailField()
     otp = serializers.CharField()
 
     def validate(self, attrs):
@@ -223,24 +249,31 @@ class ResetPasswordSerializer(serializers.Serializer):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise serializers.ValidationError("User with this email does not exist.")
+            raise serializers.ValidationError({"email": "User with this email does not exist."})
         
         try:
             temp_user = TempUser.objects.get(email=email)
         except TempUser.DoesNotExist:
-            raise serializers.ValidationError("Invalid request. Please request a new OTP.")
+            raise serializers.ValidationError({"otp": "OTP record not found. Please request a new OTP."})
         
+        # Check if OTP matches
         if temp_user.otp != otp:
-            raise serializers.ValidationError("Invalid request.")
+            raise serializers.ValidationError({"otp": "The OTP entered is incorrect."})
+        
+        # Optional: Add OTP expiration check here using temp_user.otp_created_at
         
         self.user = user
-        temp_user.delete()
+        self.temp_user = temp_user # Keep reference to delete during save
         return attrs
     
-    def save(self):
+    def save(self, **kwargs):
         password = self.validated_data['password']
         self.user.set_password(password)
         self.user.save()
+
+        # Delete the OTP record only after successfully saving the password
+        if hasattr(self, 'temp_user'):
+            self.temp_user.delete()
 
         return self.user
 
@@ -296,3 +329,17 @@ class UpdateProfileImageSerializer(serializers.ModelSerializer):
         model = User
         fields = ['profile_pic']
 
+class UserCreditsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserCredits
+        fields = ['total_credits', 'used_credits', 'remaining_credits', 'last_purchase_date']
+
+class UserNotificationSerializer(serializers.ModelSerializer):
+    time_ago = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'title', 'message', 'notification_type', 'created_at', 'time_ago']
+
+    def get_time_ago(self, obj):
+        return obj.created_at.strftime("%b %d, %Y")

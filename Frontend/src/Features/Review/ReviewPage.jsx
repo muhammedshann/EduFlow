@@ -89,7 +89,7 @@ export default function TranscriptProReviews() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-700 font-sans p-4 md:p-12">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 font-sans p-4 md:p-12 transition-colors duration-300">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
@@ -97,13 +97,13 @@ export default function TranscriptProReviews() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-purple-500 to-red-500 bg-clip-text text-transparent">
             Students Reviews
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 dark:text-slate-400 text-lg">
             See what our students are saying about EDUFLOW
           </p>
         </div>
 
         {/* Stats Bar */}
-        <div className="bg-gray-50/50 border border-gray-200 rounded-2xl p-8 mb-12 flex flex-col md:flex-row justify-between items-center px-16">
+        <div className="bg-gray-50/50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800 rounded-2xl p-8 mb-12 flex flex-col md:flex-row justify-between items-center px-16">
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-1 mb-1">
               {[...Array(5)].map((_, i) => (
@@ -114,44 +114,44 @@ export default function TranscriptProReviews() {
                   className="text-amber-400"
                 />
               ))}
-              <span className="text-3xl font-bold ml-2 text-slate-800">
+              <span className="text-3xl font-bold ml-2 text-slate-800 dark:text-slate-100">
                 {stats.avg}
               </span>
             </div>
-            <p className="text-xs text-slate-500">Average Rating</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Average Rating</p>
           </div>
 
-          <div className="h-12 w-px bg-gray-200 hidden md:block" />
+          <div className="h-12 w-px bg-gray-200 dark:bg-slate-800 hidden md:block" />
 
           <div className="text-center py-4 md:py-0">
-            <p className="text-3xl font-bold text-slate-800">
+            <p className="text-3xl font-bold text-slate-800 dark:text-slate-100">
               {stats.total}
             </p>
-            <p className="text-xs text-slate-500">Total Reviews</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Total Reviews</p>
           </div>
 
-          <div className="h-12 w-px bg-gray-200 hidden md:block" />
+          <div className="h-12 w-px bg-gray-200 dark:bg-slate-800 hidden md:block" />
 
           <div className="text-center">
-            <div className="bg-gray-100 px-3 py-1 rounded text-[10px] font-bold mb-1">
+            <div className="bg-gray-100 dark:bg-slate-800 px-3 py-1 rounded text-[10px] font-bold mb-1 dark:text-slate-200">
               100%
             </div>
-            <p className="text-xs text-slate-500">Positive Reviews</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Positive Reviews</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
           {/* Left Column: Form */}
-          <div className="lg:col-span-5 bg-gray-50/30 border border-gray-100 rounded-2xl p-8 shadow-sm">
-            <h2 className="text-xl font-bold mb-1">Write a Review</h2>
-            <p className="text-sm text-slate-500 mb-6">
+          <div className="lg:col-span-5 bg-gray-50/30 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-800 rounded-2xl p-8 shadow-sm">
+            <h2 className="text-xl font-bold mb-1 dark:text-slate-100">Write a Review</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
               Share your experience with EduFlow to help others make informed decisions.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-bold mb-2 uppercase tracking-wide">
+                <label className="block text-xs font-bold mb-2 uppercase tracking-wide dark:text-slate-300">
                   Rating *
                 </label>
                 <div className="flex items-center gap-1">
@@ -168,18 +168,18 @@ export default function TranscriptProReviews() {
                       <Star
                         size={22}
                         fill={(hoverRating || formData.rating) >= star ? "#94a3b8" : "none"}
-                        className={(hoverRating || formData.rating) >= star ? "text-slate-400" : "text-slate-300"}
+                        className={(hoverRating || formData.rating) >= star ? "text-slate-400" : "text-slate-300 dark:text-slate-600"}
                       />
                     </button>
                   ))}
-                  <span className="text-xs text-slate-400 ml-2">
+                  <span className="text-xs text-slate-400 dark:text-slate-500 ml-2">
                     Select rating
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold mb-2 uppercase tracking-wide">
+                <label className="block text-xs font-bold mb-2 uppercase tracking-wide dark:text-slate-300">
                   Review Title
                 </label>
                 <input
@@ -189,12 +189,12 @@ export default function TranscriptProReviews() {
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  className="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm"
+                  className="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 text-sm dark:text-white outline-none focus:ring-1 focus:ring-purple-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold mb-2 uppercase tracking-wide">
+                <label className="block text-xs font-bold mb-2 uppercase tracking-wide dark:text-slate-300">
                   Your Review *
                 </label>
                 <textarea
@@ -204,13 +204,13 @@ export default function TranscriptProReviews() {
                   onChange={(e) =>
                     setFormData({ ...formData, comment: e.target.value })
                   }
-                  className="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm"
+                  className="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 text-sm dark:text-white outline-none focus:ring-1 focus:ring-purple-500"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-md"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-md transition-colors"
               >
                 Submit Review
               </button>
@@ -219,31 +219,31 @@ export default function TranscriptProReviews() {
 
           {/* Right Column: Reviews List */}
           <div className="lg:col-span-7 space-y-6">
-            <h2 className="text-lg font-bold text-slate-800 mb-4">
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4">
               Recent Reviews
             </h2>
 
             {loading ? (
-              <p className="text-center text-gray-500">Loading reviews…</p>
+              <p className="text-center text-gray-500 dark:text-slate-400">Loading reviews…</p>
             ) : (
               reviews.map((review) => (
                 <div
                   key={review.id}
-                  className="bg-gray-50/30 border border-gray-100 rounded-2xl p-6 transition-all hover:bg-white hover:shadow-sm"
+                  className="bg-gray-50/30 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-800 rounded-2xl p-6 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <img
                       src={review.avatar}
                       alt={review.name}
-                      className="w-10 h-10 rounded-full border border-gray-200"
+                      className="w-10 h-10 rounded-full border border-gray-200 dark:border-slate-700"
                     />
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-slate-800">
+                        <span className="font-bold text-sm text-slate-800 dark:text-slate-100">
                           {review.name}
                         </span>
                         {review.featured && (
-                          <span className="bg-gray-200 text-slate-600 text-[10px] px-2 py-0.5 rounded font-bold uppercase">
+                          <span className="bg-gray-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded font-bold uppercase">
                             Featured
                           </span>
                         )}
@@ -254,20 +254,20 @@ export default function TranscriptProReviews() {
                             key={i}
                             size={14}
                             fill={i < review.rating ? "#FBBF24" : "none"}
-                            className={i < review.rating ? "text-amber-400" : "text-slate-300"}
+                            className={i < review.rating ? "text-amber-400" : "text-slate-300 dark:text-slate-600"}
                           />
                         ))}
-                        <span className="text-[11px] text-slate-400 ml-2">
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 ml-2">
                           {review.date}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <h3 className="font-bold text-slate-800 mb-2">
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2">
                     {review.title}
                   </h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                     {review.comment}
                   </p>
                 </div>

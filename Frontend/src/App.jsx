@@ -41,9 +41,11 @@ import SubscriptionPlansPage from './Features/Subscriptions/SubscriptionPlansPag
 import CheckoutPage from './Features/Subscriptions/CheckoutPage';
 import UploadTranscriptionManagement from './Features/Admin/AdminUploadTranscription';
 import NotificationManagement from './Features/Admin/AdminNotificationPage';
+import AdminPublicRoute from './Routes/AdminPublicRoute';
 
 function App() {
   return (
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
     <BrowserRouter>
       <Notification />
       <Routes>
@@ -205,7 +207,9 @@ function App() {
 
         {/* admin side */}
         <Route path='/admin/login/' element={
-          <AdminLoginPage />
+          <AdminPublicRoute>
+            <AdminLoginPage />
+          </AdminPublicRoute>
         } />
 
         <Route element={<AdminLayout />}>
@@ -289,6 +293,7 @@ function App() {
         <Route path='*' element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
+    </div>
   );
 }
 

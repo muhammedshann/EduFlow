@@ -5,6 +5,8 @@ import {
     MessageSquare,
     Trash2,
     Search,
+    X,
+    Eye
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { AdminStatCard } from "./AdminUserPage";
@@ -12,24 +14,32 @@ import { DeleteReviews, FetchReviews } from "../../Redux/ReviewSlice";
 
 function ReviewViewModal({ title, comment, rating, onClose }) {
     return (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-6">
-
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">
-                    {title || "No Title"}
-                </h2>
-                <div className="text-yellow-600 font-semibold">
-                    {rating || 'no rating'} ★
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-xl shadow-2xl p-6 border border-gray-100 dark:border-slate-700 transition-colors duration-300 mx-4">
+                
+                <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-white">
+                        {title || "No Title"}
+                    </h2>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200">
+                        <X size={20} />
+                    </button>
                 </div>
 
-                <div className="text-sm text-gray-600 leading-relaxed max-h-60 overflow-y-auto">
-                    {comment || "No comment provided."}
+                <div className="text-yellow-500 font-bold text-lg mb-4 flex items-center gap-2">
+                    {rating || '0'} <Star size={18} fill="currentColor" />
+                </div>
+
+                <div className="p-4 bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-100 dark:border-slate-700 max-h-60 overflow-y-auto">
+                    <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        {comment || "No comment provided."}
+                    </p>
                 </div>
 
                 <div className="flex justify-end mt-6">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium"
+                        className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600 text-sm font-medium transition-colors"
                     >
                         Close
                     </button>
@@ -38,7 +48,6 @@ function ReviewViewModal({ title, comment, rating, onClose }) {
         </div>
     );
 }
-
 
 export default function AdminReviewManagement() {
     const dispatch = useDispatch();
@@ -49,7 +58,6 @@ export default function AdminReviewManagement() {
     const [loading, setLoading] = useState(true);
     const [openReview, setOpenReview] = useState(null);
 
-
     const [stats, setStats] = useState({
         totalReviews: 0,
         averageRating: 0,
@@ -58,7 +66,6 @@ export default function AdminReviewManagement() {
     const loadReviews = async () => {
         try {
             setLoading(true);
-
             const response = await dispatch(FetchReviews()).unwrap();
             const data = Array.isArray(response) ? response : [];
 
@@ -66,20 +73,11 @@ export default function AdminReviewManagement() {
             setFilteredReviews(data);
 
             const totalReviews = data.length;
+            const averageRating = totalReviews > 0
+                ? (data.reduce((s, r) => s + (r.rating || 0), 0) / totalReviews).toFixed(1)
+                : 0;
 
-            const averageRating =
-                totalReviews > 0
-                    ? (
-                        data.reduce((s, r) => s + (r.rating || 0), 0) /
-                        totalReviews
-                    ).toFixed(1)
-                    : 0;
-
-
-            setStats({
-                totalReviews,
-                averageRating,
-            });
+            setStats({ totalReviews, averageRating });
         } catch (err) {
             console.error("Failed to fetch reviews", err);
             setReviews([]);
@@ -96,22 +94,17 @@ export default function AdminReviewManagement() {
     const handleSearch = (e) => {
         const term = e.target.value.toLowerCase();
         setSearchTerm(term);
-
-        const filtered = reviews.filter(
-            (r) =>
-                (r.title || "").toLowerCase().includes(term) ||
-                (r.username || "").toLowerCase().includes(term)
+        const filtered = reviews.filter((r) =>
+            (r.title || "").toLowerCase().includes(term) ||
+            (r.username || "").toLowerCase().includes(term)
         );
-
         setFilteredReviews(filtered);
     };
 
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this review?")) return;
-
         try {
             await dispatch(DeleteReviews(id)).unwrap();
-
             setReviews((prev) => prev.filter((r) => r.id !== id));
             setFilteredReviews((prev) => prev.filter((r) => r.id !== id));
         } catch (err) {
@@ -120,29 +113,30 @@ export default function AdminReviewManagement() {
     };
 
     return (
-        <div className="p-6 md:p-10 bg-gray-50 min-h-screen">
+        <div className="p-4 sm:p-6 md:p-10 bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300">
 
             {/* HEADER */}
             <header className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-1 flex items-center">
-                    <Star size={32} className="mr-3 text-purple-600" />
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-1 flex items-center">
+                    <Star size={28} className="mr-3 text-purple-600 dark:text-purple-400" />
                     Review Management
                 </h1>
-                <p className="text-gray-500">
+                <p className="text-sm sm:text-base text-gray-500 dark:text-slate-400">
                     Manage and moderate user reviews across the platform.
                 </p>
             </header>
 
             {/* STATS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-10">
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-10">
                 <AdminStatCard
                     title="Total Reviews"
                     value={stats.totalReviews}
                     change="All submitted reviews"
                     icon={MessageSquare}
-                    iconBg="bg-purple-100"
-                    iconColor="text-purple-600"
+                    iconBg="bg-purple-100 dark:bg-purple-900/20"
+                    iconColor="text-purple-600 dark:text-purple-400"
+                    valueColor="text-gray-800 dark:text-white"
+                    changeColor="text-gray-500 dark:text-slate-400"
                 />
 
                 <AdminStatCard
@@ -150,46 +144,39 @@ export default function AdminReviewManagement() {
                     value={`${stats.averageRating} ★`}
                     change="Across all reviews"
                     icon={Star}
-                    iconBg="bg-yellow-100"
-                    iconColor="text-yellow-600"
+                    iconBg="bg-yellow-100 dark:bg-yellow-900/20"
+                    iconColor="text-yellow-600 dark:text-yellow-400"
+                    valueColor="text-gray-800 dark:text-white"
+                    changeColor="text-gray-500 dark:text-slate-400"
                 />
-
-                {/* <AdminStatCard
-                    title="Users Reviewed"
-                    value={stats.totalUsers}
-                    change="Unique users"
-                    icon={Users}
-                    iconBg="bg-green-100"
-                    iconColor="text-green-600"
-                /> */}
             </div>
 
-            {/* TABLE */}
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+            {/* TABLE CARD */}
+            <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 transition-colors duration-300">
 
                 {/* SEARCH */}
-                <div className="flex justify-between items-center mb-6 flex-wrap">
-                    <h2 className="text-xl font-bold text-gray-800 mb-4 sm:mb-0">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">
                         User Reviews
                     </h2>
 
                     <div className="relative w-full sm:w-80">
                         <Search
                             size={18}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"
                         />
                         <input
                             type="text"
                             placeholder="Search by title or user..."
                             value={searchTerm}
                             onChange={handleSearch}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white rounded-lg focus:ring-purple-500 dark:focus:border-purple-400 outline-none transition-colors"
                         />
                     </div>
                 </div>
 
-                {/* HEADER */}
-                <div className="grid grid-cols-9 text-sm font-semibold text-gray-500 border-b py-3 px-4">
+                {/* DESKTOP HEADER (Hidden on Mobile) */}
+                <div className="hidden sm:grid grid-cols-9 text-sm font-semibold text-gray-500 dark:text-slate-400 border-b border-gray-200 dark:border-slate-700 py-3 px-4">
                     <div className="col-span-2">User</div>
                     <div>Rating</div>
                     <div className="col-span-2">Title</div>
@@ -199,35 +186,58 @@ export default function AdminReviewManagement() {
                 </div>
 
                 {/* ROWS */}
-                <div className="divide-y">
+                <div className="divide-y divide-gray-100 dark:divide-slate-700">
                     {!loading && filteredReviews.length > 0 ? (
                         filteredReviews.map((review) => (
                             <div
                                 key={review.id}
-                                className="grid grid-cols-9 items-center p-4 hover:bg-gray-50"
+                                className="flex flex-col sm:grid sm:grid-cols-9 items-start sm:items-center p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors gap-3 sm:gap-0"
                             >
-                                <div className="col-span-2 font-medium truncate">
-                                    {review.username}
+                                {/* User */}
+                                <div className="col-span-2 w-full sm:w-auto flex justify-between sm:block">
+                                    <span className="sm:hidden text-xs font-bold text-gray-500 dark:text-slate-500 uppercase">User</span>
+                                    <span className="font-medium truncate text-gray-800 dark:text-slate-200">{review.username}</span>
                                 </div>
 
-                                <div className="text-yellow-600 font-semibold">
-                                    {review.rating} ★
+                                {/* Rating */}
+                                <div className="w-full sm:w-auto flex justify-between sm:block">
+                                    <span className="sm:hidden text-xs font-bold text-gray-500 dark:text-slate-500 uppercase">Rating</span>
+                                    <div className="text-yellow-600 dark:text-yellow-400 font-semibold flex items-center gap-1">
+                                        {review.rating} <Star size={12} fill="currentColor"/>
+                                    </div>
                                 </div>
 
-                                <div className="col-span-2 truncate text-gray-700">
-                                    {review.title}
+                                {/* Title */}
+                                <div className="col-span-2 w-full sm:w-auto flex justify-between sm:block min-w-0">
+                                    <span className="sm:hidden text-xs font-bold text-gray-500 dark:text-slate-500 uppercase shrink-0 mr-4">Title</span>
+                                    <span className="truncate text-gray-700 dark:text-slate-300 block">{review.title}</span>
                                 </div>
 
-                                <div className="col-span-2 truncate text-gray-700">
-                                    {review.comment}
+                                {/* Comment */}
+                                <div className="col-span-2 w-full sm:w-auto flex justify-between sm:block min-w-0">
+                                    <span className="sm:hidden text-xs font-bold text-gray-500 dark:text-slate-500 uppercase shrink-0 mr-4">Comment</span>
+                                    <span className="truncate text-gray-500 dark:text-slate-400 block italic">"{review.comment}"</span>
                                 </div>
 
-                                <div className="text-sm text-gray-500">
-                                    {new Date(review.created_at).toLocaleDateString()}
+                                {/* Date */}
+                                <div className="w-full sm:w-auto flex justify-between sm:block">
+                                    <span className="sm:hidden text-xs font-bold text-gray-500 dark:text-slate-500 uppercase">Date</span>
+                                    <span className="text-sm text-gray-500 dark:text-slate-400">{new Date(review.created_at).toLocaleDateString()}</span>
                                 </div>
 
-                                <div className="flex justify-end gap-3">
+                                {/* Actions */}
+                                <div className="flex justify-end gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                                     <button
+                                        onClick={() =>
+                                            setOpenReview({
+                                                title: review.title,
+                                                comment: review.comment,
+                                                rating: review.rating,
+                                            })
+                                        }
+                                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                    >
+                                        <button
                                         onClick={() =>
                                             setOpenReview({
                                                 title: review.title,
@@ -239,25 +249,28 @@ export default function AdminReviewManagement() {
                                     >
                                         View
                                     </button>
+                                    </button>
 
-                                    <Trash2
-                                        size={18}
+                                    <button 
                                         onClick={() => handleDelete(review.id)}
-                                        className="text-gray-400 hover:text-red-600 cursor-pointer"
-                                    />
+                                        className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors flex items-center gap-1"
+                                    >
+                                        <Trash2 size={18} /> <span className="sm:hidden text-sm">Delete</span>
+                                    </button>
                                 </div>
-
                             </div>
                         ))
                     ) : (
                         !loading && (
-                            <p className="text-center text-gray-500 py-10">
+                            <p className="text-center text-gray-500 dark:text-slate-500 py-10">
                                 No reviews found.
                             </p>
                         )
                     )}
                 </div>
             </div>
+
+            {/* MODAL OVERLAY */}
             {openReview && (
                 <ReviewViewModal
                     title={openReview.title}
@@ -266,7 +279,6 @@ export default function AdminReviewManagement() {
                     onClose={() => setOpenReview(null)}
                 />
             )}
-
         </div>
     );
 }

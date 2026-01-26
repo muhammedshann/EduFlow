@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, Lock, CheckCircle2, AlertCircle, PartyPopper, Wallet, CreditCard } from 'lucide-react';
+import { ChevronLeft, Lock, CheckCircle2, AlertCircle, Wallet, CreditCard } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { RzpCreateOrder, RzpVerifyOrder, WalletPayment } from '../../Redux/SubscriptionSlice'; // Added WalletPayment
+import { RzpCreateOrder, RzpVerifyOrder, WalletPayment } from '../../Redux/SubscriptionSlice'; 
 import confetti from 'canvas-confetti';
 import { useUser } from '../../Context/UserContext';
 import { SentNotification } from '../../Redux/AdminRedux/AdminNotificationSlice';
@@ -12,13 +12,11 @@ export default function CheckoutPage() {
     const dispatch = useDispatch();
     const location = useLocation();
     const bundle = location.state?.bundle;
-    console.log('bundle',bundle);
-    
 
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState(null);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'wallet'
+    const [paymentMethod, setPaymentMethod] = useState('online'); 
     const { balance } = useSelector(state => state.wallet);
 
     const { user } = useUser();
@@ -70,10 +68,7 @@ export default function CheckoutPage() {
         e.preventDefault();
         setErrorMsg(null);
         setLoading(true);
-        console.log(balance,'-------',bundle.price);
-        
 
-        // --- WALLET PAYMENT LOGIC ---
         if (paymentMethod === 'wallet') {
             const numericBalance = parseFloat(balance);
             const numericPrice = parseFloat(bundle.price);
@@ -104,7 +99,6 @@ export default function CheckoutPage() {
             return;
         }
 
-        // --- ONLINE (RAZORPAY) LOGIC ---
         const isScriptLoaded = await loadRazorpay();
         if (!isScriptLoaded) {
             setErrorMsg("Razorpay SDK failed to load.");
@@ -119,8 +113,8 @@ export default function CheckoutPage() {
                 bundle_id: bundle.id || null 
             }));
 
-            if (RzpCreateOrder.rejected.match(createRes)) {
-                setErrorMsg(createRes.payload || "Failed to create order");
+            if (createRes.payload?.error) {
+                setErrorMsg(createRes.payload.error);
                 setLoading(false);
                 return;
             }
@@ -169,62 +163,60 @@ export default function CheckoutPage() {
     const displayPrice = parseFloat(bundle.price);
 
     return (
-        <div className="min-h-screen bg-gray-50/50 py-12 px-4 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 py-12 px-4 flex items-center justify-center transition-colors duration-300">
             <div className="max-w-md w-full transition-all duration-500">
                 {!isSuccess && (
-                    <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-gray-400 hover:text-purple-600 font-bold text-xs mb-8 transition-colors group">
+                    <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-gray-400 dark:text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 font-bold text-xs mb-8 transition-colors group">
                         <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
                         Back to Plans
                     </button>
                 )}
 
-                <div className={`bg-white rounded-[40px] border border-gray-100 shadow-2xl overflow-hidden transition-all duration-500 ${isSuccess ? 'scale-105 border-green-100' : ''}`}>
+                <div className={`bg-white dark:bg-slate-900 rounded-[40px] border border-gray-100 dark:border-slate-800 shadow-2xl overflow-hidden transition-all duration-500 ${isSuccess ? 'scale-105 border-green-100 dark:border-green-900/30' : ''}`}>
                     {isSuccess ? (
                         <div className="p-10 text-center animate-in zoom-in-95 duration-500">
-                            {/* ... (Existing Success UI) */}
                             <div className="mb-6 flex justify-center">
-                                <div className="relative w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-100">
+                                <div className="relative w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-100 dark:shadow-none">
                                     <CheckCircle2 className="text-white" size={48} />
                                 </div>
                             </div>
-                            <h2 className="text-3xl font-black text-gray-900 mb-2">Payment Received!</h2>
-                            <p className="text-gray-500 font-bold text-sm mb-8">Successfully added <span className="text-purple-600">{bundle.credits.toLocaleString()} credits</span>.</p>
+                            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Payment Received!</h2>
+                            <p className="text-gray-500 dark:text-slate-400 font-bold text-sm mb-8">Successfully added <span className="text-purple-600 dark:text-purple-400">{bundle.credits.toLocaleString()} credits</span>.</p>
                             <div className="space-y-4">
-                                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="w-full h-1.5 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                     <div className="h-full bg-purple-600 animate-progress origin-left" />
                                 </div>
                             </div>
                         </div>
                     ) : (
                         <>
-                            <div className="p-8 border-b border-gray-50 text-center bg-gray-50/30">
-                                <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Finalizing Order</h2>
-                                <h3 className="font-black text-gray-900 text-3xl mb-1">{bundle.name}</h3>
-                                <p className="text-purple-600 font-black text-xs mt-2 uppercase">{bundle.credits.toLocaleString()} Credits</p>
+                            <div className="p-8 border-b border-gray-50 dark:border-slate-800 text-center bg-gray-50/30 dark:bg-slate-800/30">
+                                <h2 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-4">Finalizing Order</h2>
+                                <h3 className="font-black text-gray-900 dark:text-white text-3xl mb-1">{bundle.name}</h3>
+                                <p className="text-purple-600 dark:text-purple-400 font-black text-xs mt-2 uppercase">{bundle.credits.toLocaleString()} Credits</p>
                             </div>
 
                             <div className="p-8 space-y-6">
                                 {errorMsg && (
-                                    <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-center gap-3 text-red-600">
+                                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 p-4 rounded-xl flex items-center gap-3 text-red-600 dark:text-red-400">
                                         <AlertCircle size={18} />
                                         <span className="text-xs font-bold">{typeof errorMsg === 'object' ? errorMsg.message : errorMsg}</span>
                                     </div>
                                 )}
 
-                                {/* PAYMENT METHOD TOGGLE */}
                                 <div className="space-y-3">
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Select Payment Method</p>
+                                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Select Payment Method</p>
                                     <div className="grid grid-cols-2 gap-3">
                                         <button 
                                             onClick={() => setPaymentMethod('online')}
-                                            className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${paymentMethod === 'online' ? 'border-purple-600 bg-purple-50 text-purple-600' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}
+                                            className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${paymentMethod === 'online' ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' : 'border-gray-100 dark:border-slate-800 text-gray-400 dark:text-slate-500 hover:border-gray-200 dark:hover:border-slate-700'}`}
                                         >
                                             <CreditCard size={20} />
                                             <span className="text-[10px] font-black uppercase">Online</span>
                                         </button>
                                         <button 
                                             onClick={() => setPaymentMethod('wallet')}
-                                            className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${paymentMethod === 'wallet' ? 'border-purple-600 bg-purple-50 text-purple-600' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}
+                                            className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${paymentMethod === 'wallet' ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' : 'border-gray-100 dark:border-slate-800 text-gray-400 dark:text-slate-500 hover:border-gray-200 dark:hover:border-slate-700'}`}
                                         >
                                             <Wallet size={20} />
                                             <span className="text-[10px] font-black uppercase tracking-tighter">Wallet (₹{balance})</span>
@@ -233,11 +225,11 @@ export default function CheckoutPage() {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <div className="flex items-center gap-4 text-gray-600 font-bold text-sm">
+                                    <div className="flex items-center gap-4 text-gray-600 dark:text-slate-400 font-bold text-sm">
                                         <CheckCircle2 className="text-green-500" size={18} />
                                         {paymentMethod === 'wallet' ? 'Instant Wallet Debit' : 'Instant Activation'}
                                     </div>
-                                    <div className="flex items-center gap-4 text-gray-600 font-bold text-sm">
+                                    <div className="flex items-center gap-4 text-gray-600 dark:text-slate-400 font-bold text-sm">
                                         <CheckCircle2 className="text-green-500" size={18} />
                                         Secure Transaction
                                     </div>
@@ -245,17 +237,17 @@ export default function CheckoutPage() {
                             </div>
 
                             <div className="p-8 pt-0">
-                                <div className="flex justify-between items-end mb-8 pt-4 border-t border-dashed border-gray-200">
+                                <div className="flex justify-between items-end mb-8 pt-4 border-t border-dashed border-gray-200 dark:border-slate-800">
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-400 uppercase">Amount Due</p>
-                                        <p className="text-4xl font-black text-gray-900">₹{displayPrice.toFixed(0)}</p>
+                                        <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase">Amount Due</p>
+                                        <p className="text-4xl font-black text-gray-900 dark:text-white">₹{displayPrice.toFixed(0)}</p>
                                     </div>
                                 </div>
                                 
                                 <button 
                                     onClick={handlePurchase}
                                     disabled={loading}
-                                    className="w-full py-5 bg-purple-600 text-white rounded-2xl text-lg font-black shadow-xl shadow-purple-100 hover:bg-purple-700 active:scale-[0.97] transition-all flex items-center justify-center gap-3 disabled:bg-gray-300"
+                                    className="w-full py-5 bg-purple-600 text-white rounded-2xl text-lg font-black shadow-xl shadow-purple-100 dark:shadow-none hover:bg-purple-700 active:scale-[0.97] transition-all flex items-center justify-center gap-3 disabled:bg-gray-300 dark:disabled:bg-slate-800"
                                 >
                                     {loading ? (
                                         <div className="flex items-center gap-2">

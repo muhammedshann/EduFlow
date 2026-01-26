@@ -16,8 +16,10 @@ import {
 import { useDispatch } from "react-redux";
 import { SaveLiveNote, StartLiveTranscription, UploadTranscription } from "../../Redux/LiveTranscriptionSlice";
 import api from "../../api/axios";
+import { useTheme } from "../../Context/ThemeContext";
 
 export default function LiveTranscriptionPage() {
+    const { isDarkMode } = useTheme(); // Hook for theme context
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -114,7 +116,6 @@ export default function LiveTranscriptionPage() {
             setSelectedFile(file);
             setNoteTitle(file.name.split('.')[0]); // Default title from filename
         }
-        // UploadTranscription
     };
 
     const pollForTranscript = (mediaId) => {
@@ -123,7 +124,6 @@ export default function LiveTranscriptionPage() {
                 const res = await api.get(`/transcription-notes/media/${mediaId}/`);
                 const data = res.data;
                 console.log(data);
-                
 
                 if (data.status === "done") {
                     setTranscript(data.transcript);
@@ -139,8 +139,6 @@ export default function LiveTranscriptionPage() {
         }, 5000);
     };
 
-
-
     const handleFileUpload = async () => {
         if (!selectedFile) return;
 
@@ -155,15 +153,12 @@ export default function LiveTranscriptionPage() {
             const action = await dispatch(UploadTranscription(form));
             const mediaId = action.payload.id
             SetSelectedFileId(mediaId)
-
-            // 🔥 START POLLING
             pollForTranscript(mediaId);
         } catch (err) {
             console.error(err);
             setIsProcessing(false);
         }
     };
-
 
     const handleChat = () => {
         navigate(`/chat-bot/${noteId}`);
@@ -175,14 +170,12 @@ export default function LiveTranscriptionPage() {
     };
 
     const HandleSaveNote = async () => {
-        // Determine payload based on active tab
         const payload = {
             type: activeTab === "live" ? "live" : "file",
             title: noteTitle,
             transcript_text: transcript,
         };
 
-        // If it's a file upload, attach the source ID (stored when file was uploaded)
         if (activeTab === "upload" && selectedFileId) {
             payload.upload_source = selectedFileId;
         }
@@ -192,40 +185,38 @@ export default function LiveTranscriptionPage() {
         if (SaveLiveNote.fulfilled.match(response)) {
             setNoteId(response.payload.id);
             setNoteSaved(true);
-            // Optional: show success notification
         } else {
-            // Handle error (e.g., duplicate title)
             alert(response.payload?.error || "Failed to save note");
         }
     };
 
     return (
-        <div className="min-h-screen bg-[#faf7ff] px-4 py-10">
+        <div className="min-h-screen bg-[#faf7ff] dark:bg-slate-950 px-4 py-10 transition-colors duration-300">
             <div className="max-w-4xl mx-auto space-y-8">
 
                 {/* Header */}
                 <div className="text-center space-y-2">
-                    <h1 className="text-4xl font-bold text-purple-600">
+                    <h1 className="text-4xl font-bold text-purple-600 dark:text-purple-500">
                         Smart Notes
                     </h1>
-                    <p className="text-gray-500">
-                        Convert your speech or audio , video files to text accurately
+                    <p className="text-gray-500 dark:text-slate-400">
+                        Convert your speech or audio, video files to text accurately
                     </p>
                 </div>
 
                 {/* Tab Switcher */}
                 <div className="flex justify-center">
-                    <div className="bg-white p-1 rounded-xl shadow-sm border border-purple-100 inline-flex">
+                    <div className="bg-white dark:bg-slate-900 p-1 rounded-xl shadow-sm border border-purple-100 dark:border-slate-700 inline-flex transition-colors duration-300">
                         <button
                             onClick={() => setActiveTab("live")}
-                            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition ${activeTab === "live" ? "bg-purple-600 text-white shadow-md" : "text-gray-500 hover:bg-purple-50"}`}
+                            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition ${activeTab === "live" ? "bg-purple-600 text-white shadow-md" : "text-gray-500 dark:text-slate-400 hover:bg-purple-50 dark:hover:bg-slate-800"}`}
                         >
                             <Mic size={18} />
                             Live Mode
                         </button>
                         <button
                             onClick={() => setActiveTab("file")}
-                            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition ${activeTab === "file" ? "bg-purple-600 text-white shadow-md" : "text-gray-500 hover:bg-purple-50"}`}
+                            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition ${activeTab === "file" ? "bg-purple-600 text-white shadow-md" : "text-gray-500 dark:text-slate-400 hover:bg-purple-50 dark:hover:bg-slate-800"}`}
                         >
                             <Upload size={18} />
                             Upload File
@@ -236,31 +227,31 @@ export default function LiveTranscriptionPage() {
                 {/* Save Note Modal */}
                 {showSaveNoteModal && (
                     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex h-full items-center justify-center z-50">
-                        <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md animate-fadeIn">
-                            <h2 className="text-xl font-semibold text-gray-900 mb-1">Save Smart Note</h2>
-                            <p className="text-gray-500 text-sm mb-6">Give your note a title to save it for later.</p>
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md animate-fadeIn transition-colors duration-300">
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Save Smart Note</h2>
+                            <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Give your note a title to save it for later.</p>
                             <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Note Title</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Note Title</label>
                                 <input
                                     type="text"
                                     value={noteTitle}
                                     onChange={(e) => setNoteTitle(e.target.value)}
                                     placeholder="e.g. Physics – Newton’s Laws"
-                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none"
                                     autoFocus
                                 />
                             </div>
                             <div className="flex justify-end gap-3">
                                 <button
                                     onClick={() => { SetShowSaveNoteModal(false); setNoteTitle(""); }}
-                                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     disabled={!noteTitle.trim()}
                                     onClick={() => { HandleSaveNote(); SetShowSaveNoteModal(false); setNoteTitle(""); }}
-                                    className={`px-5 py-2 rounded-lg text-white transition ${noteTitle.trim() ? "bg-green-600 hover:bg-green-700" : "bg-gray-300 cursor-not-allowed"}`}
+                                    className={`px-5 py-2 rounded-lg text-white transition ${noteTitle.trim() ? "bg-green-600 hover:bg-green-700" : "bg-gray-300 dark:bg-slate-700 cursor-not-allowed"}`}
                                 >
                                     Save Note
                                 </button>
@@ -270,13 +261,13 @@ export default function LiveTranscriptionPage() {
                 )}
 
                 {/* Main Action Area */}
-                <div className="bg-white rounded-2xl shadow-lg p-10 text-center space-y-6">
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg dark:shadow-slate-900/50 p-10 text-center space-y-6 transition-colors duration-300">
                     {activeTab === "live" ? (
                         <>
-                            <div className={`mx-auto w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 ${isRecording ? "bg-red-500 animate-pulse shadow-[0_0_40px_rgba(239,68,68,0.6)]" : "bg-purple-100 hover:bg-purple-200"}`}>
-                                {isRecording ? <MicOff className="w-14 h-14 text-white" /> : <Mic className="w-14 h-14 text-purple-600" />}
+                            <div className={`mx-auto w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 ${isRecording ? "bg-red-500 animate-pulse shadow-[0_0_40px_rgba(239,68,68,0.6)]" : "bg-purple-100 dark:bg-slate-700 hover:bg-purple-200 dark:hover:bg-slate-600"}`}>
+                                {isRecording ? <MicOff className="w-14 h-14 text-white" /> : <Mic className="w-14 h-14 text-purple-600 dark:text-purple-400" />}
                             </div>
-                            <p className="text-lg font-medium">
+                            <p className="text-lg font-medium text-gray-700 dark:text-slate-200">
                                 {isRecording ? "Listening…" : isProcessing ? "Processing last audio…" : "Ready to record"}
                             </p>
                             {!isRecording ? (
@@ -293,7 +284,7 @@ export default function LiveTranscriptionPage() {
                         <div className="space-y-6">
                             <div
                                 onClick={() => fileInputRef.current.click()}
-                                className="mx-auto w-full max-w-lg border-2 border-dashed border-purple-200 rounded-2xl p-10 hover:bg-purple-50 hover:border-purple-400 transition cursor-pointer group"
+                                className="mx-auto w-full max-w-lg border-2 border-dashed border-purple-200 dark:border-slate-600 rounded-2xl p-10 hover:bg-purple-50 dark:hover:bg-slate-700/50 hover:border-purple-400 dark:hover:border-slate-500 transition cursor-pointer group"
                             >
                                 <input
                                     type="file"
@@ -303,14 +294,14 @@ export default function LiveTranscriptionPage() {
                                     onChange={handleFileChange}
                                 />
                                 <div className="flex flex-col items-center gap-4">
-                                    <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 group-hover:scale-110 transition">
+                                    <div className="w-16 h-16 bg-purple-100 dark:bg-slate-700 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-110 transition">
                                         <Upload size={32} />
                                     </div>
                                     <div>
-                                        <p className="text-lg font-semibold text-gray-700">
+                                        <p className="text-lg font-semibold text-gray-700 dark:text-slate-200">
                                             {selectedFile ? selectedFile.name : "Choose an audio file"}
                                         </p>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-gray-500 dark:text-slate-400">
                                             Audio (MP3, WAV) or Video (MP4, MOV, MKV) supported (Max 25MB)
                                         </p>
                                     </div>
@@ -319,7 +310,7 @@ export default function LiveTranscriptionPage() {
                             <button
                                 disabled={!selectedFile || isProcessing}
                                 onClick={handleFileUpload}
-                                className={`inline-flex items-center gap-2 px-10 py-3 rounded-lg font-semibold transition ${selectedFile && !isProcessing ? "bg-purple-600 text-white hover:bg-purple-700 hover:scale-105" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
+                                className={`inline-flex items-center gap-2 px-10 py-3 rounded-lg font-semibold transition ${selectedFile && !isProcessing ? "bg-purple-600 text-white hover:bg-purple-700 hover:scale-105" : "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 cursor-not-allowed"}`}
                             >
                                 {isProcessing ? "Processing..." : "Transcribe File"}
                             </button>
@@ -329,24 +320,24 @@ export default function LiveTranscriptionPage() {
 
                 {/* Transcript Display */}
                 {showTranscript && (
-                    <div className="bg-white rounded-2xl shadow-lg p-6 space-y-4 animate-fadeIn">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg dark:shadow-slate-900/50 p-6 space-y-4 animate-fadeIn transition-colors duration-300">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-semibold">Transcript</h2>
+                            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Transcript</h2>
                             {(isListening || isProcessing) && (
-                                <span className="text-purple-600 text-sm animate-pulse font-medium">
+                                <span className="text-purple-600 dark:text-purple-400 text-sm animate-pulse font-medium">
                                     {isListening ? "listening…" : "processing…"}
                                 </span>
                             )}
                         </div>
-                        <div className="bg-gray-50 rounded-lg p-4 min-h-[120px] border border-gray-100">
+                        <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-4 min-h-[120px] border border-gray-100 dark:border-slate-700 transition-colors duration-300">
                             {isEditing ? (
                                 <textarea
                                     value={editedTranscript}
                                     onChange={(e) => setEditedTranscript(e.target.value)}
-                                    className="w-full h-32 p-3 border rounded-md focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white"
+                                    className="w-full h-32 p-3 border rounded-md focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
                                 />
                             ) : (
-                                <p className="whitespace-pre-wrap text-gray-800 leading-relaxed italic">
+                                <p className="whitespace-pre-wrap text-gray-800 dark:text-slate-200 leading-relaxed italic">
                                     {transcript || "Speak or upload a file to see transcription…"}
                                 </p>
                             )}
@@ -359,10 +350,10 @@ export default function LiveTranscriptionPage() {
                                             <MessageSquare size={18} /> Chat
                                         </button>
                                     )}
-                                    <button onClick={() => { setEditedTranscript(transcript); setIsEditing(true); }} className="inline-flex items-center gap-2 border border-gray-200 px-6 py-2 rounded-lg hover:bg-gray-50 transition">
+                                    <button onClick={() => { setEditedTranscript(transcript); setIsEditing(true); }} className="inline-flex items-center gap-2 border border-gray-200 dark:border-slate-600 px-6 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 transition">
                                         <Edit3 size={18} /> Edit
                                     </button>
-                                    <button onClick={() => SetShowSaveNoteModal(true)} className="inline-flex items-center gap-2 border border-gray-200 px-6 py-2 rounded-lg hover:bg-gray-50 transition">
+                                    <button onClick={() => SetShowSaveNoteModal(true)} className="inline-flex items-center gap-2 border border-gray-200 dark:border-slate-600 px-6 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 transition">
                                         <Save size={18} /> Save
                                     </button>
                                 </>
@@ -371,7 +362,7 @@ export default function LiveTranscriptionPage() {
                                     <button onClick={saveEdits} className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
                                         <Save size={18} /> Save Changes
                                     </button>
-                                    <button onClick={() => setIsEditing(false)} className="inline-flex items-center gap-2 border border-gray-200 px-6 py-2 rounded-lg hover:bg-gray-50 transition">
+                                    <button onClick={() => setIsEditing(false)} className="inline-flex items-center gap-2 border border-gray-200 dark:border-slate-600 px-6 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 transition">
                                         <X size={18} /> Cancel
                                     </button>
                                 </>
@@ -387,12 +378,12 @@ export default function LiveTranscriptionPage() {
                         { title: "High Accuracy", text: "Whisper AI ensures precise text conversion", icon: <Type size={20} /> },
                         { title: "Safe Storage", text: "Your transcripts are encrypted and private", icon: <Save size={20} /> },
                     ].map((f, i) => (
-                        <div key={i} className="bg-white rounded-xl shadow p-6 text-center space-y-2 border border-purple-50 hover:border-purple-200 transition">
-                            <div className="w-12 h-12 mx-auto bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold">
+                        <div key={i} className="bg-white dark:bg-slate-800 rounded-xl shadow p-6 text-center space-y-2 border border-purple-50 dark:border-slate-700 hover:border-purple-200 dark:hover:border-slate-600 transition-colors duration-300">
+                            <div className="w-12 h-12 mx-auto bg-purple-100 dark:bg-slate-700 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold">
                                 {f.icon}
                             </div>
-                            <h3 className="font-semibold text-gray-800">{f.title}</h3>
-                            <p className="text-sm text-gray-500">{f.text}</p>
+                            <h3 className="font-semibold text-gray-800 dark:text-slate-200">{f.title}</h3>
+                            <p className="text-sm text-gray-500 dark:text-slate-400">{f.text}</p>
                         </div>
                     ))}
                 </div>

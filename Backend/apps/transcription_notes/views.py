@@ -109,7 +109,6 @@ class MediaUploadView(APIView):
     def post(self, request):
         serializer = MediaUploadSerializer(data=request.data)
         if serializer.is_valid():
-            print('its inside of view it is valid')
             media = serializer.save(user=request.user)
             transcribe_media.delay(media.id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

@@ -205,7 +205,6 @@ class GenerateOtpView(APIView):
             user = User.objects.get(email=email)
             
             otp = str(random.randint(100000, 999999))
-            print("generated otp for reset password = ",otp)
 
             temp_user, created = TempUser.objects.update_or_create(
                 email=email,
@@ -472,7 +471,6 @@ class GenerateOtpEmailView(APIView):
             user = request.user
             
             otp = str(random.randint(100000, 999999))
-            print(otp)
             
             temp_user, created = TempUser.objects.update_or_create(
                 email=email,
@@ -495,7 +493,6 @@ class GenerateOtpEmailView(APIView):
             return Response({"error": "User with this email does not exist."}, status=status.HTTP_404_NOT_FOUND)
             
         except Exception as e:
-            print(f"Error: {e}")
             return Response(
                 {"message": "Failed to send email."}, 
                 status=status.HTTP_503_SERVICE_UNAVAILABLE

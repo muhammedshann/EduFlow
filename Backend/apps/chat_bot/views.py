@@ -13,7 +13,6 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 class ChatBotView(APIView):
     def post(self, request):
         user_message = request.data.get("message")
-        print('inside of notmal view ',user_message)
         
         model = genai.GenerativeModel("gemini-1.5-flash")
         

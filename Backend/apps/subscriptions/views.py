@@ -109,7 +109,6 @@ class CreateOrderView(APIView):
                     "payment_capture": "1" 
                 })
             except Exception as e:
-                print(f"Razorpay Connection Error: {e}")
                 return Response({"error": "Payment gateway unreachable. Please try again."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
             CreditPurchase.objects.create(
@@ -130,7 +129,6 @@ class CreateOrderView(APIView):
             })
 
         except Exception as e:
-            print(f"General Error: {e}")
             return Response({"error": "An internal error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class VerifyPaymentView(APIView):
@@ -157,7 +155,6 @@ class VerifyPaymentView(APIView):
                 return Response({"status": "Already Processed"}, status=200)
 
         except Exception as e:
-            print(f"Signature Verification Error: {e}") 
             return Response({"status": "Failed", "error": str(e)}, status=400)
 
     def fulfill_order(self, order_id, payment_id=None):
@@ -226,7 +223,6 @@ class WalletPurchaseView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        print('💡 inside WalletPurchaseView POST')
         
         bundle_id = request.data.get('bundle_id')
         bundle = None
@@ -288,5 +284,4 @@ class WalletPurchaseView(APIView):
             }, status=200)
 
         except Exception as e:
-            print("Internal Server Error:", str(e))
             return Response({"error": "An error occurred during the transaction"}, status=500)

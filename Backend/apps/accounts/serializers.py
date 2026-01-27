@@ -89,7 +89,6 @@ class TempRegisterSerializer(serializers.ModelSerializer):
 
         # Generate OTP
         otp = str(random.randint(100000, 999999))
-        print("Generated OTP:", otp)
 
         # Hash password
         validated_data['password'] = make_password(validated_data['password'])

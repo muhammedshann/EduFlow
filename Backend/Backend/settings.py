@@ -165,13 +165,11 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
+    "https://eduflow-ivory.vercel.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",  # your React dev server
-    "http://127.0.0.1:5173",
+    "https://eduflow-ivory.vercel.app",
 ]
 
 # Allow credentials if needed
@@ -265,8 +263,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 
 
-LOGIN_REDIRECT_URL = 'http://localhost:5173'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'http://localhost:5173'
+LOGIN_REDIRECT_URL = 'https://eduflow-ivory.vercel.app'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'https://eduflow-ivory.vercel.app'
 
 
 # media
@@ -292,7 +290,7 @@ RZP_KEY_ID=config('RZP_KEY_ID')
 RZP_KEY_SECRET=config('RZP_KEY_SECRET')
 
 # whisper transcription
-CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = "django-db"

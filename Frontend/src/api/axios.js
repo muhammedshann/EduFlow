@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8000/api/',
+    baseURL: 'http://52.200.25.84/api/',
     withCredentials: true, // cookies are sent automatically
     // headers: { 'Content-Type': 'application/json' },
 });
@@ -44,7 +44,7 @@ api.interceptors.response.use(
 
             try {
                 await axios.post(
-                    'http://localhost:8000/api/accounts/token/refresh/',
+                    'http://52.200.25.84/api/accounts/token/refresh/',
                     {},
                     { withCredentials: true } // send cookies & receive new access cookie
                 );

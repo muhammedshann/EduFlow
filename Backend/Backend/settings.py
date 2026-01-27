@@ -207,23 +207,22 @@ DEFAULT_FROM_EMAIL = 'EduFlow <app.eduflow@gmail.com>'
 SITE_ID = 1
 
 # Authentication methods
+# 1. Replaces ACCOUNT_AUTHENTICATION_METHOD
+ACCOUNT_LOGIN_METHODS = {'email'}
 
-ACCOUNT_SIGNUP_FIELDS = {
-    'username': {
-        'required': True,  # This replaces 'username*'
-        'unique': True,    # Ensures usernames are unique
-    },
-    'email': {
-        'required': True,  # This replaces 'email*'
-        'unique': True,    # Ensures emails are unique
-        
-        # This line is good to add to match your other setting
-        'verification': 'none', 
-    },
-}
+# 2. Replaces ACCOUNT_EMAIL_REQUIRED, ACCOUNT_USERNAME_REQUIRED, 
+# and the old dictionary-style ACCOUNT_SIGNUP_FIELDS
+ACCOUNT_SIGNUP_FIELDS = ['username', 'email']
+
+# 3. Keep your existing logic
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_CONFIRM_EMAIL_ON_GET = False
+ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'
 
-# Social authentication
+# Social authentication stays the same
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
@@ -236,6 +235,34 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+# ACCOUNT_SIGNUP_FIELDS = {
+#     'username': {
+#         'required': True,  # This replaces 'username*'
+#         'unique': True,    # Ensures usernames are unique
+#     },
+#     'email': {
+#         'required': True,  # This replaces 'email*'
+#         'unique': True,    # Ensures emails are unique
+        
+#         # This line is good to add to match your other setting
+#         'verification': 'none', 
+#     },
+# }
+# SOCIALACCOUNT_AUTO_SIGNUP = True
+
+# # Social authentication
+# SOCIALACCOUNT_PROVIDERS = {
+#     'google': {
+#         'APP': {
+#             'client_id': config('CLIENT_ID'),
+#             'secret': config('SECRET_CLIENT_ID'),
+#             'key': ''
+#         },
+#         'SCOPE': ['email', 'profile'],
+#         'AUTH_PARAMS': {'access_type': 'offline'},
+#     }
+# }
+
 # JWT settings
 REST_USE_JWT = True
 JWT_AUTH_COOKIE = 'jwt-auth'
@@ -246,16 +273,14 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-SOCIALACCOUNT_AUTO_SIGNUP = True
-SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-ACCOUNT_CONFIRM_EMAIL_ON_GET = False
+# SOCIALACCOUNT_AUTO_SIGNUP = True
+# SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+# ACCOUNT_EMAIL_VERIFICATION = 'none'
+# ACCOUNT_CONFIRM_EMAIL_ON_GET = False
 
-ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username' # Or None if you don't use usernames
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+# ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username' # Or None if you don't use usernames
+# ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+# ACCOUNT_LOGIN_METHODS = {'email'}
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None  # or 'same-origin-allow-popups'
 SESSION_COOKIE_SAMESITE = 'None'

@@ -29,7 +29,7 @@ SECRET_KEY = config("SECRET_KEY", default="fallback-secret")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ['52.200.25.84', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['api.fresheasy.online','52.200.25.84', 'localhost', '127.0.0.1']
 
 
 # sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
@@ -166,10 +166,14 @@ AUTH_USER_MODEL = 'accounts.User'
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "https://eduflow-ivory.vercel.app",
+    "https://fresheasy.online",
+    "https://www.fresheasy.online",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://eduflow-ivory.vercel.app",
+    "https://fresheasy.online",
+    "https://www.fresheasy.online",
 ]
 
 # Allow credentials if needed
@@ -263,8 +267,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 
 
-LOGIN_REDIRECT_URL = 'https://eduflow-ivory.vercel.app'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'https://eduflow-ivory.vercel.app'
+LOGIN_REDIRECT_URL = "https://fresheasy.online"
+ACCOUNT_LOGOUT_REDIRECT_URL = "https://fresheasy.online"
 
 
 # media

@@ -29,7 +29,7 @@ SECRET_KEY = config("SECRET_KEY", default="fallback-secret")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ['api.fresheasy.online','52.200.25.84', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['api.fresheasy.online','35.172.185.98', 'localhost', '127.0.0.1']
 
 
 # sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))

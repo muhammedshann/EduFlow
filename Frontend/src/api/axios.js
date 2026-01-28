@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://api.fresheasy.online/api/',
+    baseURL: 'https://api.fresheasy.online/api/',
     withCredentials: true, // cookies are sent automatically
     // headers: { 'Content-Type': 'application/json' },
 });

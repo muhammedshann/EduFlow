@@ -9,6 +9,7 @@ User = get_user_model()
 
 @database_sync_to_async
 def get_user_from_db(user_id):
+    User = get_user_model()
     try:
         return User.objects.get(id=user_id)
     except User.DoesNotExist:

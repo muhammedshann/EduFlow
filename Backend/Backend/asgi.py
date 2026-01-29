@@ -18,14 +18,11 @@ print("CHAT BOT WS:", chat_bot_ws)
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": OriginValidator(
-        JWTAuthMiddleware(
-            URLRouter(chat_wb + live_transcription_ws + chat_bot_ws)
-        ),
-        [
-            "https://fresheasy.online",
-            "https://www.fresheasy.online",
-            "https://eduflow-ivory.vercel.app",
-        ]
-    )
+    "websocket": JWTAuthMiddleware(
+        URLRouter(
+            chat_wb +
+            live_transcription_ws +
+            chat_bot_ws
+        )
+    ),
 })

@@ -283,20 +283,23 @@ class LoginView(APIView):
             })
 
             response.set_cookie(
-                key='access',
+                key="access",
                 value=accessToken,
                 httponly=True,
-                secure=False,
-                samesite='Lax',
-                max_age=15*60
+                secure=True,
+                samesite="None",
+                domain=".fresheasy.online",
+                max_age=15 * 60,
             )
+
             response.set_cookie(
-                key='refresh',
+                key="refresh",
                 value=refreshToken,
                 httponly=True,
-                samesite='Lax',
-                max_age=7*24*60*60,
-                secure=False,
+                secure=True,
+                samesite="None",
+                domain=".fresheasy.online",
+                max_age=7 * 24 * 60 * 60,
             )
             return response
 

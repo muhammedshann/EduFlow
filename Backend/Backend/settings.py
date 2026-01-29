@@ -29,7 +29,12 @@ SECRET_KEY = config("SECRET_KEY", default="fallback-secret")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ['api.fresheasy.online','54.161.28.33', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['api.fresheasy.online',
+    "www.fresheasy.online",
+    "fresheasy.online",
+    '54.161.28.33',
+    'localhost', '127.0.0.1'
+    ]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 

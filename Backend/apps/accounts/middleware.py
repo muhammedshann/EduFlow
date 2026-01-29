@@ -1,6 +1,10 @@
 import jwt
+from urllib.parse import parse_qs
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
+
 from channels.middleware import BaseMiddleware
 from channels.db import database_sync_to_async
 
@@ -17,24 +21,52 @@ def get_user_from_db(user_id):
 
 class JWTAuthMiddleware(BaseMiddleware):
     async def __call__(self, scope, receive, send):
-        scope.setdefault("user", None)
-
-        headers = dict(scope.get("headers", []))
-        raw_cookie = headers.get(b"cookie", b"").decode()
+        scope["user"] = AnonymousUser()
 
         token = None
-        for part in raw_cookie.split(";"):
-            key, _, value = part.strip().partition("=")
-            if key == "access":        # your cookie name
-                token = value
-                break
 
+        # ----------------------------------
+        # 1️⃣ Try query-string token (RELIABLE)
+        # ----------------------------------
+        try:
+            query_string = scope.get("query_string", b"").decode()
+            query_params = parse_qs(query_string)
+            token = query_params.get("token", [None])[0]
+        except Exception:
+            token = None
+
+        # ----------------------------------
+        # 2️⃣ Fallback to cookie token
+        # ----------------------------------
+        if not token:
+            headers = dict(scope.get("headers", []))
+            raw_cookie = headers.get(b"cookie", b"").decode()
+
+            for part in raw_cookie.split(";"):
+                key, _, value = part.strip().partition("=")
+                if key == "access":
+                    token = value
+                    break
+
+        # ----------------------------------
+        # 3️⃣ Validate token
+        # ----------------------------------
         if token:
             try:
-                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-                user = await get_user_from_db(payload.get("user_id"))
-                if user:
-                    scope["user"] = user
+                payload = jwt.decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"],
+                )
+                user_id = payload.get("user_id")
+                if user_id:
+                    user = await get_user_from_db(user_id)
+                    if user:
+                        scope["user"] = user
+            except jwt.ExpiredSignatureError:
+                pass
+            except jwt.InvalidTokenError:
+                pass
             except Exception:
                 pass
 

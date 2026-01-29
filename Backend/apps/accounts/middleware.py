@@ -4,12 +4,11 @@ from django.contrib.auth import get_user_model
 from channels.middleware import BaseMiddleware
 from channels.db import database_sync_to_async
 
-# User = get_user_model()
+User = get_user_model()
 
 
 @database_sync_to_async
 def get_user_from_db(user_id):
-    User = get_user_model()
     try:
         return User.objects.get(id=user_id)
     except User.DoesNotExist:

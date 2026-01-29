@@ -5,7 +5,7 @@ import asyncio
 import whisper
 from channels.generic.websocket import AsyncWebsocketConsumer
 
-model = whisper.load_model("base")
+model = whisper.load_model("tiny")
 
 
 class LiveTranscriptionConsumer(AsyncWebsocketConsumer):

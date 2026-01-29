@@ -68,7 +68,7 @@ export default function ChatPage() {
     }, [messages, dispatch]);
 
     useEffect(() => {
-        socket.current = new WebSocket("ws://localhost:8000/ws/chat-bot/");
+        socket.current = new WebSocket("wss://api.fresheasy.online/ws/chat-bot/");
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
             setIsLoading(false);

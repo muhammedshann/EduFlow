@@ -44,7 +44,7 @@ api.interceptors.response.use(
 
             try {
                 await axios.post(
-                    'http://52.200.25.84/api/accounts/token/refresh/',
+                    'https://api.fresheasy.online/api/accounts/token/refresh/',
                     {},
                     { withCredentials: true } // send cookies & receive new access cookie
                 );

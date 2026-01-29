@@ -2,8 +2,6 @@ import os
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
-from channels.security.websocket import OriginValidator
-
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Backend.settings")
 
@@ -18,11 +16,9 @@ print("CHAT BOT WS:", chat_bot_ws)
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": JWTAuthMiddleware(
-        URLRouter(
-            chat_wb +
-            live_transcription_ws +
-            chat_bot_ws
+    "websocket": AllowedHostsOriginValidator(
+        JWTAuthMiddleware(
+            URLRouter(chat_wb + live_transcription_ws + chat_bot_ws)
         )
     ),
 })

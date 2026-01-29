@@ -10,10 +10,10 @@ from django.db import models
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.user = self.scope["user"]
-        if not self.user.is_authenticated:
-            await self.close()
-            return
+        # self.user = self.scope["user"]
+        # if not self.user.is_authenticated:
+        #     await self.close()
+        #     return
         await self.accept()
 
     async def receive(self, text_data):

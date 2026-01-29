@@ -190,7 +190,7 @@ export default function GroupChat() {
         const setupChat = async () => {
             const success = await fetchData();
             if (success) {
-                ws = new WebSocket(`ws://localhost:8000/ws/chat/${groupId}/`);
+                ws = new WebSocket(`wss://api.fresheasy.online/ws/chat/${groupId}/`);
                 ws.onmessage = (event) => {
                     const data = JSON.parse(event.data);
                     setMessages(prev => [...prev, {

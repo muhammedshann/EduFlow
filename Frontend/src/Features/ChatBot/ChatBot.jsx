@@ -68,11 +68,6 @@ export default function ChatPage() {
     }, [messages, dispatch]);
 
     useEffect(() => {
-        const token = localStorage.getItem("access");
-        const ws = new WebSocket("wss://api.fresheasy.online/ws/chat-bot/");
-        ws.onopen = () => console.log("WS OPEN");
-        ws.onerror = (e) => console.log("WS ERROR", e);
-        ws.onclose = () => console.log("WS CLOSED");
         socket.current = new WebSocket("wss://api.fresheasy.online/ws/chat-bot/");
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data);

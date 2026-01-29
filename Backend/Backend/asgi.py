@@ -11,6 +11,8 @@ from apps.groups.routing import websocket_urlpatterns as chat_wb
 from apps.transcription_notes.routing import websocket_urlpatterns as live_transcription_ws
 from apps.chat_bot.routing import websocket_urlpatterns as chat_bot_ws
 from apps.accounts.middleware import JWTAuthMiddleware
+print("CHAT BOT WS:", chat_bot_ws)
+
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,

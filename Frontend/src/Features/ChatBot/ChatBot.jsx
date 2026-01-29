@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Send, Loader2, Zap, X, Sparkles, Info } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { FetchDetailNote } from "../../Redux/LiveTranscriptionSlice";
 import { ClearChatBot, FetchChatBot } from "../../Redux/ChatBotSlice";
 import { FetchCredit } from "../../Redux/SubscriptionSlice";
@@ -13,7 +13,6 @@ export default function ChatPage() {
     const { noteId } = useParams();
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { AccessToken } = useSelector(state => state.auth);
 
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
@@ -69,9 +68,9 @@ export default function ChatPage() {
     }, [messages, dispatch]);
 
     useEffect(() => {
-        // const token = localStorage.getItem("access");
+        const token = localStorage.getItem("access");
 
-        socket.current = new WebSocket(`wss://api.fresheasy.online/ws/chat-bot/?token=${AccessToken}`);
+        socket.current = new WebSocket("wss://api.fresheasy.online/ws/chat-bot/");
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
             setIsLoading(false);

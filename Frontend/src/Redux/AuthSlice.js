@@ -261,7 +261,7 @@ const AuthSlice = createSlice({
                 state.Loading = false;
                 state.User = action.payload.user;
                 // state.RefreshToken = action.payload.refresh;
-                // state.AccessToken = action.payload.access;
+                state.AccessToken = action.payload.access;
                 state.message = 'Login successful!';
                 state.messageType = "success";
             })

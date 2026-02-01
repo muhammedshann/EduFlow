@@ -3,7 +3,9 @@ import {
     LayoutDashboard, Menu, X, Sparkles, LogOut, WalletCards, 
     UserCog, Star, BadgeCheck, Users2, Bell, 
     AudioWaveform, History, CalendarRange, NotebookTabs, 
-    CloudUpload, MessageSquarePlus, ShieldCheck, Settings2
+    CloudUpload, MessageSquarePlus, ShieldCheck, Settings2,
+    ChevronRight,
+    ChevronLeft
 } from "lucide-react";
 import { useUser } from "../Context/UserContext"; 
 import { useSidebar } from "../Context/SideBarContext";

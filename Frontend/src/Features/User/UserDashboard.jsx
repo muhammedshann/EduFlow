@@ -1,14 +1,12 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
     Mic,
-    Upload,
     Timer,
     CheckSquare,
     Users,
     MessageSquare,
     Bell,
     CreditCard,
-    BarChart3,
     LogOut,
     Settings,
     Notebook
@@ -29,18 +27,18 @@ export default function UserDashboard() {
     const dispatch = useDispatch();
     const { user, logout } = useUser();
 
-    // -- Reusable Card Component with Dark Mode --
+    // -- Reusable Card --
     const Card = ({ children, className }) => (
-        <div className={`bg-white dark:bg-slate-800 shadow-md dark:shadow-slate-900/50 rounded-xl p-4 transition-colors duration-300 ${className}`}>
+        <div className={`bg-white dark:bg-slate-800 shadow-sm md:shadow-md dark:shadow-slate-900/50 rounded-xl p-4 transition-colors duration-300 ${className}`}>
             {children}
         </div>
     );
 
-    // -- Reusable Button Component with Dark Mode --
+    // -- Reusable Button --
     const Button = ({ children, className, onClick }) => (
         <button
             onClick={onClick}
-            className={`px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors duration-200 ${className}`}
+            className={`px-4 py-3 md:py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors duration-200 text-sm md:text-base ${className}`}
         >
             {children}
         </button>
@@ -50,7 +48,6 @@ export default function UserDashboard() {
         try {
             const HabitResponse = await dispatch(WeeklyStatsHabit()).unwrap();
             const PomodoroResponse = await dispatch(FetchDailyStats()).unwrap();
-            console.log(PomodoroResponse);
             setTodayPomodoroCount(PomodoroResponse.sessions_completed)
 
             const todayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date().getDay()];
@@ -70,172 +67,187 @@ export default function UserDashboard() {
     }, []);
 
     return (
-        // Main Container Background
-        <div className="space-y-8 p-15 min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
+        // FIXED: p-15 is not standard. Changed to p-4 for mobile, p-8 for laptop.
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300 p-4 md:p-8 space-y-6 md:space-y-8 pb-24 md:pb-8">
             
-            {/* Header with Profile */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-                <div className="flex items-center space-x-4">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                {/* User Info */}
+                <div className="flex items-center space-x-3 md:space-x-4">
                     <div
-                        className="w-16 h-16 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-purple-500 transition-all"
+                        className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-purple-500 transition-all flex-shrink-0"
                         onClick={() => navigate('/settings/')}
                     >
                         {user.profilePic ? (
                             <img
                                 src={user.profilePic}
-                                alt={`${user.firstname} ${user.lastname}`}
-                                className="w-full h-full object-cover rounded-full"
+                                alt="Profile"
+                                className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white text-lg font-bold w-full h-full rounded-full">
+                            <div className="bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm md:text-lg font-bold w-full h-full">
                                 {`${user.firstname?.[0] || ""}${user.lastname?.[0] || ""}`.toUpperCase()}
                             </div>
                         )}
                     </div>
 
-                    <div>
-                        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400">
-                            Welcome back, {user ? user.username : 'Alex'}!
+                    <div className="flex-1 min-w-0"> {/* min-w-0 allows text truncation */}
+                        {/* FIXED: Smaller text on mobile (text-xl) */}
+                        <h1 className="text-xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400 truncate">
+                            Hi, {user ? user.username : 'Alex'}!
                         </h1>
-                        <p className="text-gray-500 dark:text-slate-400">Ready to boost your productivity?</p>
+                        <p className="text-sm md:text-base text-gray-500 dark:text-slate-400 truncate">
+                            Let's be productive today.
+                        </p>
                     </div>
                 </div>
 
-                {/* Notifications and Logout */}
-                <div className="flex items-center gap-4">
-                    {/* Notifications */}
-                    <div className="relative">
+                {/* Action Buttons - Stacked horizontally on mobile now */}
+                <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 bg-white dark:bg-slate-800 md:bg-transparent md:dark:bg-transparent p-2 md:p-0 rounded-xl shadow-sm md:shadow-none">
+                    <div className="flex items-center gap-2">
                         <button 
-                            className="relative p-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition" 
+                            className="p-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition" 
                             onClick={() => navigate('/notification/')}
                         >
-                            <Bell className="h-6 w-6" />
+                            <Bell className="h-5 w-5 md:h-6 md:w-6" />
+                        </button>
+
+                        <button 
+                            className="p-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition" 
+                            onClick={() => navigate('/settings/')}
+                        >
+                            <Settings className="w-5 h-5 md:w-6 md:h-6" />
                         </button>
                     </div>
 
-                    <button 
-                        className="flex items-center gap-2 p-2 rounded-md text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 font-medium transition" 
-                        onClick={() => navigate('/settings/')}
-                    >
-                        <Settings className="w-6 h-6" />
-                    </button>
+                    {/* Separator for mobile */}
+                    <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 md:hidden"></div>
                     
-                    {/* Logout Button */}
                     <button 
-                        className="flex items-center gap-2 p-2 rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium transition" 
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 transition text-sm font-medium" 
                         onClick={() => logout()}
                     >
-                        <LogOut className="w-6 h-6" />
+                        <LogOut className="w-4 h-4 md:w-5 md:h-5" />
+                        <span className="md:inline">Logout</span>
                     </button>
                 </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Quick Stats Grid - 2 columns on mobile, 4 on desktop */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 <Card>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                         <div>
-                            <p className="text-sm text-gray-500 dark:text-slate-400">Today's Focus</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{TodayPomodoroCount}</p>
-                            <p className="text-xs text-gray-500 dark:text-slate-500">Pomodoros</p>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Today's Focus</p>
+                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TodayPomodoroCount}</p>
+                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Pomodoros</p>
                         </div>
-                        <Timer className="h-8 w-8 text-purple-500 dark:text-purple-400" />
+                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
+                            <Timer className="h-5 w-5 md:h-8 md:w-8 text-purple-500 dark:text-purple-400" />
+                        </div>
                     </div>
                 </Card>
 
                 <Card>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                         <div>
-                            <p className="text-sm text-gray-500 dark:text-slate-400">Habits</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{TodayHabitPercentage}%</p>
-                            <p className="text-xs text-gray-500 dark:text-slate-500">This week</p>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Habits</p>
+                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TodayHabitPercentage}%</p>
+                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Completed</p>
                         </div>
-                        <CheckSquare className="h-8 w-8 text-green-500 dark:text-green-400" />
+                        <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg w-fit">
+                            <CheckSquare className="h-5 w-5 md:h-8 md:w-8 text-green-500 dark:text-green-400" />
+                        </div>
                     </div>
                 </Card>
 
                 <Card>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                         <div>
-                            <p className="text-sm text-gray-500 dark:text-slate-400">Credits</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{userCredits?.remaining_credits}</p>
-                            <p className="text-xs text-gray-500 dark:text-slate-500">Remaining</p>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Credits</p>
+                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{userCredits?.remaining_credits || 0}</p>
+                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Remaining</p>
                         </div>
-                        <CreditCard className="h-8 w-8 text-blue-500 dark:text-blue-400" />
+                        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg w-fit">
+                            <CreditCard className="h-5 w-5 md:h-8 md:w-8 text-blue-500 dark:text-blue-400" />
+                        </div>
                     </div>
                 </Card>
 
                 <Card>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                         <div>
-                            <p className="text-sm text-gray-500 dark:text-slate-400">Total</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{TotalNotes}</p>
-                            <p className="text-xs text-gray-500 dark:text-slate-500">Notes</p>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Total</p>
+                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TotalNotes}</p>
+                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Notes</p>
                         </div>
-                        <Mic className="h-8 w-8 text-purple-500 dark:text-purple-400" />
+                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
+                            <Mic className="h-5 w-5 md:h-8 md:w-8 text-purple-500 dark:text-purple-400" />
+                        </div>
                     </div>
                 </Card>
             </div>
 
-            {/* Main Features Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Main Features Grid - 1 col mobile, 2 col desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                
                 {/* Transcription */}
-                <Card>
-                    <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <Mic className="h-5 w-5 mr-2 text-purple-500 dark:text-purple-400" />
+                <Card className="border-l-4 border-purple-500">
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
+                        <Mic className="h-5 w-5 mr-2 text-purple-500" />
                         Smart Notes
                     </h2>
                     <div className="space-y-3">
-                        <NavLink to="/smart-note/">
-                            <Button className="w-full justify-start flex items-center h-12">
-                                <Mic className="h-4 w-4 mr-3" />
+                        <NavLink to="/smart-note/" className="block">
+                            <Button className="w-full justify-start flex items-center h-12 md:h-12 active:scale-95 transition-transform">
+                                <Mic className="h-4 w-4 mr-3 text-purple-500" />
                                 Start Live/Upload Note
                             </Button>
                         </NavLink>
-                        <NavLink to="/notes/">
-                            <Button className="w-full justify-start flex items-center mt-1 h-12">
-                                <Notebook className="h-4 w-4 mr-3" />
-                                Notes
+                        <NavLink to="/notes/" className="block">
+                            <Button className="w-full justify-start flex items-center h-12 md:h-12 active:scale-95 transition-transform">
+                                <Notebook className="h-4 w-4 mr-3 text-purple-500" />
+                                My Notebooks
                             </Button>
                         </NavLink>
                     </div>
                 </Card>
 
                 {/* AI Assistant */}
-                <Card>
-                    <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <MessageSquare className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" />
+                <Card className="border-l-4 border-blue-500">
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
+                        <MessageSquare className="h-5 w-5 mr-2 text-blue-500" />
                         AI Assistant
                     </h2>
                     <div className="space-y-3">
-                        <NavLink to="/chat-bot/">
-                            <Button className="w-full justify-start flex items-center h-12">
-                                <MessageSquare className="h-4 w-4 mr-3" />
+                        <NavLink to="/chat-bot/" className="block">
+                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
+                                <MessageSquare className="h-4 w-4 mr-3 text-blue-500" />
                                 Chat with AI
                             </Button>
                         </NavLink>
-                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-3">
-                            Ask questions about studies.
+                        <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400 px-1">
+                            Ask questions about your studies anytime.
                         </p>
                     </div>
                 </Card>
 
                 {/* Focus & Habits */}
-                <Card>
-                    <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <Timer className="h-5 w-5 mr-2 text-green-500 dark:text-green-400" />
+                <Card className="border-l-4 border-green-500">
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
+                        <Timer className="h-5 w-5 mr-2 text-green-500" />
                         Focus & Habits
                     </h2>
                     <div className="space-y-3">
-                        <NavLink to="/promodoro/">
-                            <Button className="w-full justify-start flex items-center h-12">
-                                <Timer className="h-4 w-4 mr-3" />
+                        <NavLink to="/promodoro/" className="block">
+                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
+                                <Timer className="h-4 w-4 mr-3 text-green-500" />
                                 Pomodoro Timer
                             </Button>
                         </NavLink>
-                        <NavLink to="/habit-tracker/">
-                            <Button className="w-full justify-start flex items-center mt-1 h-12">
-                                <CheckSquare className="h-4 w-4 mr-3" />
+                        <NavLink to="/habit-tracker/" className="block">
+                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
+                                <CheckSquare className="h-4 w-4 mr-3 text-green-500" />
                                 Habit Tracker
                             </Button>
                         </NavLink>
@@ -243,19 +255,19 @@ export default function UserDashboard() {
                 </Card>
 
                 {/* Community */}
-                <Card>
-                    <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <Users className="h-5 w-5 mr-2 text-purple-500 dark:text-purple-400" />
+                <Card className="border-l-4 border-pink-500">
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
+                        <Users className="h-5 w-5 mr-2 text-pink-500" />
                         Community
                     </h2>
                     <div className="space-y-3">
-                        <NavLink to="/groups/">
-                            <Button className="w-full justify-start flex items-center h-12">
-                                <Users className="h-4 w-4 mr-3" />
+                        <NavLink to="/groups/" className="block">
+                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
+                                <Users className="h-4 w-4 mr-3 text-pink-500" />
                                 Study Groups
                             </Button>
                         </NavLink>
-                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-3">Learn with friends</p>
+                        <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400 px-1">Connect and learn with friends.</p>
                     </div>
                 </Card>
             </div>

@@ -47,7 +47,7 @@ export default function AdminSidebar() {
             {/* Only visible when sidebar is NOT collapsed on mobile screens */}
             {!collapsed && (
                 <div 
-                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[45] lg:hidden transition-opacity duration-300"
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[45] lg:hidden transition-opacity duration-500"
                     onClick={toggleSidebar}
                 />
             )}
@@ -57,6 +57,12 @@ export default function AdminSidebar() {
                     ${collapsed ? "-translate-x-full lg:translate-x-0 lg:w-20" : "translate-x-0 w-[280px] lg:w-72"}
                 `}
             >
+                <button
+                    onClick={toggleSidebar}
+                    className="hidden lg:flex absolute -right-3 top-9 z-50 w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full items-center justify-center text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-sm transition-colors"
+                >
+                    {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                </button>
                 {/* --- Admin Branding --- */}
                 <div className="h-20 flex items-center px-6 shrink-0 border-b border-slate-50/50 dark:border-slate-800/50">
                     <div className={`flex items-center w-full ${collapsed ? "justify-center" : "justify-between"}`}>

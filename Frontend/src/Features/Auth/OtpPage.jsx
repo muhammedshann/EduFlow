@@ -2,16 +2,21 @@ import React, { useEffect, useState } from "react";
 import { Key, ArrowRight, Sparkles, Timer, ShieldCheck, Loader2, RotateCcw } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { generateOtp, verifyOtp } from "../../Redux/AuthSlice";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 function OtpVerifyPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [params] = useSearchParams();
+    const location = useLocation();
+    // const [params] = useSearchParams();
 
-    const email = params.get("email");
-    const otpCreationTime = params.get("created");
-    const type = params.get("type");
+    const email = location.state?.email;
+    const otpCreationTime = location.state?.created;
+    const type = location.state?.type;
+
+    // const email = params.get("email");
+    // const otpCreationTime = params.get("created");
+    // const type = params.get("type");
 
     const [otp, setOtp] = useState("");
     const [timeLeft, setTimeLeft] = useState(0);

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../../Context/UserContext";
 import { GoogleLogin } from '@react-oauth/google';
 import api from "../../api/axios";
+import { showNotification } from "../../Redux/NotificationSlice";
 
 function LoginPage() {
     const [isLogin, setIsLogin] = useState(true);
@@ -15,7 +16,7 @@ function LoginPage() {
     const { setUser } = useUser();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [alert, setAlert] = useState({ message: '', type: '', show: false });
+    // const [alert, setAlert] = useState({ message: '', type: '', show: false });
     const [formData, setFormData] = useState({
         first_name: "", last_name: "", username: "", email: "", password: "", register: true
     });
@@ -28,35 +29,84 @@ function LoginPage() {
             });
             if (response.status === 200) {
                 setUser(response.data.user);
-                setAlert({ message: 'Google login successful!', type: 'success', show: true });
+                // setAlert({ message: 'Google login successful!', type: 'success', show: true });
                 setTimeout(() => navigate('/dashboard'), 1000);
             }
         } catch (error) {
-            setAlert({ message: 'Google login failed.', type: 'error', show: true });
+            // setAlert({ message: 'Google login failed.', type: 'error', show: true });
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleGoogleError = () => {
-        setAlert({ message: 'Google Sign-In failed.', type: 'error', show: true });
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const { username, email, password } = formData;
+
+        // --- Validation Logic ---
+        if (isLogin) {
+            if (!username || !password) {
+                dispatch(showNotification({ message: "Please fill in all fields", type: "error" }));
+                return;
+            }
+        } else {
+            // Register Validation
+            if (!username || !email || !password) {
+                dispatch(showNotification({ message: "All fields are required for registration", type: "error" }));
+                return;
+            }
+
+            // Email Format Validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                dispatch(showNotification({ message: "Please enter a valid email address", type: "error" }));
+                return;
+            }
+
+            // Password Strength (Example: Min 6 chars)
+            if (password.length < 6) {
+                dispatch(showNotification({ message: "Password must be at least 6 characters long", type: "error" }));
+                return;
+            }
+
+            // Optional: Username length check
+            if (username.length < 3) {
+                dispatch(showNotification({ message: "Username must be at least 3 characters", type: "error" }));
+                return;
+            }
+        }
+        // --- End Validation ---
+
         setIsLoading(true);
         try {
             if (isLogin) {
-                const loginData = { username: formData.username, password: formData.password };
+                const loginData = { username, password };
                 const result = await dispatch(Login(loginData)).unwrap();
+                
+                dispatch(showNotification({ message: "Welcome back!", type: "success" }));
                 setUser(result.user);
                 navigate('/dashboard/');
                 return;
             }
+
             const result = await dispatch(SignUp(formData)).unwrap();
-            navigate(`/otp/?type=register&email=${formData.email}&created=${result.created_time}`);
+            
+            dispatch(showNotification({ message: "Account created! Please verify your OTP", type: "success" }));
+            navigate('/otp/', { 
+                state: { 
+                    email: formData.email, 
+                    created: result.created_time, 
+                    type: 'register' 
+                } 
+            });
         } catch (err) {
-            setAlert({ message: "Authentication failed", type: 'error', show: true });
+            // The error notification is likely handled by your Redux middleware, 
+            // but you can manually trigger one here if 'err' contains a message.
+            dispatch(showNotification({ 
+                message: err?.message || "Authentication failed", 
+                type: "error" 
+            }));
         } finally {
             setIsLoading(false);
         }
@@ -70,13 +120,13 @@ function LoginPage() {
         <div className="h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 flex items-center justify-center p-2 transition-colors duration-500 overflow-hidden">
             <div className="w-full max-w-md animate-in fade-in zoom-in duration-300">
                 
-                {alert.show && (
+                {/* {alert.show && (
                     <div className={`fixed bottom-4 right-4 max-w-md p-3 rounded-xl shadow-2xl z-50 transition-all ${
                         alert.type === "success" ? "bg-emerald-500" : "bg-rose-500"
                     } text-white`}>
                         <p className="text-xs font-bold">{alert.message}</p>
                     </div>
-                )}
+                )} */}
 
                 {/* Branding Section */}
                 <div className="text-center mb-4 transition-colors duration-300">
@@ -169,7 +219,7 @@ function LoginPage() {
                         </div>
 
                         <div className="flex justify-center rounded-xl overflow-hidden transition-all scale-95">
-                            <GoogleLogin onSuccess={handleGoogleLogin} onError={handleGoogleError} theme={document.documentElement.classList.contains('dark') ? 'filled_blue' : 'outline'} width="380px" />
+                            <GoogleLogin onSuccess={handleGoogleLogin} theme={document.documentElement.classList.contains('dark') ? 'filled_blue' : 'outline'} width="380px" />
                         </div>
                     </form>
                 </div>

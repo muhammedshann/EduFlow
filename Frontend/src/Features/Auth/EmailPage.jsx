@@ -28,13 +28,21 @@ function EmailPage() {
             const result = await dispatch(generateOtp(email)).unwrap();
             const createdTime = result.created_at;
 
-            const params = new URLSearchParams({
-                type: 'reset',
-                email: email,
-                created: createdTime
-            }).toString();
+            navigate('/otp/', { 
+                state: { 
+                    email: email, 
+                    created: createdTime, 
+                    type: 'reset' 
+                } 
+            });
 
-            navigate(`/otp/?${params}`);
+            // const params = new URLSearchParams({
+            //     type: 'reset',
+            //     email: email,
+            //     created: createdTime
+            // }).toString();
+
+            // navigate(`/otp/?${params}`);
         } catch (err) {
             console.error("OTP Request failed:", err);
         } finally {

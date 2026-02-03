@@ -44,35 +44,45 @@ function LoginPage() {
 
         const { username, email, password } = formData;
 
-        // --- Validation Logic ---
+        // --- Strict Validation Logic ---
         if (isLogin) {
             if (!username || !password) {
-                dispatch(showNotification({ message: "Please fill in all fields", type: "error" }));
+                dispatch(showNotification({ message: "Username and password required", type: "error" }));
                 return;
             }
         } else {
-            // Register Validation
-            if (!username || !email || !password) {
-                dispatch(showNotification({ message: "All fields are required for registration", type: "error" }));
+            // 1. Basic Presence Check (No empty strings or just spaces)
+            if (!username?.trim() || !email?.trim() || !password?.trim()) {
+                dispatch(showNotification({ message: "All fields are required", type: "error" }));
                 return;
             }
 
-            // Email Format Validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            // 2. Strict Username Validation
+            // Rules: 3-20 chars, starts with a letter, only letters, numbers, and underscores. No only-symbols.
+            const usernameRegex = /^[A-Za-z][A-Za-z0-9_]{2,19}$/;
+            if (!usernameRegex.test(username)) {
+                dispatch(showNotification({ 
+                    message: "Username must be 3-20 characters, start with a letter, and contain no special symbols except underscores.", 
+                    type: "error" 
+                }));
+                return;
+            }
+
+            // 3. Strict Email Validation
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
             if (!emailRegex.test(email)) {
                 dispatch(showNotification({ message: "Please enter a valid email address", type: "error" }));
                 return;
             }
 
-            // Password Strength (Example: Min 6 chars)
-            if (password.length < 6) {
-                dispatch(showNotification({ message: "Password must be at least 6 characters long", type: "error" }));
-                return;
-            }
-
-            // Optional: Username length check
-            if (username.length < 3) {
-                dispatch(showNotification({ message: "Username must be at least 3 characters", type: "error" }));
+            // 4. Strict Password Validation
+            // Rules: Min 8 chars, at least one letter and one number.
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                dispatch(showNotification({ 
+                    message: "Password must be at least 8 characters and include both letters and numbers.", 
+                    type: "error" 
+                }));
                 return;
             }
         }
@@ -83,16 +93,14 @@ function LoginPage() {
             if (isLogin) {
                 const loginData = { username, password };
                 const result = await dispatch(Login(loginData)).unwrap();
-                
-                dispatch(showNotification({ message: "Welcome back!", type: "success" }));
+                dispatch(showNotification({ message: "Login successful", type: "success" }));
                 setUser(result.user);
                 navigate('/dashboard/');
                 return;
             }
 
             const result = await dispatch(SignUp(formData)).unwrap();
-            
-            dispatch(showNotification({ message: "Account created! Please verify your OTP", type: "success" }));
+            dispatch(showNotification({ message: "Account created! Verification required.", type: "success" }));
             navigate('/otp/', { 
                 state: { 
                     email: formData.email, 
@@ -101,10 +109,8 @@ function LoginPage() {
                 } 
             });
         } catch (err) {
-            // The error notification is likely handled by your Redux middleware, 
-            // but you can manually trigger one here if 'err' contains a message.
             dispatch(showNotification({ 
-                message: err?.message || "Authentication failed", 
+                message: err?.message || "An error occurred during authentication", 
                 type: "error" 
             }));
         } finally {

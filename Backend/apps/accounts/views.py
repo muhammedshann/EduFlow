@@ -200,45 +200,54 @@ class RegisterView(APIView):
 class GenerateOtpView(APIView):
     def post(self, request):
         serializer = GenerateOtpSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            
-            # Logic: Try to find the username from either table
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        email = serializer.validated_data['email']
+        otp = str(random.randint(100000, 999999))
+        now = timezone.now()
+
+        try:
+            # 1. Check if they are an existing User (Password Reset Case)
             user = User.objects.filter(email=email).first()
-            temp_user_record = TempUser.objects.filter(email=email).first()
-
-            # Determine the username (prioritize real User, fallback to TempUser)
-            username = user.username if user else (temp_user_record.username if temp_user_record else None)
-
-            if not username:
-                return Response({"message": "User context not found."}, status=404)
-
-            otp = str(random.randint(100000, 999999))
-
-            # Update or create the temp record with the new OTP
-            temp_user, created = TempUser.objects.update_or_create(
-                email=email,
-                defaults={
-                    'username': username,
-                    'otp': otp,
-                    'otp_created_at': timezone.now()
-                }
-            )
-
-            try:
-                sent_otp_email(email, otp, 'Your OTP Code for EduFlow.')
-                return Response({
-                    "email": email, 
-                    "message": "OTP sent successfully",
-                    "created_at": temp_user.otp_created_at.isoformat()
-                }, status=status.HTTP_200_OK)
-            except Exception as e:
-                return Response(
-                    {"message": "Failed to send email."}, 
-                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+            
+            if user:
+                # Password Reset: Update or create a TempUser record just for the OTP
+                temp_user, _ = TempUser.objects.update_or_create(
+                    email=email,
+                    defaults={
+                        'username': user.username,
+                        'otp': otp,
+                        'otp_created_at': now
+                    }
                 )
+                subject = 'Your Password Reset OTP'
+            
+            else:
+                # 2. If not a User, check if they are mid-registration
+                temp_user = TempUser.objects.filter(email=email).first()
+                
+                if temp_user:
+                    # Registration Resend: Just update the existing record
+                    temp_user.otp = otp
+                    temp_user.otp_created_at = now
+                    temp_user.save()
+                    subject = 'Your Registration Verification OTP'
+                else:
+                    # 3. Email doesn't exist anywhere
+                    return Response({"message": "Email not found in our records."}, status=404)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # --- Send the Email ---
+            sent_otp_email(email, otp, subject)
+            
+            return Response({
+                "email": email,
+                "message": "OTP sent successfully",
+                "created_at": now.isoformat()
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"message": "Internal server error"}, status=500)
 
         # return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 

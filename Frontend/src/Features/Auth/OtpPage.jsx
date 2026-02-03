@@ -21,7 +21,6 @@ function OtpVerifyPage() {
     const [otp, setOtp] = useState("");
     const [timeLeft, setTimeLeft] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
-    const [alert, setAlert] = useState({ message: "", type: "", show: false });
 
     useEffect(() => {
         if (!otpCreationTime) return;
@@ -62,8 +61,7 @@ function OtpVerifyPage() {
                 navigate("/reset-password", { state: { email, otp } });
             }
         } catch (err) {
-            setAlert({ message: "Invalid or expired OTP", type: "error", show: true });
-            setTimeout(() => setAlert(prev => ({ ...prev, show: false })), 4000);
+            console.log(err);
         } finally {
             setIsLoading(false);
         }
@@ -84,26 +82,14 @@ function OtpVerifyPage() {
             }).toString();
 
             navigate(`/otp/?${params}`, { replace: true });
-            setAlert({ message: "New code sent!", type: "success", show: true });
-            setTimeout(() => setAlert(prev => ({ ...prev, show: false })), 3000);
         } catch (err) {
-            setAlert({ message: "Failed to resend code", type: "error", show: true });
+            console.log(err);
         }
     };
 
     return (
         <div className="h-screen w-full bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 flex items-center justify-center p-4 transition-colors duration-500 overflow-hidden">
             <div className="w-full max-w-md animate-in fade-in zoom-in duration-500">
-                
-                {/* Floating Alert */}
-                {alert.show && (
-                    <div className={`fixed bottom-6 right-6 max-w-xs p-4 rounded-2xl shadow-2xl z-50 animate-in slide-in-from-right ${alert.type === "success" ? "bg-emerald-500" : "bg-rose-500"} text-white`}>
-                        <div className="flex items-center gap-3">
-                            <ShieldCheck size={18} />
-                            <p className="text-xs font-bold">{alert.message}</p>
-                        </div>
-                    </div>
-                )}
 
                 {/* Header Section */}
                 <div className="text-center mb-6">

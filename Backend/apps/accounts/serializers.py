@@ -143,6 +143,19 @@ class RegisterSerializer(serializers.ModelSerializer):
 class GenerateOtpSerializer(serializers.Serializer):
     email = serializers.CharField()
 
+    def validate_email(self, value):
+        # Check Main User Table (for Password Reset)
+        is_registered = User.objects.filter(email=value).exists()
+        
+        # Check Temp Table (for Registration Resend)
+        is_pending = TempUser.objects.filter(email=value).exists()
+        
+        # If the email is in NEITHER table, then raise the error
+        if not (is_registered or is_pending):
+            raise serializers.ValidationError("Email not registered")
+            
+        return value
+
     # def validate_email(self, value):
     #     user_exists = User.objects.filter(email=value).exists()
     #     temp_user_exists = TempUser.objects.filter(email=value).exists()

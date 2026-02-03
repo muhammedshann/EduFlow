@@ -201,53 +201,49 @@ class GenerateOtpView(APIView):
     def post(self, request):
         serializer = GenerateOtpSerializer(data=request.data)
         if not serializer.is_valid():
+            # This will now only return 400 if the email is truly unknown
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         email = serializer.validated_data['email']
         otp = str(random.randint(100000, 999999))
         now = timezone.now()
 
-        try:
-            # 1. Check if they are an existing User (Password Reset Case)
-            user = User.objects.filter(email=email).first()
+        # 1. Check User Table First (Priority: Password Reset)
+        user = User.objects.filter(email=email).first()
+        
+        if user:
+            # Logic for Password Reset
+            TempUser.objects.update_or_create(
+                email=email,
+                defaults={
+                    'username': user.username,
+                    'otp': otp,
+                    'otp_created_at': now
+                }
+            )
+            subject = 'Your Password Reset OTP'
+
+        else:
+            # 2. Check TempUser Table (Priority: Registration Resend)
+            temp_user = TempUser.objects.filter(email=email).first()
             
-            if user:
-                # Password Reset: Update or create a TempUser record just for the OTP
-                temp_user, _ = TempUser.objects.update_or_create(
-                    email=email,
-                    defaults={
-                        'username': user.username,
-                        'otp': otp,
-                        'otp_created_at': now
-                    }
-                )
-                subject = 'Your Password Reset OTP'
-            
+            if temp_user:
+                # Logic for Registration Resend
+                temp_user.otp = otp
+                temp_user.otp_created_at = now
+                temp_user.save()
+                subject = 'Your Registration Verification OTP'
             else:
-                # 2. If not a User, check if they are mid-registration
-                temp_user = TempUser.objects.filter(email=email).first()
-                
-                if temp_user:
-                    # Registration Resend: Just update the existing record
-                    temp_user.otp = otp
-                    temp_user.otp_created_at = now
-                    temp_user.save()
-                    subject = 'Your Registration Verification OTP'
-                else:
-                    # 3. Email doesn't exist anywhere
-                    return Response({"message": "Email not found in our records."}, status=404)
+                # Should not happen because Serializer already checked, but good for safety
+                return Response({"message": "Email not found."}, status=404)
 
-            # --- Send the Email ---
+        try:
             sent_otp_email(email, otp, subject)
-            
             return Response({
-                "email": email,
                 "message": "OTP sent successfully",
-                "created_at": now.isoformat()
             }, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response({"message": "Internal server error"}, status=500)
+        except Exception:
+            return Response({"message": "Failed to send email."}, status=503)
 
         # return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 

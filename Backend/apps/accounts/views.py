@@ -195,7 +195,7 @@ class RegisterView(APIView):
                 "created_time": temp_user.otp_created_at
             }, status=status.HTTP_201_CREATED)
 
-        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class GenerateOtpView(APIView):
     def post(self, request):

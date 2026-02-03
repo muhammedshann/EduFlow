@@ -15,15 +15,24 @@ export const SignUp = createAsyncThunk(
             return response.data;
         } catch (err) {
             let errorMessage = 'Something went wrong';
+            // Access the actual data returned by Django
             const data = err.response?.data;
 
-            if (data?.errors) {
-                // Handles Django-style { "email": ["error"], "username": ["error"] }
-                errorMessage = Object.entries(data.errors)
-                    .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            // 1. Check if it's in your custom {"errors": {...}} format 
+            // 2. Or standard DRF format {...}
+            const errorSource = data?.errors || data;
+
+            if (errorSource && typeof errorSource === 'object') {
+                // This converts { email: ["exists"], username: ["short"] } 
+                // into "email: exists | username: short"
+                errorMessage = Object.entries(errorSource)
+                    .map(([field, messages]) => {
+                        const msg = Array.isArray(messages) ? messages.join(', ') : messages;
+                        return `${field}: ${msg}`;
+                    })
                     .join(' | ');
-            } else if (data?.message || data?.detail) {
-                errorMessage = data.message || data.detail;
+            } else if (typeof data === 'string') {
+                errorMessage = data;
             } else if (err.message) {
                 errorMessage = err.message;
             }

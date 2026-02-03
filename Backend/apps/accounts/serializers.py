@@ -144,8 +144,11 @@ class GenerateOtpSerializer(serializers.Serializer):
     email = serializers.CharField()
 
     def validate_email(self, value):
-        if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Email not registered")
+        user_exists = User.objects.filter(email=value).exists()
+        temp_user_exists = TempUser.objects.filter(email=value).exists()
+        
+        if not (user_exists or temp_user_exists):
+            raise serializers.ValidationError("No account or registration found for this email.")
         return value
 
 class VerifyAccountSerializer(serializers.Serializer):

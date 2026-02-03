@@ -202,29 +202,39 @@ class GenerateOtpView(APIView):
         serializer = GenerateOtpSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
-            user = User.objects.get(email=email)
             
+            # Logic: Try to find the username from either table
+            user = User.objects.filter(email=email).first()
+            temp_user_record = TempUser.objects.filter(email=email).first()
+
+            # Determine the username (prioritize real User, fallback to TempUser)
+            username = user.username if user else (temp_user_record.username if temp_user_record else None)
+
+            if not username:
+                return Response({"message": "User context not found."}, status=404)
+
             otp = str(random.randint(100000, 999999))
 
+            # Update or create the temp record with the new OTP
             temp_user, created = TempUser.objects.update_or_create(
                 email=email,
                 defaults={
-                    'username': user.username,
+                    'username': username,
                     'otp': otp,
                     'otp_created_at': timezone.now()
                 }
             )
 
             try:
-                sent_otp_email(email, otp, 'Your OTP Code for EduFlow Password Reset.')
+                sent_otp_email(email, otp, 'Your OTP Code for EduFlow.')
                 return Response({
                     "email": email, 
                     "message": "OTP sent successfully",
                     "created_at": temp_user.otp_created_at.isoformat()
                 }, status=status.HTTP_200_OK)
-            except Exception:
+            except Exception as e:
                 return Response(
-                    {"message": "Failed to send email. Please try again later."}, 
+                    {"message": "Failed to send email."}, 
                     status=status.HTTP_503_SERVICE_UNAVAILABLE
                 )
 

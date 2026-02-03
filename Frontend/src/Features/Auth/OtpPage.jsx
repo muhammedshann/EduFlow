@@ -75,13 +75,21 @@ function OtpVerifyPage() {
         try {
             const result = await dispatch(generateOtp(email)).unwrap();
             const createdTime = result.created_at;
-            const params = new URLSearchParams({
-                type: type || 'reset',
-                email: email,
-                created: createdTime
-            }).toString();
+            // const params = new URLSearchParams({
+            //     type: type || 'reset',
+            //     email: email,
+            //     created: createdTime
+            // }).toString();
+            navigate('/otp/', { 
+                state: { 
+                    email: email, 
+                    created: createdTime, 
+                    type: 'reset' 
+                },
+                replace: true
+            });
 
-            navigate(`/otp/?${params}`, { replace: true });
+            // navigate(`/otp/?${params}`, { replace: true });
         } catch (err) {
             console.log(err);
         }

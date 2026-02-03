@@ -75,6 +75,7 @@ export const Login = createAsyncThunk(
         }
     }
 );
+
 export const generateOtp = createAsyncThunk(
     'auth/generate_otp',
     async (email, {dispatch, rejectWithValue }) => {

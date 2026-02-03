@@ -207,7 +207,7 @@ export const deleteUserAccount = createAsyncThunk(
         console.log("Attempting to delete user..."); // Check if this shows in console
         try {
             // Ensure this matches your path('delete-user/', ...) in urls.py
-            const response = await api.post('accounts/delete-user/'); 
+            const response = await api.delete('accounts/delete-user/'); 
             
             dispatch(showNotification({
                 message: "Account Deleted Successfully",

@@ -19,7 +19,7 @@ export const AdminHanldeGroupDelete = createAsyncThunk(
     'admin/AdminHanldeGroupDelete',
     async(id,{rejectWithValue}) => {
         try {
-            const response = await api.post('/admin/groups/delete/', id);
+            const response = await api.delete('/admin/groups/delete/', id);
             console.log(response.data);
             return response.data
         } catch(err) {

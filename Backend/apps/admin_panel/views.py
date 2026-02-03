@@ -171,7 +171,7 @@ class AdminGroupView(APIView):
 class AdminGroupDeleteView(APIView):
     permission_classes = [IsAdminUser]
 
-    def post(self, request):
+    def delete(self, request):
         group_id = request.data.get("id")
 
         if not group_id:

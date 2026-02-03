@@ -308,7 +308,7 @@ class LoginView(APIView):
 class DeleteUser(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def delete(self, request):
         refresh_token = request.COOKIES.get('refresh')
 
         if not refresh_token:

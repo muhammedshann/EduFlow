@@ -26,7 +26,6 @@ class LiveTranscriptionConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         if not bytes_data:
             return
-        print(f"Received {len(bytes_data)} bytes")
 
         self.audio_buffer.extend(bytes_data)
         self.chunk_counter += 1
@@ -42,23 +41,26 @@ class LiveTranscriptionConsumer(AsyncWebsocketConsumer):
         await self.transcribe_snapshot()
 
     async def transcribe_snapshot(self):
-        if len(self.audio_buffer) < 120_000:
+        if len(self.audio_buffer) < 80_000:
             return
 
         loop = asyncio.get_event_loop()
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as f:
-            f.write(bytes(self.audio_buffer))
+            f.write(self.audio_buffer)
             path = f.name
 
         try:
-            text = await asyncio.get_event_loop().run_in_executor(None, self.run_whisper, path)
+            text = await loop.run_in_executor(None, self.run_whisper, path)
+
             if text:
-                await self.send(json.dumps({"text": text}))
+                # 🔥 SEND FULL SNAPSHOT (NOT DIFF)
+                await self.send(json.dumps({
+                    "text": text
+                }))
 
         finally:
-            if os.path.exists(path):
-                os.remove(path)
+            os.remove(path)
 
     def run_whisper(self, path):
         try:

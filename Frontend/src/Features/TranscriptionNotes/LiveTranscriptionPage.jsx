@@ -50,6 +50,7 @@ export default function LiveTranscriptionPage() {
 
     useEffect(() => {
         const socket = new WebSocket("wss://api.fresheasy.online/ws/live-transcribe/");
+        socket.binaryType = "arraybuffer";
         socketRef.current = socket;
 
         socket.onmessage = (event) => {

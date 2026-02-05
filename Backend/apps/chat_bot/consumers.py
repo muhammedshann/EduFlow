@@ -35,8 +35,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
 
         prompt = f"Note: {note_title}\nContext: {context}\nQuestion: {message}" if context else message
+        print("promt from chat bot message user: ",prompt)
         
         reply = await sync_to_async(call_gemini, thread_sensitive=False)(prompt)
+        print('reply from ai :', reply)
 
         if "❌" not in reply and "⚠️" not in reply:
             self.chatbot_obj = await self.finalise_transaction(check_result['mode'])

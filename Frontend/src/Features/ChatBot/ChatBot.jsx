@@ -72,6 +72,8 @@ export default function ChatPage() {
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
             setIsLoading(false);
+            console.log(data, " : chat bot mesasage");
+            
 
             if (data.type === "limit_reached") {
                 setShowLimitModal(true);
@@ -79,7 +81,7 @@ export default function ChatPage() {
                 return;
             }
 
-            const incomingText = data.reply || "";
+            const incomingText = data.reply?.message || "";
             setMessages((prev) => {
                 const last = prev[prev.length - 1];
                 if (last && last.role === "bot") {

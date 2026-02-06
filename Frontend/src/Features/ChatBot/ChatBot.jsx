@@ -81,7 +81,8 @@ export default function ChatPage() {
                 return;
             }
 
-            const incomingText = data.reply?.message || "";
+            const incomingText = data.reply || data.message || "";
+
             setMessages((prev) => {
                 const last = prev[prev.length - 1];
                 if (last && last.role === "bot") {

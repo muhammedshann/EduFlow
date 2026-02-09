@@ -34,7 +34,3 @@ def call_gemini(prompt: str) -> str:
 
     except Exception:
         return "❌ Something went wrong. Please try again later."
-
-    # response.raise_for_status()
-
-    # return response.json()["candidates"][0]["content"]["parts"][0]["text"]

@@ -32,7 +32,7 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = ['api.fresheasy.online',
     "www.fresheasy.online",
     "fresheasy.online",
-    '18.215.156.220',
+    '54.81.80.38',
     'localhost', '127.0.0.1'
     ]
 

@@ -9,7 +9,7 @@ import { useSidebar } from "../Context/SideBarContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FetchCredit } from "../Redux/SubscriptionSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { motion, LayoutGroup } from "framer-motion";
+import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 
 export default function Sidebar() {
     const location = useLocation();
@@ -37,9 +37,9 @@ export default function Sidebar() {
 
     return (
         <>
-            {/* --- SLIDING LIQUID MOBILE DOCK --- */}
-            <nav className="lg:hidden fixed bottom-6 left-4 right-4 z-[100] bg-white/90 dark:bg-slate-950/90 backdrop-blur-3xl border border-white/20 dark:border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[2.5rem] px-3 py-3 overflow-hidden">
-                <div className="flex items-center overflow-x-auto no-scrollbar gap-2 relative">
+            {/* --- ULTIMATE MOBILE DOCK --- */}
+            <nav className="lg:hidden fixed bottom-6 left-5 right-5 z-[100] bg-white/70 dark:bg-slate-950/80 backdrop-blur-2xl border border-white/20 dark:border-slate-800 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] rounded-[3rem] px-2 py-3 overflow-hidden">
+                <div className="flex items-center overflow-x-auto no-scrollbar gap-2 relative px-2">
                     <LayoutGroup>
                         {navItems.map((item) => {
                             const Icon = item.icon;
@@ -49,32 +49,31 @@ export default function Sidebar() {
                                 <motion.button
                                     key={item.label}
                                     layout
+                                    whileTap={{ scale: 0.9 }}
                                     onClick={() => handleNavClick(item.path)}
-                                    className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-full transition-colors relative whitespace-nowrap
-                                    ${isActive ? "text-white" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"}`}
+                                    className={`flex items-center justify-center gap-3 py-3 px-5 rounded-full relative whitespace-nowrap transition-all
+                                    ${isActive ? "text-white" : "text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"}`}
                                 >
-                                    {/* Liquid Background Slide */}
                                     {isActive && (
                                         <motion.div
-                                            layoutId="activePill"
-                                            className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-full z-0 shadow-lg shadow-indigo-500/30"
-                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                            layoutId="activePillMobile"
+                                            className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700 rounded-full z-0 shadow-[0_10px_20px_-5px_rgba(79,70,229,0.5)]"
+                                            transition={{ type: "spring", stiffness: 350, damping: 30 }}
                                         />
                                     )}
 
-                                    <div className="relative z-10">
+                                    <div className="relative z-10 flex items-center gap-2">
                                         <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                                        {isActive && (
+                                            <motion.span
+                                                initial={{ opacity: 0, x: -5 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                className="text-xs font-black tracking-tight"
+                                            >
+                                                {item.label}
+                                            </motion.span>
+                                        )}
                                     </div>
-
-                                    {isActive && (
-                                        <motion.span
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            className="text-xs font-bold relative z-10"
-                                        >
-                                            {item.label}
-                                        </motion.span>
-                                    )}
                                 </motion.button>
                             );
                         })}
@@ -82,35 +81,44 @@ export default function Sidebar() {
                 </div>
             </nav>
 
-            {/* --- PREMIUM DESKTOP SIDEBAR --- */}
+            {/* --- CINEMATIC DESKTOP SIDEBAR --- */}
             <aside
-                className={`hidden lg:flex fixed left-0 top-0 flex-col h-full bg-white dark:bg-[#080b14] transition-all duration-500 ease-in-out z-[50] border-r border-slate-100 dark:border-slate-800/60
-                ${collapsed ? "w-24" : "w-72"}`}
+                className={`hidden lg:flex fixed left-0 top-0 flex-col h-full bg-white dark:bg-[#07090f] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] z-[50] border-r border-slate-100 dark:border-slate-900/50
+                ${collapsed ? "w-24" : "w-80"}`}
             >
-                <button
+                {/* Refined Trigger */}
+                <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={toggleSidebar}
-                    className="absolute -right-3 top-10 z-50 w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-indigo-600 shadow-xl transition-transform hover:scale-110"
+                    className="absolute -right-4 top-12 z-50 w-8 h-8 bg-indigo-600 dark:bg-indigo-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-indigo-500/40 cursor-pointer"
                 >
-                    {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-                </button>
+                    {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+                </motion.button>
 
-                <div className="h-24 flex items-center px-8 shrink-0">
-                    <div className={`flex items-center gap-4 ${collapsed ? "mx-auto" : ""}`}>
-                        <div className="w-11 h-11 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                {/* Brand Header */}
+                <div className="h-32 flex items-center px-10 shrink-0">
+                    <div className={`flex items-center gap-5 ${collapsed ? "mx-auto" : ""}`}>
+                        <motion.div 
+                            animate={{ rotate: [0, 10, -10, 0] }}
+                            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                            className="w-12 h-12 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-2xl flex items-center justify-center shadow-[0_15px_30px_-5px_rgba(79,70,229,0.4)]"
+                        >
                             <Sparkles className="w-6 h-6 text-white" />
-                        </div>
+                        </motion.div>
                         {!collapsed && (
-                            <div className="flex flex-col">
-                                <span className="text-slate-800 dark:text-slate-100 font-black text-xl tracking-tight leading-none">
+                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col">
+                                <span className="text-slate-900 dark:text-slate-50 font-black text-2xl tracking-tighter leading-none">
                                     EduFlow<span className="text-indigo-600">.</span>
                                 </span>
-                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-[0.2em] mt-1">Admin</span>
-                            </div>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-1.5 opacity-60">Control Center</span>
+                            </motion.div>
                         )}
                     </div>
                 </div>
 
-                <nav className="flex-1 px-5 py-4 space-y-2 overflow-y-auto no-scrollbar">
+                {/* Navigation */}
+                <nav className="flex-1 px-6 py-4 space-y-3 overflow-y-auto no-scrollbar">
                     <LayoutGroup>
                         {navItems.map((item) => {
                             const Icon = item.icon;
@@ -120,54 +128,78 @@ export default function Sidebar() {
                                 <div
                                     key={item.label}
                                     onClick={() => handleNavClick(item.path)}
-                                    className={`group flex items-center w-full px-4 py-3.5 rounded-2xl transition-all duration-300 relative cursor-pointer
-                                    ${isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}
+                                    className={`group flex items-center w-full px-5 py-4 rounded-[1.25rem] transition-all duration-500 relative cursor-pointer
+                                    ${isActive ? "text-indigo-600 dark:text-indigo-300" : "text-slate-500 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-slate-200"}`}
                                 >
                                     {isActive && (
                                         <motion.div
                                             layoutId="desktopActive"
-                                            className="absolute inset-0 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl z-0"
-                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                            className="absolute inset-0 bg-indigo-50/50 dark:bg-indigo-500/10 rounded-[1.25rem] z-0"
+                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                         />
                                     )}
-                                    {isActive && <span className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-indigo-600 rounded-r-full z-10" />}
                                     
-                                    <Icon className={`${collapsed ? 'mx-auto' : 'mr-4'} w-5 h-5 shrink-0 transition-transform group-hover:scale-110 relative z-10`} />
+                                    <Icon className={`${collapsed ? 'mx-auto' : 'mr-5'} w-5 h-5 shrink-0 transition-all group-hover:scale-125 group-hover:rotate-12 relative z-10`} />
 
-                                    {!collapsed && <span className="truncate text-sm font-semibold relative z-10">{item.label}</span>}
+                                    {!collapsed && <span className="truncate text-sm font-bold tracking-tight relative z-10">{item.label}</span>}
+
+                                    {collapsed && (
+                                        <div className="fixed left-[100px] px-4 py-2 bg-slate-900 dark:bg-indigo-600 text-white text-[11px] font-black rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300 z-[9999] shadow-2xl uppercase tracking-widest">
+                                            {item.label}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
                     </LayoutGroup>
                 </nav>
 
-                <div className="p-6">
-                    <div className={`relative overflow-hidden transition-all duration-500 rounded-[2rem] border border-white/20 dark:border-slate-800 shadow-sm
-                        ${collapsed ? "p-3 bg-slate-50 dark:bg-slate-800/50" : "p-5 bg-gradient-to-br from-indigo-500 to-violet-600"}`}>
+                {/* Boutique Credit Card */}
+                <div className="p-8">
+                    <motion.div 
+                        whileHover={{ scale: 1.02 }}
+                        className={`relative overflow-hidden transition-all duration-700 rounded-[2.5rem]
+                        ${collapsed ? "p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800" : "p-7 bg-indigo-600 shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)]"}`}>
+                        
                         {!collapsed ? (
                             <div className="relative z-10 text-white">
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="text-[10px] uppercase tracking-widest font-bold opacity-80">Credits</span>
+                                <div className="flex items-center justify-between mb-5">
+                                    <span className="text-[10px] uppercase tracking-[0.2em] font-black opacity-60">Your Balance</span>
                                     <Wallet className="w-4 h-4 opacity-80" />
                                 </div>
-                                <div className="flex items-end gap-2">
-                                    <span className="text-3xl font-black">{userCredits?.remaining_credits || 0}</span>
-                                    <span className="text-[10px] font-bold mb-1.5 opacity-80">PCS</span>
+                                <div className="flex items-baseline gap-2">
+                                    <motion.span 
+                                        key={userCredits?.remaining_credits}
+                                        initial={{ y: 10, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        className="text-4xl font-black tracking-tighter"
+                                    >
+                                        {userCredits?.remaining_credits || 0}
+                                    </motion.span>
+                                    <span className="text-xs font-bold opacity-60">TOKENS</span>
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center gap-1">
+                            <div className="flex flex-col items-center gap-2">
                                  <Wallet className="w-5 h-5 text-indigo-500" />
-                                 <span className="text-[10px] font-black text-slate-800 dark:text-slate-100">{userCredits?.remaining_credits || 0}</span>
+                                 <span className="text-[10px] font-black text-slate-900 dark:text-slate-100">{userCredits?.remaining_credits || 0}</span>
                             </div>
                         )}
-                    </div>
+
+                        {/* Glass Decor */}
+                        {!collapsed && (
+                            <>
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-400 rounded-full blur-[60px] opacity-50" />
+                                <div className="absolute bottom-0 left-0 w-24 h-24 bg-violet-400 rounded-full blur-[50px] opacity-40" />
+                            </>
+                        )}
+                    </motion.div>
 
                     <button
                         onClick={() => logout()}
-                        className="mt-6 flex items-center w-full px-5 py-3.5 text-slate-400 hover:text-red-500 transition-all rounded-2xl hover:bg-red-50 dark:hover:bg-red-900/10 font-bold text-xs uppercase tracking-widest"
+                        className="mt-10 flex items-center w-full px-6 py-4 text-slate-400 hover:text-red-500 transition-all rounded-[1.5rem] hover:bg-red-50 dark:hover:bg-red-500/10 font-black text-xs uppercase tracking-[0.2em]"
                     >
-                        <LogOut className={`w-5 h-5 ${collapsed ? 'mx-auto' : 'mr-4'}`} />
+                        <LogOut className={`w-5 h-5 ${collapsed ? 'mx-auto' : 'mr-5'}`} />
                         {!collapsed && <span>Sign Out</span>}
                     </button>
                 </div>

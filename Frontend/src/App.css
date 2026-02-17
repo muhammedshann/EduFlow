@@ -31,3 +31,37 @@
     opacity: 0;
   }
 }
+/* 
+.pb-safe-area {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Hide scrollbar for the mobile nav scroll 
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+} */
+
+/* Custom class to hide scrollbars for horizontal nav */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Handle iPhone safe areas (notches/home indicators) */
+.pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+}
+
+/* Ensure the main content doesn't get hidden behind the mobile nav */
+@media (max-width: 1023px) {
+    main, .main-content {
+        padding-bottom: 90px;
+    }
+}

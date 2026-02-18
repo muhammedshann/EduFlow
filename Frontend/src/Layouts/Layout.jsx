@@ -7,12 +7,11 @@ export default function Layout() {
   const { userCredits } = useSelector((state) => state.subscriptions);
 
   return (
-    // FIXED: applied standard cinematic gradient
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300">
       <Sidebar />
       
-      <main className="flex-1 flex flex-col w-full">
-        {/* Transparent header with glass blur */}
+      <main className="flex-1 flex flex-col w-full min-h-screen">
+        {/* Header */}
         <header className="flex items-center justify-between px-6 py-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 transition-colors duration-300">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -31,8 +30,8 @@ export default function Layout() {
           </div>
         </header>
 
-        {/* Content Wrapper - Removed background color so gradient shows through */}
-        <div className="flex-1 w-full flex flex-col pb-24">
+        {/* FIXED: Removed all bottom padding/margin for a flush fit */}
+        <div className="flex-1 w-full flex flex-col">
           <Outlet />
         </div>
       </main>

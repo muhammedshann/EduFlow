@@ -31,29 +31,45 @@
     opacity: 0;
   }
 }
-/* Glassmorphism Depth */
-.backdrop-blur-3xl {
-  backdrop-filter: blur(50px) saturate(200%);
-  -webkit-backdrop-filter: blur(50px) saturate(200%);
+/* --- Global Sidebar Transitions --- */
+aside {
+  will-change: width, transform;
+  backface-visibility: hidden;
 }
 
-/* Hide scrollbars for the mobile navigation rail */
+/* --- Mobile Dock Styling (The "Expensive" Look) --- */
 .no-scrollbar::-webkit-scrollbar {
-  display: none;
+  display: none; /* Hide scrollbar for Chrome/Safari */
 }
+
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE/Edge */
-  scrollbar-width: none;    /* Firefox */
+  -ms-overflow-style: none;  /* IE/Edge */
+  scrollbar-width: none;     /* Firefox */
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
 }
 
-/* Safe area padding for iPhones with home indicators */
+/* Handle iPhone safe areas for the bottom nav */
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
 }
 
-/* Prevent layout jump when switching between mobile and desktop */
+/* Glassmorphism Refinement */
+.backdrop-blur-2xl {
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+}
+
+/* --- Layout Adjustments --- */
+/* Prevent content from being hidden behind the mobile nav */
 @media (max-width: 1023px) {
-  body {
+  main, .page-content {
     padding-bottom: 120px;
+  }
+}
+
+/* Ensure Desktop sidebar doesn't overlap on very small laptops */
+@media (min-width: 1024px) and (max-width: 1280px) {
+  .lg-w-72 {
+    width: 260px;
   }
 }

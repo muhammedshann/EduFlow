@@ -121,11 +121,11 @@ export default function ChatPage() {
     };
 
     return (
-        /* FIXED: Increased pb-28 to provide a larger "cap" at the bottom for the dock */
-        <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden pb-48">
+        /* FIXED: Added pb-32. This container now handles the bottom spacing. */
+        <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden pb-32">
             
             {/* Chat Body Container */}
-            <div className="flex-1 overflow-y-auto px-4 md:px-8 pt-6 pb-40 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 pt-6 scrollbar-hide">
                 <div className="w-full max-w-4xl mx-auto">
                     
                     {/* Top Floating Controls */}
@@ -150,16 +150,16 @@ export default function ChatPage() {
                         )}
                     </div>
 
-                    {/* Messages Area */}
+                    {/* Messages */}
                     <div className="space-y-6 md:space-y-8">
                         {messages.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
                                 <div className="w-16 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl flex items-center justify-center shadow-xl border border-white/20 dark:border-slate-800 mb-6">
                                     <Zap className="text-indigo-600 dark:text-indigo-400 w-8 h-8" />
                                 </div>
-                                <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2">How can I help you?</h2>
+                                <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">How can I help you?</h2>
                                 <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto leading-relaxed font-medium">
-                                    Daily message limit applies to assist your learning journey.
+                                    Ask anything to assist your learning journey.
                                 </p>
                             </div>
                         )}
@@ -194,11 +194,11 @@ export default function ChatPage() {
                 </div>
             </div>
 
-            {/* Input Form */}
-            <div className="absolute bottom-6 md:bottom-10 left-0 right-0 px-4 md:px-8 z-20 pointer-events-none">
+            {/* FIXED: Input Form is now RELATIVE and inside the padding zone */}
+            <div className="relative px-4 md:px-8 z-20 mt-4">
                 <form 
                     onSubmit={sendMessage} 
-                    className="max-w-3xl mx-auto flex items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/20 dark:border-slate-800 rounded-[28px] p-2 shadow-2xl pointer-events-auto transition-all focus-within:border-indigo-400"
+                    className="max-w-3xl mx-auto flex items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/20 dark:border-slate-800 rounded-[28px] p-2 shadow-2xl transition-all focus-within:border-indigo-400"
                 >
                     <input
                         type="text"

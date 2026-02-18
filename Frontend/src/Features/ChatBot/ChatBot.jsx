@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Send, Loader2, Zap, X, Sparkles, Info } from "lucide-react";
+import { Send, Loader2, Zap, X, Sparkles, Info, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { FetchDetailNote } from "../../Redux/LiveTranscriptionSlice";
@@ -25,10 +25,6 @@ export default function ChatPage() {
 
     const socket = useRef(null);
     const messagesEndRef = useRef(null);
-
-    // Cinematic Theme Constants
-    const GRADIENT_BG = "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20";
-    const GLASS_CARD = "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 shadow-xl";
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -76,8 +72,6 @@ export default function ChatPage() {
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
             setIsLoading(false);
-            console.log(data, " : chat bot mesasage");
-            
 
             if (data.type === "limit_reached") {
                 setShowLimitModal(true);
@@ -127,92 +121,85 @@ export default function ChatPage() {
     };
 
     return (
-        // FIXED: Cinematic Gradient Background
-        <div className={`flex flex-col h-screen ${GRADIENT_BG} transition-colors duration-300 relative overflow-hidden font-sans`}>
+        /* FIXED: Cinematic Gradient applied directly to the main container */
+        <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden">
             
-            {/* Header - Glassmorphism Applied */}
-            <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between flex-shrink-0 z-10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border-b border-white/20 dark:border-slate-800">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
-                        <Sparkles className="text-white w-5 h-5" />
-                    </div>
-                    <div>
-                        <h1 className="text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-none">AI Assistant</h1>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">EduFlow AI</p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2 md:gap-4">
-                    {noteTitle && (
-                        <div className={`flex items-center gap-2 px-4 py-2 ${GLASS_CARD} rounded-xl text-xs font-bold text-indigo-600 dark:text-indigo-400 shadow-sm`}>
-                            <Info size={14} className="hidden sm:block" />
-                            <span className="max-w-[100px] md:max-w-[200px] truncate">{noteTitle}</span>
-                            <button onClick={() => navigate('/chat-bot/')} className="hover:text-rose-500 transition-colors">
-                                <X size={14} />
-                            </button>
-                        </div>
-                    )}
-                    {messages.length > 0 && (
-                        <button 
-                            onClick={() => setShowClearConfirm(true)} 
-                            className="text-[10px] md:text-xs font-black text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 uppercase tracking-widest transition-colors"
-                        >
-                            Clear
-                        </button>
-                    )}
-                </div>
-            </header>
-
-            {/* Chat Body */}
-            <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-40 scrollbar-hide">
-                <div className="w-full max-w-4xl mx-auto space-y-6 md:space-y-8 mt-6">
+            {/* Chat Body Container */}
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 pt-6 pb-40 scrollbar-hide">
+                <div className="w-full max-w-4xl mx-auto">
                     
+                    {/* Top Floating Controls (Replacing Header) */}
+                    <div className="flex items-center justify-between mb-8 sticky top-0 z-20">
+                        {noteTitle ? (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-indigo-100 dark:border-slate-800 rounded-full text-[11px] font-bold text-indigo-600 dark:text-indigo-400 shadow-sm transition-all hover:border-indigo-200">
+                                <Info size={14} className="text-indigo-500" />
+                                <span className="max-w-[150px] md:max-w-[300px] truncate uppercase tracking-wider">Context: {noteTitle}</span>
+                                <button onClick={() => navigate('/chat-bot/')} className="ml-1 p-0.5 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-full transition-colors">
+                                    <X size={12} />
+                                </button>
+                            </div>
+                        ) : <div />}
+
+                        {messages.length > 0 && (
+                            <button 
+                                onClick={() => setShowClearConfirm(true)} 
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-full text-[10px] font-black text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all uppercase tracking-widest"
+                            >
+                                <Trash2 size={12} /> Clear
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Welcome View */}
                     {messages.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                            <div className={`w-20 h-20 ${GLASS_CARD} rounded-[2rem] flex items-center justify-center mb-6`}>
-                                <Zap className="text-indigo-600 dark:text-indigo-400 w-10 h-10" />
+                            <div className="w-16 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl flex items-center justify-center shadow-xl border border-white/20 dark:border-slate-800 mb-6">
+                                <Zap className="text-indigo-600 dark:text-indigo-400 w-8 h-8" />
                             </div>
-                            <h2 className="text-3xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">How can I help you?</h2>
+                            <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2">How can I help you?</h2>
                             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto leading-relaxed font-medium">
-                                You have <span className="text-indigo-600 dark:text-indigo-400 font-bold">5 free daily messages</span> to assist with your learning journey.
+                                You have <span className="text-indigo-600 dark:text-indigo-400 font-black">5 free daily messages</span> to assist with your learning journey.
                             </p>
                         </div>
                     )}
 
-                    {messages.map((m, i) => (
-                        <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} items-end gap-3`}>
-                            <div className={`px-6 py-4 rounded-[2rem] text-[15px] leading-relaxed shadow-sm transition-all duration-300 ${
-                                m.role === "user" 
-                                ? "bg-indigo-600 text-white border border-indigo-500 rounded-br-none shadow-lg shadow-indigo-500/20" 
-                                : `${GLASS_CARD} text-slate-700 dark:text-slate-200 rounded-bl-none`
-                            } max-w-[90%] md:max-w-[80%] min-w-[50px]`}>
-                                <div className={`prose prose-sm max-w-none ${m.role === "user" ? "prose-invert text-white" : "dark:text-slate-200 dark:prose-invert prose-indigo"}`}>
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                        {m.text}
-                                    </ReactMarkdown>
+                    {/* Messages */}
+                    <div className="space-y-6 md:space-y-8">
+                        {messages.map((m, i) => (
+                            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} items-end gap-3`}>
+                                <div className={`px-5 md:px-6 py-3 md:py-4 rounded-3xl text-[15px] leading-relaxed shadow-sm border transition-all duration-300 ${
+                                    m.role === "user" 
+                                    ? "bg-indigo-600 text-white border-indigo-500 rounded-br-none shadow-lg shadow-indigo-500/10" 
+                                    : "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl text-slate-700 dark:text-slate-200 border-white/20 dark:border-slate-800 rounded-bl-none"
+                                } max-w-[90%] md:max-w-[80%] min-w-[50px]`}>
+                                    <div className={`prose prose-sm max-w-none ${m.role === "user" ? "prose-invert text-white" : "dark:text-slate-200 dark:prose-invert prose-indigo"}`}>
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {m.text}
+                                        </ReactMarkdown>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                    
-                    {isLoading && (
-                        <div className="flex justify-start animate-in fade-in duration-300">
-                            <div className={`px-6 py-5 ${GLASS_CARD} rounded-[2rem] rounded-bl-none shadow-sm flex gap-1.5 items-center`}>
-                                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></div>
-                                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                        ))}
+                        
+                        {isLoading && (
+                            <div className="flex justify-start animate-in fade-in duration-300">
+                                <div className="px-6 py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 rounded-3xl rounded-bl-none shadow-sm flex gap-1.5 items-center">
+                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></div>
+                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                     <div ref={messagesEndRef} />
                 </div>
             </div>
 
-            {/* Floating Input Box - Glassmorphism Applied */}
+            {/* Floating Input Box */}
             <div className="absolute bottom-6 md:bottom-10 left-0 right-0 px-4 md:px-8 z-20 pointer-events-none">
                 <form 
                     onSubmit={sendMessage} 
-                    className={`max-w-3xl mx-auto flex items-center ${GLASS_CARD} rounded-[2.5rem] p-2 pointer-events-auto transition-all focus-within:border-indigo-400 dark:focus-within:border-indigo-500`}
+                    className="max-w-3xl mx-auto flex items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/20 dark:border-slate-800 rounded-[28px] p-2 shadow-2xl pointer-events-auto transition-all focus-within:border-indigo-400 dark:focus-within:border-indigo-500"
                 >
                     <input
                         type="text"
@@ -220,18 +207,19 @@ export default function ChatPage() {
                         onChange={(e) => setInput(e.target.value)}
                         placeholder={noteTitle ? "Ask about this note..." : "Ask EduFlow anything..."}
                         disabled={isLoading}
-                        className="flex-1 bg-transparent px-6 py-4 text-slate-800 dark:text-slate-100 text-sm md:text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium"
+                        className="flex-1 bg-transparent px-4 md:px-6 py-3 text-slate-800 dark:text-slate-100 text-sm md:text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium"
                     />
                     <button 
                         type="submit" 
                         disabled={isLoading || !input.trim()} 
-                        className="w-12 h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center transition-all disabled:opacity-30 shadow-lg shadow-indigo-500/20 active:scale-95"
+                        className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center transition-all disabled:opacity-30 shadow-lg shadow-indigo-500/20 active:scale-95"
                     >
-                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-0.5" />}
+                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4 md:w-5 md:h-5" />}
                     </button>
                 </form>
             </div>
 
+            {/* Confirmation & Modal UI kept as is */}
             <DeleteConfirmModal
                 isOpen={showClearConfirm}
                 onClose={() => setShowClearConfirm(false)}
@@ -242,18 +230,18 @@ export default function ChatPage() {
 
             {showLimitModal && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in zoom-in duration-300">
-                    <div className={`${GLASS_CARD} rounded-[3rem] p-10 w-full max-w-sm text-center`}>
-                        <div className="w-20 h-20 bg-indigo-50 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
-                            <Zap className="text-indigo-600 dark:text-indigo-400 fill-indigo-600 dark:fill-indigo-400" size={40} />
+                    <div className="bg-white dark:bg-slate-900 rounded-[40px] p-8 md:p-10 w-full max-w-sm text-center shadow-2xl border border-white/10">
+                        <div className="w-16 md:w-20 h-16 md:h-20 bg-indigo-50 dark:bg-indigo-950 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                            <Zap className="text-indigo-600 dark:text-indigo-400 fill-indigo-600 dark:fill-indigo-400" size={32} />
                         </div>
                         <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-3 tracking-tight">Daily Limit Hit</h2>
                         <p className="text-slate-500 dark:text-slate-400 font-medium mb-8 leading-relaxed text-sm">
                             You've used your 5 free messages. Upgrade to Pro for unlimited AI-powered learning!
                         </p>
-                        <button onClick={() => navigate('/subscription-plans/')} className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black shadow-lg shadow-indigo-500/20 active:scale-95 transition-all text-sm uppercase tracking-wider">
+                        <button onClick={() => navigate('/subscription-plans/')} className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95">
                             Upgrade Now
                         </button>
-                        <button onClick={() => setShowLimitModal(false)} className="mt-6 text-slate-400 dark:text-slate-500 text-xs font-bold hover:text-slate-600 transition-colors uppercase tracking-widest">Close</button>
+                        <button onClick={() => setShowLimitModal(false)} className="mt-4 text-slate-400 dark:text-slate-500 text-sm font-bold hover:text-slate-600 transition-colors">Close</button>
                     </div>
                 </div>
             )}

@@ -8,10 +8,6 @@ import api from "../../api/axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-// Cinematic Theme Constants
-const GRADIENT_BG = "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20";
-const GLASS_CARD = "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 shadow-xl";
-
 const formatTime = (date) => {
     if (!date) return "";
     const d = new Date(date);
@@ -37,8 +33,7 @@ const MessageBubble = ({ message }) => {
     
     return (
         <div className={`flex w-full px-2 md:px-4 mb-4 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'} items-end gap-2`}>
-            {/* Avatar */}
-            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border border-white/20 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
                 {message.profile_pic ? (
                     <img src={message.profile_pic} alt="profile" className="w-full h-full object-cover" />
                 ) : (
@@ -46,7 +41,6 @@ const MessageBubble = ({ message }) => {
                 )}
             </div>
 
-            {/* Content Group */}
             <div className={`flex flex-col max-w-[75%] md:max-w-[60%] ${isCurrentUser ? 'items-end' : 'items-start'}`}>
                 {!isCurrentUser && (
                     <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 ml-1 mb-1 uppercase tracking-tight">
@@ -54,10 +48,10 @@ const MessageBubble = ({ message }) => {
                     </span>
                 )}
 
-                <div className={`relative px-4 py-3 shadow-sm transition-all duration-300 ${
+                <div className={`relative px-4 py-2.5 shadow-sm transition-all duration-300 ${
                     isCurrentUser 
-                    ? 'bg-indigo-600 text-white rounded-2xl rounded-br-none shadow-indigo-500/20' 
-                    : `bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl text-slate-800 dark:text-slate-100 rounded-2xl rounded-bl-none border border-white/20 dark:border-slate-800`
+                    ? 'bg-indigo-600 text-white rounded-2xl rounded-br-none' 
+                    : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-700'
                 }`}>
                     {message.image && (
                         <div className="mb-2 overflow-hidden rounded-lg cursor-zoom-in">
@@ -71,7 +65,7 @@ const MessageBubble = ({ message }) => {
                         </div>
                     )}
 
-                    <div className={`text-[10px] mt-1 flex justify-end ${isCurrentUser ? 'text-indigo-100/70' : 'text-slate-400 font-medium'}`}>
+                    <div className={`text-[10px] mt-1 flex justify-end ${isCurrentUser ? 'text-indigo-100/70' : 'text-slate-400'}`}>
                         {formatTime(message.timestamp)}
                     </div>
                 </div>
@@ -86,30 +80,30 @@ const GroupInfoModal = ({ open, onClose, group, users_count }) => {
     const [copied, setCopied] = useState(false);
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-            <div className={`${GLASS_CARD} w-full max-w-md rounded-[2.5rem] p-8`} onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300" onClick={onClose}>
+            <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 border border-white dark:border-slate-800" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Group Details</h2>
+                    <h2 className="text-xl font-black text-slate-800 dark:text-white">Group Details</h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                         <X size={20} className="text-slate-400" />
                     </button>
                 </div>
 
                 <div className="flex flex-col items-center text-center mb-8">
-                    <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-indigo-500/20 mb-4">
-                        <Users size={32} />
+                    <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-indigo-200 dark:shadow-none mb-4">
+                        <Users size={40} />
                     </div>
-                    <h3 className="text-2xl font-black text-slate-800 dark:text-white leading-tight tracking-tight">{group.name}</h3>
+                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white leading-tight">{group.name}</h3>
                     <div className="flex items-center gap-2 mt-2">
                         {group.type === "public" ? <Globe size={14} className="text-emerald-500" /> : <Lock size={14} className="text-rose-500" />}
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{group.type} COMMUNITY</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{group.type} COMMUNITY</span>
                     </div>
                 </div>
 
                 <div className="space-y-6">
                     <div>
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">About</label>
-                        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50/50 dark:bg-slate-800/50 p-4 rounded-2xl border border-white/20 dark:border-slate-800">
+                        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                             {group.description || "No description provided."}
                         </p>
                     </div>
@@ -117,23 +111,23 @@ const GroupInfoModal = ({ open, onClose, group, users_count }) => {
                     <div>
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Share Link</label>
                         <button 
-                            className="w-full flex items-center gap-3 bg-indigo-50/50 dark:bg-indigo-900/10 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-all group"
+                            className="w-full flex items-center gap-3 bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all group"
                             onClick={() => {
                                 navigator.clipboard.writeText(`http://localhost:5173/groups/chat/${group.id}/`);
                                 setCopied(true);
                                 setTimeout(() => setCopied(false), 1500);
                             }}
                         >
-                            <Link size={18} className="text-indigo-600 dark:text-indigo-400" />
+                            <Link size={18} className="text-indigo-600" />
                             <span className="text-xs text-indigo-700 dark:text-indigo-300 font-bold truncate flex-1 text-left">Click to copy invite link</span>
                             {copied && <span className="text-[10px] text-emerald-600 font-bold animate-pulse">COPIED!</span>}
                         </button>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-800/50 rounded-2xl border border-white/20 dark:border-slate-800">
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
                         <span className="text-xs font-bold text-slate-500">Active Members</span>
                         <div className="flex items-center gap-2">
-                            <Users size={14} className="text-indigo-600 dark:text-indigo-400" />
+                            <Users size={14} className="text-indigo-600" />
                             <span className="text-sm font-black text-slate-800 dark:text-white">{users_count}</span>
                         </div>
                     </div>
@@ -247,22 +241,20 @@ export default function GroupChat() {
     };
 
     return (
-        // FIXED: Cinematic Gradient Background
-        <div className={`flex flex-col h-screen w-full ${GRADIENT_BG} transition-colors duration-300 relative overflow-hidden`}>
-            
-            {/* Header - Glassmorphism Applied */}
-            <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/20 dark:border-slate-800 w-full sticky top-0 z-40 shadow-sm">
+        // FIXED: Applied Cinematic Background Gradient
+        <div className="flex flex-col h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden">
+            <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 w-full sticky top-0 z-40">
                 <div className="flex items-center justify-between p-4 px-6">
                     <div className="flex items-center gap-4">
                         <button onClick={() => navigate('/groups/')} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all">
                             <ArrowLeft size={20} />
                         </button>
                         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setShowInfo(true)}>
-                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
                                 <Users size={18} />
                             </div>
                             <div>
-                                <h1 className="text-md font-black text-slate-800 dark:text-white leading-none tracking-tight">
+                                <h1 className="text-md font-black text-slate-800 dark:text-white leading-none">
                                     {groupName || "Loading..."}
                                 </h1>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
@@ -282,8 +274,8 @@ export default function GroupChat() {
                 </div>
             </header>
 
-            {/* Main Chat Area */}
-            <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-56 space-y-2 scrollbar-hide">
+            {/* FIXED: Small bottom padding added (pb-40) to prevent message box from covering content */}
+            <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-40 space-y-2 scrollbar-hide">
                 {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                         <Loader2 className="animate-spin text-indigo-600" size={32} />
@@ -295,15 +287,13 @@ export default function GroupChat() {
                         ))}
                     </>
                 )}
-                {/* Space for Floating Input */}
                 <div ref={messagesEndRef} className="h-24 w-full" />
             </main>
 
-            {/* Floating Message Box - Glassmorphism Applied */}
             <div className="absolute bottom-6 md:bottom-10 left-0 right-0 px-4 md:px-8 z-40 pointer-events-none">
-                <div className={`max-w-4xl mx-auto flex items-center ${GLASS_CARD} rounded-[2rem] p-2 pointer-events-auto transition-all focus-within:border-indigo-400`}>
+                <div className="max-w-4xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[28px] p-2 shadow-2xl pointer-events-auto transition-all focus-within:border-indigo-400">
                     <label className="cursor-pointer p-3 text-slate-400 hover:text-indigo-600 transition-colors">
-                        <Image className="w-6 h-6" />
+                        <Image className="w-5 h-5" />
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && handleImageUpload(e.target.files[0])} />
                     </label>
 
@@ -313,16 +303,16 @@ export default function GroupChat() {
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder={`Message ${groupName}...`}
-                        className="flex-1 bg-transparent px-3 py-3 text-slate-700 dark:text-slate-100 text-sm md:text-base outline-none placeholder:text-slate-400 font-medium"
+                        className="flex-1 bg-transparent px-2 py-3 text-slate-700 dark:text-slate-100 text-sm md:text-base outline-none placeholder:text-slate-400"
                     />
 
                     <button
                         onClick={handleSendMessage}
                         disabled={!inputValue.trim()}
-                        className={`p-4 rounded-2xl transition-all shadow-lg active:scale-95 ${
+                        className={`p-4 rounded-2xl transition-all shadow-lg ${
                             !inputValue.trim()
                             ? "bg-slate-100 text-slate-300 dark:bg-slate-800 dark:text-slate-600"
-                            : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-500/20"
+                            : "bg-indigo-600 text-white hover:bg-indigo-700"
                         }`}
                     >
                         <Send size={18} />
@@ -330,20 +320,19 @@ export default function GroupChat() {
                 </div>
             </div>
 
-            {/* Modals */}
             <GroupInfoModal open={showInfo} onClose={() => setShowInfo(false)} group={group} users_count={totalUsers} />
             
             {showLeaveConfirm && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-in fade-in duration-300">
-                    <div className={`${GLASS_CARD} p-8 rounded-[2.5rem] w-full max-w-sm text-center`}>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl w-full max-w-sm text-center border border-white dark:border-slate-800">
                         <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-rose-500">
                             <LogOut size={32} />
                         </div>
                         <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">Leave Group?</h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-8 leading-relaxed font-medium">Are you sure you want to leave this community? You'll need a new invite link to rejoin.</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-8 leading-relaxed">Are you sure you want to leave this community? You'll need a new invite link to rejoin.</p>
                         <div className="grid grid-cols-2 gap-3">
-                            <button onClick={() => setShowLeaveConfirm(false)} className="py-3.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all uppercase text-xs tracking-wider">Cancel</button>
-                            <button onClick={handleLeaveGroup} className="py-3.5 px-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold shadow-lg shadow-rose-500/20 transition-all uppercase text-xs tracking-wider">Leave</button>
+                            <button onClick={() => setShowLeaveConfirm(false)} className="py-3.5 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-500 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancel</button>
+                            <button onClick={handleLeaveGroup} className="py-3.5 px-4 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold shadow-lg shadow-rose-100 dark:shadow-none transition-all">Leave</button>
                         </div>
                     </div>
                 </div>

@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { AddHabit, FetchHabit, StreakStatsHabit, ToggleHabit, WeeklyStatsHabit, DeleteHabit } from '../../Redux/HabitTrackerSlice';
 import { DeleteConfirmModal } from '../../Components/ConfirmDelete';
 
+
 const HabitTracker = () => {
     const dispatch = useDispatch();
 
@@ -16,11 +17,6 @@ const HabitTracker = () => {
     // DELETE MODAL STATES
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [habitToDelete, setHabitToDelete] = useState(null);
-
-    // Cinematic Constants
-    const SOFT_BG = "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20";
-    const CARD_BG = "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl";
-    const BORDER_COLOR = "border-slate-200 dark:border-slate-800";
 
     // DAILY SUMMARY
     const dailySummary = {
@@ -109,7 +105,7 @@ const HabitTracker = () => {
         const isDone = habit.done_today ?? habit.doneToday ?? false;
 
         return (
-            <div className={`flex items-center justify-between p-4 border-b ${BORDER_COLOR} last:border-b-0 hover:bg-purple-50/50 dark:hover:bg-indigo-500/5 transition duration-150`}>
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-slate-800 last:border-b-0 hover:bg-purple-50/50 dark:hover:bg-slate-800/50 transition duration-150">
                 <div className="flex items-center flex-1 min-w-0">
                     <label className="flex items-center cursor-pointer">
                         <input
@@ -180,13 +176,13 @@ const HabitTracker = () => {
         };
 
         return (
-            <div className={`flex flex-col p-4 pt-0 border-b ${BORDER_COLOR} space-y-3`}>
+            <div className="flex flex-col p-4 pt-0 border-b border-gray-100 dark:border-slate-800 space-y-3">
                 <input
                     type="text"
                     placeholder="Enter new habit name"
                     value={habitTitle}
                     onChange={(e) => setHabitTitle(e.target.value)}
-                    className="p-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all"
+                    className="p-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-purple-500 focus:border-purple-500 outline-none"
                 />
 
                 <input
@@ -194,12 +190,12 @@ const HabitTracker = () => {
                     placeholder="Optional description"
                     value={habitDescription}
                     onChange={(e) => setHabitDescription(e.target.value)}
-                    className="p-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all"
+                    className="p-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-purple-500 focus:border-purple-500 outline-none"
                 />
 
                 <button
                     onClick={handleSave}
-                    className="flex items-center justify-center px-4 py-2 bg-purple-600 text-white font-semibold rounded-xl shadow-md hover:bg-purple-700 transition duration-150 text-sm"
+                    className="flex items-center justify-center px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-150 text-sm"
                 >
                     <CheckCircle className="w-4 h-4 mr-1" /> Save Habit
                 </button>
@@ -208,17 +204,18 @@ const HabitTracker = () => {
     };
 
     return (
-        <div className={`min-h-screen ${SOFT_BG} p-4 sm:p-8 transition-colors duration-300 pb-32`}>
+        // FIXED: Applied Cinematic Background Gradient and small bottom padding
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 p-4 sm:p-8 transition-colors duration-300 pb-12">
             <div className="max-w-6xl mx-auto">
 
                 {/* HEADER */}
                 <header className="text-center py-6">
-                    <h1 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Habit Tracker</h1>
-                    <p className="text-gray-500 dark:text-slate-400 mt-1 font-medium">Build consistent daily habits and track your progress</p>
+                    <h1 className="text-3xl font-extrabold text-purple-800 dark:text-white">Habit Tracker</h1>
+                    <p className="text-gray-500 dark:text-slate-400 mt-1">Build consistent daily habits and track your progress</p>
                 </header>
 
                 {/* TODAY STATS */}
-                <div className={`${CARD_BG} border ${BORDER_COLOR} rounded-2xl shadow-xl p-6 mb-8`}>
+                <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-6 mb-8 border border-gray-100 dark:border-slate-800">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                         <div>
                             <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100">Today's Progress</h2>
@@ -250,8 +247,8 @@ const HabitTracker = () => {
                 </div>
 
                 {/* HABIT LIST */}
-                <div className={`${CARD_BG} border ${BORDER_COLOR} rounded-3xl shadow-xl mb-8 overflow-hidden`}>
-                    <div className={`flex justify-between items-center p-4 border-b ${BORDER_COLOR}`}>
+                <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 mb-8">
+                    <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-slate-800">
                         <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100">Daily Habits</h2>
                         <button
                             onClick={() => setIsAddingHabit(prev => !prev)}
@@ -263,9 +260,9 @@ const HabitTracker = () => {
 
                     {isAddingHabit && <AddHabitInput />}
 
-                    <div className={`divide-y divide-gray-100 dark:divide-slate-800`}>
+                    <div className="divide-y divide-gray-100 dark:divide-slate-800">
                         {habits.length === 0 ? (
-                            <div className="flex items-center justify-center p-8 text-gray-500 dark:text-slate-400 bg-gray-50/50 dark:bg-slate-900/50">
+                            <div className="flex items-center justify-center p-8 text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-900/50">
                                 <Info className="w-5 h-5 text-purple-400 mr-2" />
                                 <p className="font-medium">No habits found. Click 'Add Habit' to start tracking!</p>
                             </div>
@@ -278,7 +275,7 @@ const HabitTracker = () => {
                 {/* DAILY & WEEKLY STATS */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 pb-8">
                     {/* DAILY SUMMARY */}
-                    <div className={`${CARD_BG} border ${BORDER_COLOR} rounded-2xl shadow-xl p-6 sm:p-8`}>
+                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 p-6 sm:p-8">
                         <div className="flex items-center space-x-3 mb-6">
                             <Heart className="w-6 h-6 text-pink-500" />
                             <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">
@@ -287,11 +284,11 @@ const HabitTracker = () => {
                         </div>
 
                         <div className="space-y-4">
-                            <div className={`flex justify-between border-b ${BORDER_COLOR} pb-2`}>
+                            <div className="flex justify-between border-b border-gray-100 dark:border-slate-800 pb-2">
                                 <span className="font-medium text-gray-700 dark:text-slate-300">Total Habits Tracked</span>
                                 <span className="text-lg font-semibold text-gray-900 dark:text-white">{dailySummary.total_habits}</span>
                             </div>
-                            <div className={`flex justify-between border-b ${BORDER_COLOR} pb-2`}>
+                            <div className="flex justify-between border-b border-gray-100 dark:border-slate-800 pb-2">
                                 <span className="font-medium text-gray-700 dark:text-slate-300">Habits Completed Today</span>
                                 <span className="text-2xl font-bold text-pink-600">{dailySummary.completed_habits}</span>
                             </div>
@@ -315,7 +312,7 @@ const HabitTracker = () => {
                     </div>
 
                     {/* WEEKLY STATS */}
-                    <div className={`${CARD_BG} border ${BORDER_COLOR} rounded-2xl shadow-xl p-6 sm:p-8`}>
+                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 p-6 sm:p-8">
                         <div className="flex items-center space-x-3 mb-6">
                             <TrendingUp className="w-6 h-6 text-green-500" />
                             <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">Weekly Completion Rate</h3>

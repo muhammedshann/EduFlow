@@ -14,7 +14,7 @@ export default function NoteDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const printRef = useRef(); 
+    const printRef = useRef(); // Create reference for PDF content
 
     const [note, setNote] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -22,9 +22,6 @@ export default function NoteDetailPage() {
 
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
-
-    // Cinematic Theme Constants
-    const GRADIENT_BG = "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20";
 
     const formatDate = (dateString) => {
         const d = new Date(dateString);
@@ -60,7 +57,7 @@ export default function NoteDetailPage() {
         );
 
         if (!res.error) {
-            setNote(res.payload); 
+            setNote(res.payload); // 🔥 backend truth
             setIsEditing(false);
         }
     };
@@ -71,9 +68,8 @@ export default function NoteDetailPage() {
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const maxLineWidth = pageWidth - (margin * 2);
-        let yPos = 20; 
+        let yPos = 20;
 
-        // -- TITLE --
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
         doc.setTextColor(0, 0, 0); 
@@ -81,9 +77,8 @@ export default function NoteDetailPage() {
         const titleText = title || "Untitled Note";
         const titleLines = doc.splitTextToSize(titleText, maxLineWidth);
         doc.text(titleLines, margin, yPos);
-        yPos += (titleLines.length * 10); 
+        yPos += (titleLines.length * 10);
 
-        // -- DATE --
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100); 
@@ -92,12 +87,10 @@ export default function NoteDetailPage() {
         doc.text(dateText, margin, yPos);
         yPos += 15;
 
-        // -- SEPARATOR LINE --
         doc.setDrawColor(200, 200, 200);
         doc.line(margin, yPos, pageWidth - margin, yPos);
         yPos += 15;
 
-        // -- BODY CONTENT --
         doc.setFont("helvetica", "normal");
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0); 
@@ -123,24 +116,24 @@ export default function NoteDetailPage() {
 
     if (loading) {
         return (
-            <div className={`min-h-screen flex items-center justify-center ${GRADIENT_BG} text-slate-400`}>
+            <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 ${isDarkMode ? "text-slate-400" : "text-gray-400"}`}>
                 Loading…
             </div>
         );
     }
 
     return (
-        // FIXED: Applied Cinematic Gradient
-        <div className={`min-h-screen ${GRADIENT_BG} px-6 py-16 transition-colors duration-300`}>
+        /* FIXED: Applied Cinematic Background Gradient and small bottom padding (pb-20) */
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 px-6 py-16 pb-20 transition-colors duration-300">
             <div className="max-w-3xl mx-auto">
 
                 {/* Top bar */}
                 <div className="flex items-center justify-between mb-16">
                     <button
                         onClick={() => navigate(-1)}
-                        className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-200 transition"
                     >
-                        <ArrowLeft size={24} />
+                        <ArrowLeft size={18} />
                     </button>
 
                     <div className="flex gap-4">
@@ -148,21 +141,21 @@ export default function NoteDetailPage() {
                             <>
                                 <button
                                     onClick={handleChat}
-                                    className="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2 transition-colors uppercase tracking-wider"
+                                    className="text-sm text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 flex items-center gap-1 transition-colors"
                                 >
-                                    <MessageCircle size={16} /> Chat
+                                    <MessageCircle size={14} /> Chat
                                 </button>
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2 transition-colors uppercase tracking-wider"
+                                    className="text-sm text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 flex items-center gap-1 transition-colors"
                                 >
-                                    <Edit3 size={16} /> Edit
+                                    <Edit3 size={14} /> Edit
                                 </button>
                                 <button
                                     onClick={handleExportPDF}
-                                    className="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2 transition-colors uppercase tracking-wider"
+                                    className="text-sm text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 flex items-center gap-1 transition-colors"
                                 >
-                                    <Download size={16} /> PDF
+                                    <Download size={14} /> PDF
                                 </button>
                             </>
                         ) : (
@@ -173,22 +166,21 @@ export default function NoteDetailPage() {
                                         setTitle(note.title);
                                         setContent(note.transcript_text);
                                     }}
-                                    className="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-rose-500 flex items-center gap-2 transition-colors uppercase tracking-wider"
+                                    className="text-sm text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 flex items-center gap-1 transition-colors"
                                 >
-                                    <X size={16} /> Cancel
+                                    <X size={14} /> Cancel
                                 </button>
                                 <button
                                     onClick={handleSave}
-                                    className="text-sm font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2 transition-colors uppercase tracking-wider"
+                                    className="text-sm text-black dark:text-white font-medium flex items-center gap-1 transition-colors"
                                 >
-                                    <Save size={16} /> Save
+                                    <Save size={14} /> Save
                                 </button>
                             </>
                         )}
                     </div>
                 </div>
 
-                {/* Content Wrapper - Transparent to show gradient */}
                 <div ref={printRef} id="pdf-wrapper" className="bg-transparent transition-colors duration-300">
                     {/* Title */}
                     {isEditing ? (
@@ -197,16 +189,16 @@ export default function NoteDetailPage() {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Untitled"
-                            className="w-full text-5xl font-black mb-6 outline-none bg-transparent text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-700 tracking-tight"
+                            className="w-full text-5xl font-semibold mb-6 outline-none bg-transparent text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-slate-600"
                         />
                     ) : (
-                        <h1 id="pdf-title" className="text-5xl font-black mb-6 text-slate-900 dark:text-white tracking-tight">
+                        <h1 id="pdf-title" className="text-5xl font-semibold mb-6 text-gray-900 dark:text-white">
                             {note.title || "Untitled"}
                         </h1>
                     )}
 
                     {/* Meta */}
-                    <p id="pdf-date" className="text-sm font-bold text-slate-400 dark:text-slate-500 mb-12 uppercase tracking-widest">
+                    <p id="pdf-date" className="text-sm text-gray-400 dark:text-slate-500 mb-12">
                         {formatDate(note.created_at)}
                     </p>
 
@@ -216,11 +208,11 @@ export default function NoteDetailPage() {
                             id="pdf-body"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
-                            className="w-full min-h-[600px] text-lg leading-loose outline-none resize-none bg-transparent text-slate-700 dark:text-slate-300 placeholder-slate-300 dark:placeholder-slate-700 font-medium"
+                            className="w-full min-h-[400px] text-lg leading-relaxed outline-none resize-none bg-transparent text-gray-800 dark:text-slate-300 placeholder-gray-300 dark:placeholder-slate-600"
                             placeholder="Start typing…"
                         />
                     ) : (
-                        <div id="pdf-body" className="text-lg leading-loose whitespace-pre-wrap text-slate-700 dark:text-slate-300 font-medium">
+                        <div id="pdf-body" className="text-lg leading-relaxed whitespace-pre-wrap text-gray-800 dark:text-slate-300">
                             {note.transcript_text}
                         </div>
                     )}

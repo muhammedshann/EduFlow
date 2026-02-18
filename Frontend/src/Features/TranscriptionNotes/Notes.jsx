@@ -10,27 +10,32 @@ import { useDispatch } from "react-redux";
 import { DeleteNote, FetchNotes } from "../../Redux/LiveTranscriptionSlice";
 import { useNavigate } from "react-router-dom";
 
+// Cinematic Theme Constants
+const GRADIENT_BG = "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20";
+const GLASS_CARD = "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 shadow-xl";
+const INPUT_BG = "bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200 dark:border-slate-800";
+
 function DeleteModal({ onClose, onConfirm }) {
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-sm border border-gray-100 dark:border-slate-700 transition-colors duration-300">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-2">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+            <div className={`${GLASS_CARD} p-8 rounded-[2rem] w-full max-w-sm animate-fadeIn transition-colors duration-300`}>
+                <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">
                     Delete Note?
                 </h2>
-                <p className="text-gray-600 dark:text-slate-400 text-sm mb-6">
-                    Are you sure you want to delete this note?
+                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-8 leading-relaxed">
+                    Are you sure you want to delete this note? This action cannot be undone.
                 </p>
                 <div className="flex justify-end gap-3">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                        className="px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-bold text-xs uppercase tracking-wider"
                     >
                         Cancel
                     </button>
 
                     <button
                         onClick={onConfirm}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                        className="px-6 py-3 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition shadow-lg shadow-rose-600/20 font-bold text-xs uppercase tracking-wider"
                     >
                         Delete
                     </button>
@@ -90,17 +95,17 @@ export default function NotesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#f6f3ff] to-[#fafafa] dark:from-slate-950 dark:to-slate-900 p-6 transition-colors duration-300">
-            <div className="max-w-7xl mx-auto space-y-8">
+        <div className={`min-h-screen ${GRADIENT_BG} p-6 transition-colors duration-300 pb-32`}>
+            <div className="max-w-7xl mx-auto space-y-10">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <Sparkles className="text-purple-600 dark:text-purple-400" />
+                        <h1 className="text-4xl font-black text-slate-800 dark:text-white flex items-center gap-3 tracking-tighter">
+                            <Sparkles className="text-purple-600 dark:text-purple-500 fill-purple-600/20" size={32} />
                             All Notes
                         </h1>
-                        <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">
+                        <p className="text-slate-500 dark:text-slate-400 font-medium mt-2">
                             Your complete notes history
                         </p>
                     </div>
@@ -108,27 +113,31 @@ export default function NotesPage() {
 
                 {/* Search */}
                 <div className="relative max-w-md">
-                    <Search className="absolute left-4 top-3.5 w-4 h-4 text-gray-400 dark:text-slate-500" />
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search by title..."
-                        className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 backdrop-blur focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
+                        className={`w-full pl-14 pr-6 py-4 rounded-2xl ${INPUT_BG} text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all shadow-sm font-medium`}
                     />
                 </div>
 
                 {/* Loading */}
                 {loading && (
-                    <div className="text-center py-20 text-gray-500 dark:text-slate-400">
-                        Loading notes...
+                    <div className="text-center py-20">
+                        <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs">Loading notes...</p>
                     </div>
                 )}
 
                 {/* No Notes Saved */}
                 {!loading && notes.length === 0 && (
-                    <div className="text-center py-20 text-gray-500 dark:text-slate-400">
-                        <p className="text-lg font-medium">No notes saved yet</p>
-                        <p className="text-sm mt-1">
+                    <div className={`${GLASS_CARD} rounded-[2.5rem] py-20 flex flex-col items-center text-center`}>
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-3xl flex items-center justify-center mb-4">
+                            <FileText className="w-8 h-8 text-slate-400" />
+                        </div>
+                        <p className="text-xl font-black text-slate-700 dark:text-slate-300">No notes saved yet</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">
                             Start a live transcription to create your first note
                         </p>
                     </div>
@@ -136,7 +145,7 @@ export default function NotesPage() {
 
                 {/* No Search Results */}
                 {!loading && notes.length > 0 && filteredNotes.length === 0 && (
-                    <div className="text-center py-20 text-gray-500 dark:text-slate-400">
+                    <div className="text-center py-20 text-slate-500 dark:text-slate-400 font-medium">
                         No matching notes found.
                     </div>
                 )}
@@ -147,19 +156,19 @@ export default function NotesPage() {
                         {filteredNotes.map((note) => (
                             <div
                                 key={note.id}
-                                className="group bg-white/70 dark:bg-slate-800 backdrop-blur rounded-2xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-xl dark:hover:shadow-slate-900/50 transition-all duration-300"
+                                className={`${GLASS_CARD} rounded-[2rem] p-8 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 group`}
                             >
                                 <div className="flex items-start justify-between">
-                                    <div className="flex gap-4">
-                                        <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center transition-colors">
-                                            <FileText className="text-purple-600 dark:text-purple-400" />
+                                    <div className="flex gap-5">
+                                        <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center transition-colors group-hover:bg-purple-600 group-hover:text-white">
+                                            <FileText className="text-purple-600 dark:text-purple-400 group-hover:text-white transition-colors" />
                                         </div>
 
                                         <div>
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+                                            <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight line-clamp-1">
                                                 {note.title || "Untitled Note"}
                                             </h3>
-                                            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+                                            <p className="text-sm text-slate-500 dark:text-slate-400 font-bold mt-1 uppercase tracking-wide">
                                                 {new Date(note.created_at).toLocaleDateString('en-US', {
                                                     month: 'long',
                                                     day: 'numeric',
@@ -170,31 +179,29 @@ export default function NotesPage() {
                                     </div>
                                 </div>
 
-                                <div className="mt-5 flex items-center justify-between">
-                                    <div className="text-sm text-gray-600 dark:text-slate-400">
-                                        Type:
-                                        <span className="ml-1 font-medium text-gray-900 dark:text-slate-200 capitalize">
-                                            {note.type}
-                                        </span>
+                                <div className="mt-8 flex items-center justify-between">
+                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg">
+                                        {note.type}
                                     </div>
 
                                     <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => navigate(`/notes/${note.id}`)}
-                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-600 text-sm text-gray-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+                                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-300 transition-colors"
                                         >
-                                            <Eye size={16} />
-                                            View Details
+                                            <Eye size={14} />
+                                            View
                                         </button>
 
-                                        <Trash2
-                                            size={18}
+                                        <button
                                             onClick={() => {
                                                 setNoteToDelete(note.id);
                                                 setshowDeleteConfirm(true);
                                             }}
-                                            className="text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 cursor-pointer transition-colors"
-                                        />
+                                            className="p-2.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
 
                                     </div>
                                 </div>

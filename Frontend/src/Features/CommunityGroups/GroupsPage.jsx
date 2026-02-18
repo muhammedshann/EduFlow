@@ -12,12 +12,18 @@ import { useDispatch } from "react-redux";
 import { CreateGroup, FetchGroup, JoinGroup } from "../../Redux/GroupsSlice";
 import { useNavigate } from "react-router-dom";
 
-// Theme constants updated with dark mode colors
+// Theme constants updated with dark mode colors & glassmorphism
 const GRADIENT_CLASS =
     "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 dark:from-indigo-600 dark:to-purple-600";
-const SOFT_BG = "bg-purple-50 dark:bg-slate-950";
-const CARD_BG = "bg-white dark:bg-slate-900";
-const BORDER_COLOR = "border-purple-100 dark:border-slate-800";
+
+// FIXED: Using the same cinematic gradient background logic as App.jsx
+const SOFT_BG = "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20";
+
+// FIXED: Added glassmorphism transparency and blur
+const CARD_BG = "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl";
+
+// FIXED: Standardized border color for cleaner look
+const BORDER_COLOR = "border-white/20 dark:border-slate-800";
 
 export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
     const [formData, setFormData] = useState({
@@ -46,7 +52,7 @@ export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm">
-            <div className="w-full p-4 sm:p-8">
+            <div className={`${CARD_BG} rounded-xl shadow-xl w-full max-w-lg p-6 animate-fadeIn border ${BORDER_COLOR}`}>
 
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">
@@ -67,7 +73,7 @@ export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-800 dark:text-white"
+                            className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-800/50 dark:text-white"
                             placeholder="Enter group name"
                             required
                         />
@@ -81,7 +87,7 @@ export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
                             value={formData.description}
                             onChange={handleChange}
                             rows={3}
-                            className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-800 dark:text-white"
+                            className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-800/50 dark:text-white"
                             placeholder="Describe the group"
                         />
                     </div>
@@ -93,7 +99,7 @@ export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
                             name="type"
                             value={formData.type}
                             onChange={handleChange}
-                            className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-800 dark:text-white"
+                            className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-800/50 dark:text-white"
                         >
                             <option value="public">Public</option>
                             <option value="private">Private</option>
@@ -126,7 +132,7 @@ export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
 
 
 const EmptyState = ({ text }) => (
-    <div className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl py-10 flex flex-col items-center justify-center text-center shadow-sm">
+    <div className={`${CARD_BG} w-full border ${BORDER_COLOR} rounded-xl py-10 flex flex-col items-center justify-center text-center shadow-sm`}>
         <Inbox className="w-10 h-10 text-gray-400 dark:text-slate-600 mb-3" />
         <p className="text-gray-500 dark:text-slate-400 font-medium">{text}</p>
     </div>
@@ -149,7 +155,7 @@ const GroupCard = ({ id, name, members_count, description, type, actionText, isJ
 
             <div className="flex items-start justify-between">
                 <div className="flex items-start">
-                    <div className="p-2 mr-3 rounded-md bg-purple-50 dark:bg-slate-800 text-purple-600 dark:text-indigo-400">
+                    <div className="p-2 mr-3 rounded-md bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-indigo-400">
                         <GraduationCap className="w-5 h-5" />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-slate-100">{name}</h3>
@@ -162,7 +168,7 @@ const GroupCard = ({ id, name, members_count, description, type, actionText, isJ
                 {showChat ? (
                     <button
                         onClick={onAction}
-                        className="w-full py-2 rounded-lg font-semibold bg-white dark:bg-slate-800 text-purple-600 dark:text-indigo-400 border border-purple-300 dark:border-slate-700 hover:bg-purple-50 dark:hover:bg-slate-700 transition flex items-center justify-center"
+                        className="w-full py-2 rounded-lg font-semibold bg-white dark:bg-slate-800/50 text-purple-600 dark:text-indigo-400 border border-purple-300 dark:border-slate-700 hover:bg-purple-50 dark:hover:bg-slate-700 transition flex items-center justify-center"
                     >
                         <MessageSquare className="w-5 h-5 mr-2" />
                         Open Chat
@@ -249,7 +255,8 @@ const GroupsPage = () => {
                             placeholder="Search groups..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full py-3.5 pl-12 pr-4 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-900 dark:text-white"
+                            // Fixed input background for consistency
+                            className="w-full py-3.5 pl-12 pr-4 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md dark:text-white"
                         />
                     </div>
                     <button

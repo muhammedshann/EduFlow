@@ -27,18 +27,18 @@ export default function UserDashboard() {
     const dispatch = useDispatch();
     const { user, logout } = useUser();
 
-    // -- Reusable Boutique Card (Updated for Glassmorphism) --
+    // -- Reusable Card (Kept exactly as original) --
     const Card = ({ children, className }) => (
-        <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-xl dark:shadow-slate-900/50 rounded-2xl p-5 border border-white/20 dark:border-slate-800 transition-all duration-300 ${className}`}>
+        <div className={`bg-white dark:bg-slate-800 shadow-sm md:shadow-md dark:shadow-slate-900/50 rounded-xl p-4 transition-colors duration-300 ${className}`}>
             {children}
         </div>
     );
 
-    // -- Reusable Button (Updated for Theme Consistency) --
+    // -- Reusable Button (Kept exactly as original) --
     const Button = ({ children, className, onClick }) => (
         <button
             onClick={onClick}
-            className={`px-4 py-3 md:py-2.5 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200 text-sm md:text-base font-medium ${className}`}
+            className={`px-4 py-3 md:py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors duration-200 text-sm md:text-base ${className}`}
         >
             {children}
         </button>
@@ -67,7 +67,7 @@ export default function UserDashboard() {
     }, []);
 
     return (
-        // FIXED: Applied Cinematic Gradient Background
+        // FIXED: Only the background class is updated here to match other pages
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 p-4 md:p-8 space-y-6 md:space-y-8 pb-24 md:pb-8">
             
             {/* Header Section */}
@@ -75,7 +75,7 @@ export default function UserDashboard() {
                 {/* User Info */}
                 <div className="flex items-center space-x-3 md:space-x-4">
                     <div
-                        className="w-12 h-12 md:w-16 md:h-16 rounded-2xl overflow-hidden cursor-pointer border-2 border-white/50 dark:border-slate-700 hover:border-purple-500 transition-all flex-shrink-0 shadow-lg"
+                        className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-purple-500 transition-all flex-shrink-0"
                         onClick={() => navigate('/settings/')}
                     >
                         {user.profilePic ? (
@@ -92,38 +92,37 @@ export default function UserDashboard() {
                     </div>
 
                     <div className="flex-1 min-w-0"> 
-                        <h1 className="text-xl md:text-3xl font-black text-slate-800 dark:text-white tracking-tight truncate">
+                        <h1 className="text-xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400 truncate">
                             Hi, {user ? user.username : 'Alex'}!
                         </h1>
-                        <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 truncate font-medium">
+                        <p className="text-sm md:text-base text-gray-500 dark:text-slate-400 truncate">
                             Let's be productive today.
                         </p>
                     </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md md:bg-transparent md:dark:bg-transparent p-2 md:p-0 rounded-2xl shadow-sm md:shadow-none border border-white/20 md:border-none">
+                <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 bg-white dark:bg-slate-800 md:bg-transparent md:dark:bg-transparent p-2 md:p-0 rounded-xl shadow-sm md:shadow-none">
                     <div className="flex items-center gap-2">
                         <button 
-                            className="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition border border-transparent hover:border-slate-200 dark:hover:border-slate-600" 
+                            className="p-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition" 
                             onClick={() => navigate('/notification/')}
                         >
                             <Bell className="h-5 w-5 md:h-6 md:w-6" />
                         </button>
 
                         <button 
-                            className="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition border border-transparent hover:border-slate-200 dark:hover:border-slate-600" 
+                            className="p-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition" 
                             onClick={() => navigate('/settings/')}
                         >
                             <Settings className="w-5 h-5 md:w-6 md:h-6" />
                         </button>
                     </div>
 
-                    {/* Separator for mobile */}
-                    <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 md:hidden"></div>
+                    <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 md:hidden"></div>
                     
                     <button 
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 transition text-sm font-bold border border-transparent hover:border-red-200 dark:hover:border-red-800" 
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 transition text-sm font-medium" 
                         onClick={() => logout()}
                     >
                         <LogOut className="w-4 h-4 md:w-5 md:h-5" />
@@ -133,15 +132,15 @@ export default function UserDashboard() {
             </div>
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 <Card>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                         <div>
-                            <p className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Focus</p>
-                            <p className="text-xl md:text-2xl font-black text-slate-800 dark:text-white">{TodayPomodoroCount}</p>
-                            <p className="text-[10px] md:text-xs font-semibold text-slate-400 dark:text-slate-500">Sessions</p>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Today's Focus</p>
+                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TodayPomodoroCount}</p>
+                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Pomodoros</p>
                         </div>
-                        <div className="p-3 bg-purple-50 dark:bg-purple-500/10 rounded-xl w-fit border border-purple-100 dark:border-purple-500/20">
+                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
                             <Timer className="h-5 w-5 md:h-8 md:w-8 text-purple-500 dark:text-purple-400" />
                         </div>
                     </div>
@@ -150,12 +149,12 @@ export default function UserDashboard() {
                 <Card>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                         <div>
-                            <p className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Habits</p>
-                            <p className="text-xl md:text-2xl font-black text-slate-800 dark:text-white">{TodayHabitPercentage}%</p>
-                            <p className="text-[10px] md:text-xs font-semibold text-slate-400 dark:text-slate-500">Completed</p>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Habits</p>
+                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TodayHabitPercentage}%</p>
+                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Completed</p>
                         </div>
-                        <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl w-fit border border-emerald-100 dark:border-emerald-500/20">
-                            <CheckSquare className="h-5 w-5 md:h-8 md:w-8 text-emerald-500 dark:text-emerald-400" />
+                        <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg w-fit">
+                            <CheckSquare className="h-5 w-5 md:h-8 md:w-8 text-green-500 dark:text-green-400" />
                         </div>
                     </div>
                 </Card>
@@ -163,11 +162,11 @@ export default function UserDashboard() {
                 <Card>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                         <div>
-                            <p className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Credits</p>
-                            <p className="text-xl md:text-2xl font-black text-slate-800 dark:text-white">{userCredits?.remaining_credits || 0}</p>
-                            <p className="text-[10px] md:text-xs font-semibold text-slate-400 dark:text-slate-500">Tokens</p>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Credits</p>
+                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{userCredits?.remaining_credits || 0}</p>
+                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Remaining</p>
                         </div>
-                        <div className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-xl w-fit border border-blue-100 dark:border-blue-500/20">
+                        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg w-fit">
                             <CreditCard className="h-5 w-5 md:h-8 md:w-8 text-blue-500 dark:text-blue-400" />
                         </div>
                     </div>
@@ -176,12 +175,12 @@ export default function UserDashboard() {
                 <Card>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                         <div>
-                            <p className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total</p>
-                            <p className="text-xl md:text-2xl font-black text-slate-800 dark:text-white">{TotalNotes}</p>
-                            <p className="text-[10px] md:text-xs font-semibold text-slate-400 dark:text-slate-500">Notes</p>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Total</p>
+                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TotalNotes}</p>
+                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Notes</p>
                         </div>
-                        <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl w-fit border border-indigo-100 dark:border-indigo-500/20">
-                            <Mic className="h-5 w-5 md:h-8 md:w-8 text-indigo-500 dark:text-indigo-400" />
+                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
+                            <Mic className="h-5 w-5 md:h-8 md:w-8 text-purple-500 dark:text-purple-400" />
                         </div>
                     </div>
                 </Card>
@@ -192,7 +191,7 @@ export default function UserDashboard() {
                 
                 {/* Transcription */}
                 <Card className="border-l-4 border-purple-500">
-                    <h2 className="text-lg md:text-xl font-bold mb-4 flex items-center text-slate-800 dark:text-white tracking-tight">
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
                         <Mic className="h-5 w-5 mr-2 text-purple-500" />
                         Smart Notes
                     </h2>
@@ -214,7 +213,7 @@ export default function UserDashboard() {
 
                 {/* AI Assistant */}
                 <Card className="border-l-4 border-blue-500">
-                    <h2 className="text-lg md:text-xl font-bold mb-4 flex items-center text-slate-800 dark:text-white tracking-tight">
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
                         <MessageSquare className="h-5 w-5 mr-2 text-blue-500" />
                         AI Assistant
                     </h2>
@@ -225,28 +224,28 @@ export default function UserDashboard() {
                                 Chat with AI
                             </Button>
                         </NavLink>
-                        <p className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 px-1">
+                        <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400 px-1">
                             Ask questions about your studies anytime.
                         </p>
                     </div>
                 </Card>
 
                 {/* Focus & Habits */}
-                <Card className="border-l-4 border-emerald-500">
-                    <h2 className="text-lg md:text-xl font-bold mb-4 flex items-center text-slate-800 dark:text-white tracking-tight">
-                        <Timer className="h-5 w-5 mr-2 text-emerald-500" />
+                <Card className="border-l-4 border-green-500">
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
+                        <Timer className="h-5 w-5 mr-2 text-green-500" />
                         Focus & Habits
                     </h2>
                     <div className="space-y-3">
                         <NavLink to="/promodoro/" className="block">
                             <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
-                                <Timer className="h-4 w-4 mr-3 text-emerald-500" />
+                                <Timer className="h-4 w-4 mr-3 text-green-500" />
                                 Pomodoro Timer
                             </Button>
                         </NavLink>
                         <NavLink to="/habit-tracker/" className="block">
                             <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
-                                <CheckSquare className="h-4 w-4 mr-3 text-emerald-500" />
+                                <CheckSquare className="h-4 w-4 mr-3 text-green-500" />
                                 Habit Tracker
                             </Button>
                         </NavLink>
@@ -255,7 +254,7 @@ export default function UserDashboard() {
 
                 {/* Community */}
                 <Card className="border-l-4 border-pink-500">
-                    <h2 className="text-lg md:text-xl font-bold mb-4 flex items-center text-slate-800 dark:text-white tracking-tight">
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
                         <Users className="h-5 w-5 mr-2 text-pink-500" />
                         Community
                     </h2>
@@ -266,7 +265,7 @@ export default function UserDashboard() {
                                 Study Groups
                             </Button>
                         </NavLink>
-                        <p className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 px-1">Connect and learn with friends.</p>
+                        <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400 px-1">Connect and learn with friends.</p>
                     </div>
                 </Card>
             </div>

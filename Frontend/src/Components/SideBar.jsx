@@ -31,13 +31,15 @@ export default function Sidebar() {
         { label: "Settings", icon: Settings, path: '/settings/' },
     ];
 
-    useEffect(() => { dispatch(FetchCredit()); }, [location.pathname, dispatch]);
+    useEffect(() => { 
+        dispatch(FetchCredit()); 
+    }, [location.pathname, dispatch]);
 
     const handleNavClick = (path) => navigate(path);
 
     return (
         <>
-            {/* --- ULTIMATE MOBILE DOCK --- */}
+            {/* --- ULTIMATE MOBILE DOCK (Phone Experience) --- */}
             <nav className="lg:hidden fixed bottom-6 left-5 right-5 z-[100] bg-white/70 dark:bg-slate-950/80 backdrop-blur-2xl border border-white/20 dark:border-slate-800 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] rounded-[3rem] px-2 py-3 overflow-hidden">
                 <div className="flex items-center overflow-x-auto no-scrollbar gap-2 relative px-2">
                     <LayoutGroup>
@@ -86,7 +88,7 @@ export default function Sidebar() {
                 className={`hidden lg:flex fixed left-0 top-0 flex-col h-full bg-white dark:bg-[#07090f] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] z-[50] border-r border-slate-100 dark:border-slate-900/50
                 ${collapsed ? "w-24" : "w-80"}`}
             >
-                {/* Refined Trigger */}
+                {/* Refined Trigger Toggle */}
                 <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -96,7 +98,7 @@ export default function Sidebar() {
                     {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
                 </motion.button>
 
-                {/* Brand Header */}
+                {/* Brand Header with Animated Icon */}
                 <div className="h-32 flex items-center px-10 shrink-0">
                     <div className={`flex items-center gap-5 ${collapsed ? "mx-auto" : ""}`}>
                         <motion.div 
@@ -117,7 +119,7 @@ export default function Sidebar() {
                     </div>
                 </div>
 
-                {/* Navigation */}
+                {/* Navigation with Liquid Active Pill */}
                 <nav className="flex-1 px-6 py-4 space-y-3 overflow-y-auto no-scrollbar">
                     <LayoutGroup>
                         {navItems.map((item) => {
@@ -154,7 +156,7 @@ export default function Sidebar() {
                     </LayoutGroup>
                 </nav>
 
-                {/* Boutique Credit Card */}
+                {/* Boutique Credit Card (Grounded on your Credits logic) */}
                 <div className="p-8">
                     <motion.div 
                         whileHover={{ scale: 1.02 }}
@@ -186,7 +188,7 @@ export default function Sidebar() {
                             </div>
                         )}
 
-                        {/* Glass Decor */}
+                        {/* Glassmorphism Background Decor */}
                         {!collapsed && (
                             <>
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-400 rounded-full blur-[60px] opacity-50" />

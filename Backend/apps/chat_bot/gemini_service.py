@@ -3,7 +3,7 @@ import os
 
 GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/"
-    "models/gemini-flash-latest:generateContent"
+    "models/gemini-1.5-flash:generateContent"
 )
 
 def call_gemini(prompt: str) -> str:
@@ -25,9 +25,15 @@ def call_gemini(prompt: str) -> str:
                 "⚠️ I'm getting too many requests right now.\n"
                 "Please wait a few seconds and try again."
             )
-
+        
         if response.status_code != 200:
-            return "❌ AI service is temporarily unavailable."
+            error_data = response.json()
+            print("Gemini error:", error_data)
+            return f"❌ AI error: {error_data.get('error', {}).get('message', 'Unknown error')}"
+
+
+        # if response.status_code != 200:
+        #     return "❌ AI service is temporarily unavailable."
 
         data = response.json()
         return data["candidates"][0]["content"]["parts"][0]["text"]

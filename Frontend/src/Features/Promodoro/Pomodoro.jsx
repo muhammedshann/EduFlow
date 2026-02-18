@@ -11,7 +11,7 @@ import {
 } from "../../Redux/PomodoroSlice";
 
 export default function Pomodoro() {
-    const dispatch = dispatch = useDispatch();
+    const dispatch = useDispatch();
 
     const [workMinutes, setWorkMinutes] = useState(55);
     const [breakMinutes, setBreakMinutes] = useState(5);

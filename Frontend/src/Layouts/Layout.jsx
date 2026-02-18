@@ -1,18 +1,19 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../Components/SideBar"; 
 import { Sparkles } from "lucide-react";
-import { useSelector } from "react-redux"; // Added to fetch actual credits
+import { useSelector } from "react-redux";
 
 export default function Layout() {
-  // Fetching real credits from your existing Redux state logic
   const { userCredits } = useSelector((state) => state.subscriptions);
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
+    // Update dark:bg to match your component background exactly (e.g., #07090f)
+    <div className="flex min-h-screen bg-gray-50 dark:bg-[#07090f] transition-colors duration-300">
       <Sidebar />
       
       <main className="flex-1 flex flex-col w-full">
-        <header className="flex items-center justify-between px-6 py-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 sticky top-0 z-30 transition-colors duration-300">
+        {/* Transparent header to let the background bleed through */}
+        <header className="flex items-center justify-between px-6 py-4 bg-white/50 dark:bg-[#07090f]/50 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 sticky top-0 z-30 transition-colors duration-300">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <Sparkles className="w-4 h-4 text-white" />
@@ -30,8 +31,8 @@ export default function Layout() {
           </div>
         </header>
 
-        {/* --- FIXED SECTION: NO SIDE MARGINS OR PADDING --- */}
-        <div className="flex-1 w-full flex flex-col pb-32">
+        {/* Reduced pb-24 and matched background color */}
+        <div className="flex-1 w-full flex flex-col pb-24 bg-gray-50 dark:bg-[#07090f]">
           <Outlet />
         </div>
       </main>

@@ -1,62 +1,39 @@
-.loader {
-  width: 48px;
-  height: 48px;
-  display: inline-block;
-  position: relative;
+/* Update your App.css */
+
+:root {
+  --edu-bg-dark: #07090f; /* Match this to your dashboard's deep color */
 }
+
+/* Ensure the root layers share the same color */
+html, body {
+  background-color: var(--edu-bg-dark);
+}
+
 .loader::after,
 .loader::before {
-  content: '';  
-  box-sizing: border-box;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 2px solid #FFF;
-  position: absolute;
-  left: 0;
-  top: 0;
-  animation: animloader 2s linear infinite;
-}
-.loader::after {
-  animation-delay: 1s;
+  border: 2px solid #6366f1; /* Use your brand indigo for the pulse */
 }
 
-@keyframes animloader {
-  0% {
-    transform: scale(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
+/* Reduced padding for a tighter fit on mobile */
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: 90px; 
+    background-color: var(--edu-bg-dark);
   }
 }
 
-/* Cinematic iOS-class Blurs */
-.backdrop-blur-2xl {
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+/* Existing utility logic remains */
+.backdrop-blur-3xl {
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
 }
 
-/* Safe-area padding for modern phone home indicators */
-.pb-safe {
-  padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
-}
-
-/* Smooth Momentum Scrolling */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE/Edge */
-  scrollbar-width: none;    /* Firefox */
-  -webkit-overflow-scrolling: touch; /* Required for native feel */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-}
-
-/* Clear the floating mobile dock */
-@media (max-width: 1023px) {
-  body {
-    padding-bottom: 140px; 
-  }
 }

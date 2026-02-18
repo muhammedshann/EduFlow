@@ -121,8 +121,8 @@ export default function ChatPage() {
     };
 
     return (
-        /* FIXED: Added Cinematic Background Gradient and pb-12 for bottom safety zone */
-        <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden pb-12">
+        /* FIXED: Increased pb-28 to provide a larger "cap" at the bottom for the dock */
+        <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden pb-28">
             
             {/* Chat Body Container */}
             <div className="flex-1 overflow-y-auto px-4 md:px-8 pt-6 pb-40 scrollbar-hide">

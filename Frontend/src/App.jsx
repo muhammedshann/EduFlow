@@ -45,254 +45,255 @@ import AdminPublicRoute from './Routes/AdminPublicRoute';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 text-black dark:text-white transition-colors duration-300">
-    <BrowserRouter>
-      <Notification />
-      <Routes>
-        {/* 🏠 Public routes (no sidebar) */}
-        <Route path='/' element={<HomePage />} />
+    // FIXED: Global Cinematic Gradient Application
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 text-slate-900 dark:text-white transition-colors duration-300">
+      <BrowserRouter>
+        <Notification />
+        <Routes>
+          {/* 🏠 Public routes (no sidebar) */}
+          <Route path='/' element={<HomePage />} />
 
-        <Route path='/auth/' element={
-          <ProtectedRoute isLogin={true} >
-            <LoginPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/enter-email/" element={<EmailPage />} />
-        <Route path='/otp/' element={<OtpPage />} />
-        <Route path='/reset-password/' element={<ResetPasswordPage />} />
-
-        {/* 👤 Protected routes WITHOUT sidebar */}
-        <Route
-          path='/dashboard/'
-          element={
-            <ProtectedRoute>
-              <UserDashboard />
+          <Route path='/auth/' element={
+            <ProtectedRoute isLogin={true} >
+              <LoginPage />
             </ProtectedRoute>
-          }
-        />
+          } />
+          <Route path="/enter-email/" element={<EmailPage />} />
+          <Route path='/otp/' element={<OtpPage />} />
+          <Route path='/reset-password/' element={<ResetPasswordPage />} />
 
-        {/* 📂 Protected routes WITH sidebar */}
-        <Route element={<Layout />}>
+          {/* 👤 Protected routes WITHOUT sidebar */}
           <Route
-            path='/wallet/'
+            path='/dashboard/'
             element={
               <ProtectedRoute>
-                <WalletPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/settings/'
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/promodoro/'
-            element={
-              <ProtectedRoute>
-                <Pomodoro />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/notification/'
-            element={
-              <ProtectedRoute>
-                <NotificationPage />
+                <UserDashboard />
               </ProtectedRoute>
             }
           />
 
+          {/* 📂 Protected routes WITH sidebar */}
+          <Route element={<Layout />}>
+            <Route
+              path='/wallet/'
+              element={
+                <ProtectedRoute>
+                  <WalletPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/settings/'
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/promodoro/'
+              element={
+                <ProtectedRoute>
+                  <Pomodoro />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/notification/'
+              element={
+                <ProtectedRoute>
+                  <NotificationPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path='/habit-tracker/'
+              element={
+                <ProtectedRoute>
+                  <HabitTracker />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path='/groups/'
+              element={
+                <ProtectedRoute>
+                  <GroupsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path='/smart-note/'
+              element={
+                <ProtectedRoute>
+                  <LiveTranscriptionPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path='/notes/'
+              element={
+                <ProtectedRoute>
+                  <NotesPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path='/chat-bot/'
+              element={
+                <ProtectedRoute>
+                  <ChatBotPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/chat-bot/:noteId'
+              element={
+                <ProtectedRoute>
+                  <ChatBotPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path='/subscription-plans/'
+              element={
+                <ProtectedRoute>
+                  <SubscriptionPlansPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path='/checkout/'
+              element={
+                <ProtectedRoute>
+                  <CheckoutPage />
+                </ProtectedRoute>
+              }
+            />
+
+          </Route>
+
           <Route
-            path='/habit-tracker/'
+            path='/notes/:id'
             element={
               <ProtectedRoute>
-                <HabitTracker />
+                <NoteDetailPage />
               </ProtectedRoute>
             }
           />
 
           <Route
-            path='/groups/'
+            path='/groups/chat/:groupId'
             element={
               <ProtectedRoute>
-                <GroupsPage />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path='/smart-note/'
-            element={
-              <ProtectedRoute>
-                <LiveTranscriptionPage />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path='/notes/'
-            element={
-              <ProtectedRoute>
-                <NotesPage />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path='/chat-bot/'
-            element={
-              <ProtectedRoute>
-                <ChatBotPage />
+                <GroupChatPage />
               </ProtectedRoute>
             }
           />
           <Route
-            path='/chat-bot/:noteId'
+            path='/review/'
             element={
               <ProtectedRoute>
-                <ChatBotPage />
+                <ReviewsPage />
               </ProtectedRoute>
             }
           />
 
-          <Route
-            path='/subscription-plans/'
-            element={
-              <ProtectedRoute>
-                <SubscriptionPlansPage />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path='/checkout/'
-            element={
-              <ProtectedRoute>
-                <CheckoutPage />
-              </ProtectedRoute>
-            }
-          />
-
-        </Route>
-
-        <Route
-          path='/notes/:id'
-          element={
-            <ProtectedRoute>
-              <NoteDetailPage />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path='/groups/chat/:groupId'
-          element={
-            <ProtectedRoute>
-              <GroupChatPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/review/'
-          element={
-            <ProtectedRoute>
-              <ReviewsPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* admin side */}
-        <Route path='/admin/login/' element={
-          <AdminPublicRoute>
-            <AdminLoginPage />
-          </AdminPublicRoute>
-        } />
-
-        <Route element={<AdminLayout />}>
-          <Route path='/admin/dashboard/' element={
-            <AdminProtectedRoute>
-              <AdminDashboardPage />
-            </AdminProtectedRoute>
+          {/* admin side */}
+          <Route path='/admin/login/' element={
+            <AdminPublicRoute>
+              <AdminLoginPage />
+            </AdminPublicRoute>
           } />
 
-          <Route path='/admin/user/' element={
-            <AdminProtectedRoute>
-              <UserManagement />
-            </AdminProtectedRoute>
-          } />
+          <Route element={<AdminLayout />}>
+            <Route path='/admin/dashboard/' element={
+              <AdminProtectedRoute>
+                <AdminDashboardPage />
+              </AdminProtectedRoute>
+            } />
 
-          <Route path='/admin/wallet/' element={
-            <AdminProtectedRoute>
-              <WalletManagement />
-            </AdminProtectedRoute>
-          } />
+            <Route path='/admin/user/' element={
+              <AdminProtectedRoute>
+                <UserManagement />
+              </AdminProtectedRoute>
+            } />
 
-          <Route path='/admin/group/' element={
-            <AdminProtectedRoute>
-              <GroupsManagement />
-            </AdminProtectedRoute>
-          } />
+            <Route path='/admin/wallet/' element={
+              <AdminProtectedRoute>
+                <WalletManagement />
+              </AdminProtectedRoute>
+            } />
 
-          <Route path='/admin/habit/' element={
-            <AdminProtectedRoute>
-              <HabitManagement />
-            </AdminProtectedRoute>
-          } />
+            <Route path='/admin/group/' element={
+              <AdminProtectedRoute>
+                <GroupsManagement />
+              </AdminProtectedRoute>
+            } />
 
-          <Route path='/admin/pomodoro/' element={
-            <AdminProtectedRoute>
-              <PomodoroManagement />
-            </AdminProtectedRoute>
-          } />
+            <Route path='/admin/habit/' element={
+              <AdminProtectedRoute>
+                <HabitManagement />
+              </AdminProtectedRoute>
+            } />
 
-          <Route path='/admin/notes/' element={
-            <AdminProtectedRoute>
-              <NotesManagement />
-            </AdminProtectedRoute>
-          } />
+            <Route path='/admin/pomodoro/' element={
+              <AdminProtectedRoute>
+                <PomodoroManagement />
+              </AdminProtectedRoute>
+            } />
 
-          <Route path='/admin/review/' element={
-            <AdminProtectedRoute>
-              <AdminReviewManagement />
-            </AdminProtectedRoute>
-          } />
+            <Route path='/admin/notes/' element={
+              <AdminProtectedRoute>
+                <NotesManagement />
+              </AdminProtectedRoute>
+            } />
 
-          <Route path='/admin/live-transcription/' element={
-            <AdminProtectedRoute>
-              <LiveTranscriptionManagement />
-            </AdminProtectedRoute>
-          } />
-          <Route path='/admin/upload-transcription/' element={
-            <AdminProtectedRoute>
-              <UploadTranscriptionManagement />
-            </AdminProtectedRoute>
-          } />
+            <Route path='/admin/review/' element={
+              <AdminProtectedRoute>
+                <AdminReviewManagement />
+              </AdminProtectedRoute>
+            } />
 
-          <Route path='/admin/chat-bot/' element={
-            <AdminProtectedRoute>
-              <ChatBotManagement />
-            </AdminProtectedRoute>
-          } />
+            <Route path='/admin/live-transcription/' element={
+              <AdminProtectedRoute>
+                <LiveTranscriptionManagement />
+              </AdminProtectedRoute>
+            } />
+            <Route path='/admin/upload-transcription/' element={
+              <AdminProtectedRoute>
+                <UploadTranscriptionManagement />
+              </AdminProtectedRoute>
+            } />
 
-          <Route path='/admin/subscriptions/' element={
-            <AdminProtectedRoute>
-              <SubscriptionManagement />
-            </AdminProtectedRoute>
-          } />
-          <Route path='/admin/notification/' element={
-            <AdminProtectedRoute>
-              <NotificationManagement />
-            </AdminProtectedRoute>
-          } />
-        </Route>
+            <Route path='/admin/chat-bot/' element={
+              <AdminProtectedRoute>
+                <ChatBotManagement />
+              </AdminProtectedRoute>
+            } />
 
-        <Route path='*' element={<NotFoundPage />} />
-      </Routes>
-    </BrowserRouter>
+            <Route path='/admin/subscriptions/' element={
+              <AdminProtectedRoute>
+                <SubscriptionManagement />
+              </AdminProtectedRoute>
+            } />
+            <Route path='/admin/notification/' element={
+              <AdminProtectedRoute>
+                <NotificationManagement />
+              </AdminProtectedRoute>
+            } />
+          </Route>
+
+          <Route path='*' element={<NotFoundPage />} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }

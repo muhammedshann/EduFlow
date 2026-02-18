@@ -21,10 +21,6 @@ export default function CheckoutPage() {
 
     const { user } = useUser();
 
-    // Cinematic Theme Constants
-    const GRADIENT_BG = "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20";
-    const GLASS_CARD = "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 shadow-2xl";
-
     useEffect(() => {
         if (!bundle) navigate('/subscription-plans');
     }, [bundle, navigate]);
@@ -167,38 +163,38 @@ export default function CheckoutPage() {
     const displayPrice = parseFloat(bundle.price);
 
     return (
-        // FIXED: Applied Cinematic Gradient
-        <div className={`min-h-screen ${GRADIENT_BG} py-12 px-4 flex items-center justify-center transition-colors duration-300`}>
+        // FIXED: Cinematic background gradient applied
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 py-12 px-4 flex items-center justify-center transition-colors duration-300">
             <div className="max-w-md w-full transition-all duration-500">
                 {!isSuccess && (
-                    <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 font-bold text-xs mb-8 transition-colors group">
+                    <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-gray-400 dark:text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 font-bold text-xs mb-8 transition-colors group">
                         <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
                         Back to Plans
                     </button>
                 )}
 
-                {/* FIXED: Applied Glassmorphism */}
-                <div className={`${GLASS_CARD} rounded-[40px] overflow-hidden transition-all duration-500 ${isSuccess ? 'scale-105 border-green-200 dark:border-green-900/30' : ''}`}>
+                {/* FIXED: Added slight transparency/glass effect to card background only */}
+                <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[40px] border border-white/20 dark:border-slate-800 shadow-2xl overflow-hidden transition-all duration-500 ${isSuccess ? 'scale-105 border-green-100 dark:border-green-900/30' : ''}`}>
                     {isSuccess ? (
                         <div className="p-10 text-center animate-in zoom-in-95 duration-500">
                             <div className="mb-6 flex justify-center">
-                                <div className="relative w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/20">
+                                <div className="relative w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-100 dark:shadow-none">
                                     <CheckCircle2 className="text-white" size={48} />
                                 </div>
                             </div>
-                            <h2 className="text-3xl font-black text-slate-800 dark:text-white mb-2">Payment Received!</h2>
-                            <p className="text-slate-500 dark:text-slate-400 font-bold text-sm mb-8">Successfully added <span className="text-purple-600 dark:text-purple-400">{bundle.credits.toLocaleString()} credits</span>.</p>
+                            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Payment Received!</h2>
+                            <p className="text-gray-500 dark:text-slate-400 font-bold text-sm mb-8">Successfully added <span className="text-purple-600 dark:text-purple-400">{bundle.credits.toLocaleString()} credits</span>.</p>
                             <div className="space-y-4">
-                                <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div className="w-full h-1.5 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                     <div className="h-full bg-purple-600 animate-progress origin-left" />
                                 </div>
                             </div>
                         </div>
                     ) : (
                         <>
-                            <div className="p-8 border-b border-slate-100 dark:border-slate-800 text-center bg-slate-50/50 dark:bg-slate-800/30">
-                                <h2 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Finalizing Order</h2>
-                                <h3 className="font-black text-slate-800 dark:text-white text-3xl mb-1">{bundle.name}</h3>
+                            <div className="p-8 border-b border-gray-50 dark:border-slate-800 text-center bg-gray-50/50 dark:bg-slate-800/50">
+                                <h2 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-4">Finalizing Order</h2>
+                                <h3 className="font-black text-gray-900 dark:text-white text-3xl mb-1">{bundle.name}</h3>
                                 <p className="text-purple-600 dark:text-purple-400 font-black text-xs mt-2 uppercase">{bundle.credits.toLocaleString()} Credits</p>
                             </div>
 
@@ -211,18 +207,18 @@ export default function CheckoutPage() {
                                 )}
 
                                 <div className="space-y-3">
-                                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Select Payment Method</p>
+                                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Select Payment Method</p>
                                     <div className="grid grid-cols-2 gap-3">
                                         <button 
                                             onClick={() => setPaymentMethod('online')}
-                                            className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${paymentMethod === 'online' ? 'border-purple-600 bg-purple-50/50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' : 'border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                                            className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${paymentMethod === 'online' ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' : 'border-gray-100 dark:border-slate-800 text-gray-400 dark:text-slate-500 hover:border-gray-200 dark:hover:border-slate-700'}`}
                                         >
                                             <CreditCard size={20} />
                                             <span className="text-[10px] font-black uppercase">Online</span>
                                         </button>
                                         <button 
                                             onClick={() => setPaymentMethod('wallet')}
-                                            className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${paymentMethod === 'wallet' ? 'border-purple-600 bg-purple-50/50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' : 'border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                                            className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${paymentMethod === 'wallet' ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' : 'border-gray-100 dark:border-slate-800 text-gray-400 dark:text-slate-500 hover:border-gray-200 dark:hover:border-slate-700'}`}
                                         >
                                             <Wallet size={20} />
                                             <span className="text-[10px] font-black uppercase tracking-tighter">Wallet (₹{balance})</span>
@@ -231,29 +227,29 @@ export default function CheckoutPage() {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400 font-bold text-sm">
-                                        <CheckCircle2 className="text-emerald-500" size={18} />
+                                    <div className="flex items-center gap-4 text-gray-600 dark:text-slate-400 font-bold text-sm">
+                                        <CheckCircle2 className="text-green-500" size={18} />
                                         {paymentMethod === 'wallet' ? 'Instant Wallet Debit' : 'Instant Activation'}
                                     </div>
-                                    <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400 font-bold text-sm">
-                                        <CheckCircle2 className="text-emerald-500" size={18} />
+                                    <div className="flex items-center gap-4 text-gray-600 dark:text-slate-400 font-bold text-sm">
+                                        <CheckCircle2 className="text-green-500" size={18} />
                                         Secure Transaction
                                     </div>
                                 </div>
                             </div>
 
                             <div className="p-8 pt-0">
-                                <div className="flex justify-between items-end mb-8 pt-4 border-t border-dashed border-slate-200 dark:border-slate-700">
+                                <div className="flex justify-between items-end mb-8 pt-4 border-t border-dashed border-gray-200 dark:border-slate-800">
                                     <div>
-                                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Amount Due</p>
-                                        <p className="text-4xl font-black text-slate-800 dark:text-white">₹{displayPrice.toFixed(0)}</p>
+                                        <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase">Amount Due</p>
+                                        <p className="text-4xl font-black text-gray-900 dark:text-white">₹{displayPrice.toFixed(0)}</p>
                                     </div>
                                 </div>
                                 
                                 <button 
                                     onClick={handlePurchase}
                                     disabled={loading}
-                                    className="w-full py-5 bg-purple-600 text-white rounded-2xl text-lg font-black shadow-xl shadow-purple-500/20 hover:bg-purple-700 active:scale-[0.97] transition-all flex items-center justify-center gap-3 disabled:bg-slate-300 dark:disabled:bg-slate-800"
+                                    className="w-full py-5 bg-purple-600 text-white rounded-2xl text-lg font-black shadow-xl shadow-purple-100 dark:shadow-none hover:bg-purple-700 active:scale-[0.97] transition-all flex items-center justify-center gap-3 disabled:bg-gray-300 dark:disabled:bg-slate-800"
                                 >
                                     {loading ? (
                                         <div className="flex items-center gap-2">

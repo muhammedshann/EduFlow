@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from django.contrib.auth import logout
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
@@ -365,6 +366,7 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        logout(request)
         refresh_token = request.COOKIES.get('refresh')
 
         if not refresh_token:

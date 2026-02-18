@@ -369,19 +369,25 @@ class LogoutView(APIView):
         logout(request)
         refresh_token = request.COOKIES.get('refresh')
 
-        if not refresh_token:
-            return Response({"error": "No refresh token found"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-        except TokenError:
-            return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except TokenError:
+                pass
 
         response = Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
 
-        response.delete_cookie('access')
-        response.delete_cookie('refresh')
+        # FIXED: Must match the domain and path used in LoginView
+        cookie_settings = {
+            'domain': ".fresheasy.online",
+            'path': "/",
+            'samesite': "None",
+        }
+
+        response.delete_cookie('access', **cookie_settings)
+        response.delete_cookie('refresh', **cookie_settings)
+        response.delete_cookie('sessionid', path='/') # For Django Admin sessions
 
         return response
 

@@ -45,7 +45,7 @@ export const UserProvider = ({ children }) => {
         try {
             await api.post("accounts/logout/");
         } catch (err) {
-            console.error("Logout failed:", err);
+            console.error("Logout API failed, but clearing local state anyway:", err);
         } finally {
             setUser(null);
         }

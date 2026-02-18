@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
     Search,
+    Users,
     MessageSquare,
     Plus,
     GraduationCap,
@@ -8,16 +9,15 @@ import {
     X
 } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { CreateGroup, FetchGroup } from "../../Redux/GroupsSlice";
+import { CreateGroup, FetchGroup, JoinGroup } from "../../Redux/GroupsSlice";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 
-// Standardized cinematic theme constants
+// Theme constants updated with dark mode colors
 const GRADIENT_CLASS =
-    "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 dark:from-purple-600 dark:to-indigo-500 shadow-lg shadow-purple-500/20";
-const SOFT_BG = "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20";
-const CARD_BG = "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl";
-const BORDER_COLOR = "border-slate-200 dark:border-slate-800";
+    "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 dark:from-indigo-600 dark:to-purple-600";
+const SOFT_BG = "bg-purple-50 dark:bg-slate-950";
+const CARD_BG = "bg-white dark:bg-slate-900";
+const BORDER_COLOR = "border-purple-100 dark:border-slate-800";
 
 export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
     const [formData, setFormData] = useState({
@@ -40,136 +40,146 @@ export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
             return;
         }
         onSubmit(formData);
-        setFormData({ name: "", description: "", type: "public" });
+        setFormData({ name: "", description: "", type: "public", })
         onClose();
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-md p-4">
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className={`${CARD_BG} w-full max-w-lg p-8 rounded-[2.5rem] border ${BORDER_COLOR} shadow-2xl`}
-            >
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Create Group</h2>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 transition-colors">
-                        <X size={24} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm">
+            <div className="w-full p-4 sm:p-8">
+
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100">Create New Group</h2>
+                    <button onClick={onClose} className="text-gray-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-indigo-400">
+                        <X size={22} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+
+                    {/* Group Name */}
                     <div>
-                        <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Group Name</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Group Name *</label>
                         <input
                             type="text"
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            className="w-full px-5 py-3.5 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none dark:text-white transition-all"
-                            placeholder="e.g. Advanced Calculus"
+                            className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-800 dark:text-white"
+                            placeholder="Enter group name"
                             required
                         />
                     </div>
 
+                    {/* Description */}
                     <div>
-                        <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Description</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Description</label>
                         <textarea
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
                             rows={3}
-                            className="w-full px-5 py-3.5 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none dark:text-white transition-all resize-none"
-                            placeholder="What is this community about?"
+                            className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-800 dark:text-white"
+                            placeholder="Describe the group"
                         />
                     </div>
 
+                    {/* Type*/}
                     <div>
-                        <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Privacy</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Group Type</label>
                         <select
                             name="type"
                             value={formData.type}
                             onChange={handleChange}
-                            className="w-full px-5 py-3.5 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none dark:text-white appearance-none cursor-pointer"
+                            className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-800 dark:text-white"
                         >
-                            <option value="public">🌍 Public (Everyone can join)</option>
-                            <option value="private">🔒 Private (Invite only)</option>
+                            <option value="public">Public</option>
+                            <option value="private">Private</option>
                         </select>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-4">
+                    {/* Buttons */}
+                    <div className="flex justify-end gap-3 pt-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-6 py-3.5 rounded-2xl font-bold text-slate-400 hover:text-slate-600 dark:hover:text-white transition-all"
+                            className="px-5 py-2 rounded-lg border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800"
                         >
                             Cancel
                         </button>
+
                         <button
                             type="submit"
-                            className={`px-8 py-3.5 text-white font-black rounded-2xl ${GRADIENT_CLASS} active:scale-95 transition-all`}
+                            className={`px-6 py-2 text-white font-semibold rounded-lg shadow-md ${GRADIENT_CLASS}`}
                         >
                             Create Group
                         </button>
                     </div>
+
                 </form>
-            </motion.div>
+            </div>
         </div>
     );
 };
 
+
 const EmptyState = ({ text }) => (
-    <div className={`${CARD_BG} border ${BORDER_COLOR} rounded-[2rem] py-16 flex flex-col items-center justify-center text-center shadow-sm`}>
-        <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mb-4">
-            <Inbox className="w-8 h-8 text-slate-400 dark:text-slate-600" />
-        </div>
-        <p className="text-slate-500 dark:text-slate-400 font-bold tracking-tight">{text}</p>
+    <div className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl py-10 flex flex-col items-center justify-center text-center shadow-sm">
+        <Inbox className="w-10 h-10 text-gray-400 dark:text-slate-600 mb-3" />
+        <p className="text-gray-500 dark:text-slate-400 font-medium">{text}</p>
     </div>
 );
 
-const GroupCard = ({ name, description, type, actionText, isJoined, onAction }) => {
+const GroupCard = ({ id, name, members_count, description, type, actionText, isJoined, onAction }) => {
     const showChat = isJoined && actionText === "Open Chat";
 
     return (
-        <motion.div 
-            whileHover={{ y: -5 }}
-            className={`${CARD_BG} p-8 rounded-[2.5rem] border ${BORDER_COLOR} shadow-xl hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 flex flex-col h-full group`}
+        <div
+            className={`${CARD_BG} p-6 rounded-xl shadow-md ${BORDER_COLOR} border transition-all hover:shadow-lg flex flex-col h-full relative`}
         >
-            <div className="flex items-start justify-between mb-4">
-                <div className="p-3 rounded-2xl bg-purple-100 dark:bg-indigo-500/10 text-purple-600 dark:text-indigo-400 transition-colors group-hover:bg-purple-600 group-hover:text-white">
-                    <GraduationCap className="w-6 h-6" />
-                </div>
-                {type === "private" && (
-                    <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400">
+            {type === "private" && (
+                <div className="absolute top-3 right-3">
+                    <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 dark:bg-rose-900/30 text-red-700 dark:text-rose-400">
                         Private
                     </span>
-                )}
+                </div>
+            )}
+
+            <div className="flex items-start justify-between">
+                <div className="flex items-start">
+                    <div className="p-2 mr-3 rounded-md bg-purple-50 dark:bg-slate-800 text-purple-600 dark:text-indigo-400">
+                        <GraduationCap className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-slate-100">{name}</h3>
+                </div>
             </div>
 
-            <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight mb-3 line-clamp-1">{name}</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8 flex-grow line-clamp-3">{description}</p>
+            <p className="text-gray-600 dark:text-slate-400 text-sm mt-3 flex-grow">{description}</p>
 
-            <div className="mt-auto">
+            <div className="mt-4 pt-4">
                 {showChat ? (
                     <button
                         onClick={onAction}
-                        className="w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95"
+                        className="w-full py-2 rounded-lg font-semibold bg-white dark:bg-slate-800 text-purple-600 dark:text-indigo-400 border border-purple-300 dark:border-slate-700 hover:bg-purple-50 dark:hover:bg-slate-700 transition flex items-center justify-center"
                     >
-                        <MessageSquare size={16} />
+                        <MessageSquare className="w-5 h-5 mr-2" />
                         Open Chat
                     </button>
                 ) : (
                     <button
                         onClick={onAction}
-                        className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white ${GRADIENT_CLASS} active:scale-95 transition-all`}
+                        className={`w-full py-2 rounded-lg font-semibold text-white transition ${GRADIENT_CLASS} shadow-lg shadow-purple-300/20 dark:shadow-none`}
                     >
-                        Join Community
+                        Join
                     </button>
                 )}
             </div>
-        </motion.div>
+        </div>
     );
 };
+
 
 const GroupsPage = () => {
     const [createdGroups, setCreatedGroups] = useState([]);
@@ -177,16 +187,15 @@ const GroupsPage = () => {
     const [publicGroups, setPublicGroups] = useState([]);
     const [openCreateModal, setOpenCreateModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const dispatch = useDispatch();
     const fetchGroups = async () => {
         try {
             const res = await dispatch(FetchGroup()).unwrap();
-            setCreatedGroups(res.created_groups || []);
-            setJoinedGroups(res.joined_groups || []);
-            setPublicGroups(res.public_groups || []);
+            setCreatedGroups(res.created_groups);
+            setJoinedGroups(res.joined_groups);
+            setPublicGroups(res.public_groups);
         } catch (err) {
             console.error("Failed to fetch groups:", err);
         }
@@ -196,95 +205,137 @@ const GroupsPage = () => {
         fetchGroups();
     }, []);
 
-    const filterFn = g => g.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const filteredCreated = createdGroups.filter(group =>
+        group.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredJoined = joinedGroups.filter(group =>
+        group.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredPublic = publicGroups.filter(group =>
+        group.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const handleCreateGroup = async (data) => {
+        try {
+            await dispatch(CreateGroup(data)).unwrap();
+            await fetchGroups();
+            setOpenCreateModal(false);
+        } catch (err) {
+            console.error("Create group failed:", err);
+        }
+    };
 
     return (
-        <div className={`min-h-screen ${SOFT_BG} transition-colors duration-300 pb-32`}>
-            <div className="container mx-auto px-6 py-12 max-w-7xl">
-                
-                {/* Cinematic Header */}
-                <header className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-black text-slate-800 dark:text-white tracking-tighter">
-                        Communities<span className="text-purple-600">.</span>
+        <div className={`min-h-screen ${SOFT_BG} transition-colors duration-300`}>
+            <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8 max-w-7xl">
+                {/* Header */}
+                <header className="text-center mb-10">
+                    <h1 className="text-3xl font-extrabold text-purple-800 dark:text-white">
+                        Study Groups & Community
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-3 font-medium">
-                        Collaborate and grow with learners worldwide
+                    <p className="text-gray-500 dark:text-slate-400 mt-1">
+                        Connect with learners and collaborate on your studies
                     </p>
                 </header>
 
-                {/* iOS Style Search + Action */}
-                <div className="flex flex-col sm:flex-row gap-4 mb-16 max-w-4xl mx-auto">
+                {/* Search + Create Group */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-10">
                     <div className="relative flex-grow">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500" />
                         <input
                             type="text"
-                            placeholder="Find a group..."
+                            placeholder="Search groups..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full py-4 pl-14 pr-6 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-2xl font-medium text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                            className="w-full py-3.5 pl-12 pr-4 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm focus:ring-purple-500 focus:border-purple-500 dark:bg-slate-900 dark:text-white"
                         />
                     </div>
                     <button
                         onClick={() => setOpenCreateModal(true)}
-                        className={`flex items-center justify-center px-8 py-4 text-white font-black text-xs uppercase tracking-widest rounded-2xl ${GRADIENT_CLASS} active:scale-95 transition-all`}
+                        className={`flex items-center justify-center px-6 py-3.5 text-white font-semibold rounded-xl shadow-lg shadow-purple-300/20 dark:shadow-none ${GRADIENT_CLASS}`}
                     >
                         <Plus className="w-5 h-5 mr-2" />
-                        New Group
+                        Create Group
                     </button>
                 </div>
 
-                {/* SECTIONS */}
-                <div className="space-y-20">
-                    <section>
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="w-2 h-8 bg-purple-600 rounded-full" />
-                            <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Your Creations</h2>
-                        </div>
-                        {createdGroups.filter(filterFn).length === 0 ? (
-                            <EmptyState text="No groups created yet." />
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {createdGroups.filter(filterFn).map(group => (
-                                    <GroupCard key={group.id} {...group} actionText="Open Chat" isJoined={true} onAction={() => navigate(`/groups/chat/${group.id}`)} />
+                {/* CREATED GROUPS */}
+                <section className="mb-10">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6">Created Groups</h2>
+
+                    {filteredCreated.length === 0 ? (
+                        <EmptyState text="You have not created any groups." />
+                    ) : (
+                        <div className="overflow-x-auto pb-4">
+                            <div className="flex space-x-6">
+                                {filteredCreated.map((group) => (
+                                    <div key={group.id} className="min-w-[300px] max-w-[320px] flex-shrink-0">
+                                        <GroupCard
+                                            {...group}
+                                            actionText="Open Chat"
+                                            isJoined={true}
+                                            onAction={() => window.open(`/groups/chat/${group.id}/`, "_blank")}
+                                        />
+                                    </div>
                                 ))}
                             </div>
-                        )}
-                    </section>
-
-                    <section>
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="w-2 h-8 bg-indigo-600 rounded-full" />
-                            <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Joined Communities</h2>
                         </div>
-                        {joinedGroups.filter(filterFn).length === 0 ? (
-                            <EmptyState text="You haven't joined any groups." />
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {joinedGroups.filter(filterFn).map(group => (
-                                    <GroupCard key={group.id} {...group} actionText="Open Chat" isJoined={true} onAction={() => navigate(`/groups/chat/${group.id}`)} />
+                    )}
+                </section>
+
+
+                {/* JOINED GROUPS */}
+                <section className="mb-10">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6">Joined Groups</h2>
+
+                    {filteredJoined.length === 0 ? (
+                        <EmptyState text="You haven't joined any groups yet." />
+                    ) : (
+                        <div className="overflow-x-auto pb-4">
+                            <div className="flex space-x-6">
+                                {filteredJoined.map((group) => (
+                                    <div key={group.id} className="min-w-[300px] max-w-[320px] flex-shrink-0">
+                                        <GroupCard
+                                            {...group}
+                                            actionText="Open Chat"
+                                            isJoined={true}
+                                            onAction={() => window.open(`/groups/chat/${group.id}/`, "_blank")}
+                                        />
+                                    </div>
                                 ))}
                             </div>
-                        )}
-                    </section>
-
-                    <section>
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="w-2 h-8 bg-emerald-500 rounded-full" />
-                            <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Discover More</h2>
                         </div>
-                        {publicGroups.filter(filterFn).length === 0 ? (
-                            <EmptyState text="No public groups found." />
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {publicGroups.filter(filterFn).map(group => (
-                                    <GroupCard key={group.id} {...group} actionText="Join" onAction={() => navigate(`/groups/chat/${group.id}`)} />
-                                ))}
-                            </div>
-                        )}
-                    </section>
-                </div>
+                    )}
+                </section>
 
-                <CreateGroupModal open={openCreateModal} onClose={() => setOpenCreateModal(false)} onSubmit={handleCreateGroup} />
+
+                {/* DISCOVER PUBLIC GROUPS */}
+                <section className="mb-10">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6">Discover Groups</h2>
+
+                    {filteredPublic.length === 0 ? (
+                        <EmptyState text="No public groups available currently." />
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {filteredPublic.map((group) => (
+                                <GroupCard
+                                    key={group.id}
+                                    {...group}
+                                    actionText="Join"
+                                    onAction={() => window.open(`/groups/chat/${group.id}/`, "_blank")}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </section>
+                <CreateGroupModal
+                    open={openCreateModal}
+                    onClose={() => setOpenCreateModal(false)}
+                    onSubmit={handleCreateGroup}
+                />
+
             </div>
         </div>
     );

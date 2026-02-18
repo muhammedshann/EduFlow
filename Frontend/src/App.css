@@ -31,37 +31,29 @@
     opacity: 0;
   }
 }
-/* 
-.pb-safe-area {
+/* Glassmorphism Depth */
+.backdrop-blur-3xl {
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
+}
+
+/* Hide scrollbars for the mobile navigation rail */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;    /* Firefox */
+}
+
+/* Safe area padding for iPhones with home indicators */
+.pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Hide scrollbar for the mobile nav scroll 
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-} */
-
-/* Custom class to hide scrollbars for horizontal nav */
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-.no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-}
-
-/* Handle iPhone safe areas (notches/home indicators) */
-.pb-safe {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
-}
-
-/* Ensure the main content doesn't get hidden behind the mobile nav */
+/* Prevent layout jump when switching between mobile and desktop */
 @media (max-width: 1023px) {
-    main, .main-content {
-        padding-bottom: 90px;
-    }
+  body {
+    padding-bottom: 120px;
+  }
 }

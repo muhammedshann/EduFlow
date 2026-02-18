@@ -35,13 +35,13 @@
     opacity: 0;
   }
 }
-/* --- High-End Glassmorphism --- */
-.backdrop-blur-2xl {
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+/* --- Cinematic iOS Blurs --- */
+.backdrop-blur-3xl {
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
 }
 
-/* --- Mobile Nav Safe-Area Handling --- */
+/* --- Mobile Safe-Area Handling --- */
 .pb-safe {
   padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
 }
@@ -53,14 +53,13 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch; /* Required for native feel */
   scroll-behavior: smooth;
 }
 
-/* --- Layout Shift Prevention --- */
+/* --- Global Content Spacing --- */
 @media (max-width: 1023px) {
   body {
-    /* Large padding ensures content is never hidden by the floating dock */
     padding-bottom: 140px; 
   }
 }

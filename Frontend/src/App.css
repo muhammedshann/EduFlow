@@ -1,11 +1,9 @@
-/* --- 1. Snappy Cinematic Loader --- */
 .loader {
   width: 48px;
   height: 48px;
   display: inline-block;
   position: relative;
 }
-
 .loader::after,
 .loader::before {
   content: '';  
@@ -13,14 +11,12 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  /* Added a subtle indigo glow to match your brand */
-  border: 2px solid #6366f1; 
+  border: 2px solid #FFF;
   position: absolute;
   left: 0;
   top: 0;
   animation: animloader 2s linear infinite;
 }
-
 .loader::after {
   animation-delay: 1s;
 }
@@ -31,33 +27,34 @@
     opacity: 1;
   }
   100% {
-    transform: scale(1.5); /* Slightly larger for a more "dissolving" feel */
+    transform: scale(1);
     opacity: 0;
   }
 }
-/* --- Cinematic iOS Blurs --- */
-.backdrop-blur-3xl {
-  backdrop-filter: blur(50px) saturate(200%);
-  -webkit-backdrop-filter: blur(50px) saturate(200%);
+
+/* Cinematic iOS-class Blurs */
+.backdrop-blur-2xl {
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
 }
 
-/* --- Mobile Safe-Area Handling --- */
+/* Safe-area padding for modern phone home indicators */
 .pb-safe {
   padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
 }
 
-/* --- Smooth Momentum Scrolling --- */
+/* Smooth Momentum Scrolling */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;    /* Firefox */
   -webkit-overflow-scrolling: touch; /* Required for native feel */
   scroll-behavior: smooth;
 }
 
-/* --- Global Content Spacing --- */
+/* Clear the floating mobile dock */
 @media (max-width: 1023px) {
   body {
     padding-bottom: 140px; 

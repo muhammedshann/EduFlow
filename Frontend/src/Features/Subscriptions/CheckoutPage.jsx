@@ -163,8 +163,8 @@ export default function CheckoutPage() {
     const displayPrice = parseFloat(bundle.price);
 
     return (
-        // Cinematic background gradient applied
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 py-12 px-4 flex items-center justify-center transition-colors duration-300">
+        /* FIXED: Added pb-36 to ensure content clears the floating dock */
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 pt-12 pb-36 px-4 flex items-center justify-center transition-colors duration-300">
             <div className="max-w-md w-full transition-all duration-500">
                 {!isSuccess && (
                     <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-gray-400 dark:text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 font-bold text-xs mb-8 transition-colors group">
@@ -173,7 +173,6 @@ export default function CheckoutPage() {
                     </button>
                 )}
 
-                {/* Subtle glass effect applied to the card */}
                 <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[40px] border border-white/20 dark:border-slate-800 shadow-2xl overflow-hidden transition-all duration-500 ${isSuccess ? 'scale-105 border-green-100 dark:border-green-900/30' : ''}`}>
                     {isSuccess ? (
                         <div className="p-10 text-center animate-in zoom-in-95 duration-500">

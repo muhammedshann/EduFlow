@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 const GRADIENT_CLASS =
     "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 dark:from-indigo-600 dark:to-purple-600";
 
-// FIXED: Cinematic gradient background logic
+// FIXED: Cinematic gradient background logic applied
 const SOFT_BG = "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20";
 const CARD_BG = "bg-white dark:bg-slate-900";
 const BORDER_COLOR = "border-purple-100 dark:border-slate-800";
@@ -152,7 +152,7 @@ const GroupCard = ({ id, name, members_count, description, type, actionText, isJ
             <div className="flex items-start justify-between">
                 <div className="flex items-start">
                     <div className="p-2 mr-3 rounded-md bg-purple-50 dark:bg-slate-800 text-purple-600 dark:text-indigo-400">
-                        <graduationcap className="w-5 h-5" />
+                        <GraduationCap className="w-5 h-5" />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-slate-100">{name}</h3>
                 </div>
@@ -166,7 +166,7 @@ const GroupCard = ({ id, name, members_count, description, type, actionText, isJ
                         onClick={onAction}
                         className="w-full py-2 rounded-lg font-semibold bg-white dark:bg-slate-800 text-purple-600 dark:text-indigo-400 border border-purple-300 dark:border-slate-700 hover:bg-purple-50 dark:hover:bg-slate-700 transition flex items-center justify-center"
                     >
-                        <messagesquare className="w-5 h-5 mr-2" />
+                        <MessageSquare className="w-5 h-5 mr-2" />
                         Open Chat
                     </button>
                 ) : (
@@ -230,8 +230,8 @@ const GroupsPage = () => {
     };
 
     return (
-        // FIXED: Applied Cinematic Background and small bottom padding
-        <div className={`min-h-screen ${SOFT_BG} transition-colors duration-300 pb-12`}>
+        /* FIXED: Increased pb-36 to create a large safety gap at the bottom for the dock */
+        <div className={`min-h-screen ${SOFT_BG} transition-colors duration-300 pb-36`}>
             <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8 max-w-7xl">
                 {/* Header */}
                 <header className="text-center mb-10">

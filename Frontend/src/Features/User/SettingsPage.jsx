@@ -268,8 +268,8 @@ export default function Settings() {
     const purchaseDate = plan?.last_purchase_date ? new Date(plan.last_purchase_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "—";
 
     return (
-        /* FIXED: Applied Cinematic Background Gradient and small bottom padding (pb-20) */
-        <div className="min-h-screen flex justify-center py-6 px-4 md:py-12 pb-20 relative transition-colors duration-300 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20">
+        /* FIXED: Increased bottom padding to pb-40 to clear the floating dock */
+        <div className="min-h-screen flex justify-center py-6 px-4 md:py-12 pb-40 relative transition-colors duration-300 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20">
             <div className="w-full max-w-4xl space-y-6 md:space-y-10 relative">
                 
                 {/* Header & Wallet Wrapper */}

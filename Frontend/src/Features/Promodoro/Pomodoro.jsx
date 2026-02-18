@@ -262,8 +262,9 @@ export default function Pomodoro() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 flex transition-colors duration-300">
-            <div className="flex-1 w-full max-w-6xl mx-auto p-4 md:p-6 pb-24 md:pb-16">
+        /* FIXED: Applied cinematic background and increased pb-40 to clear the floating dock */
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 flex transition-colors duration-300 pb-40">
+            <div className="flex-1 w-full max-w-6xl mx-auto p-4 md:p-6">
                 <div className="text-center space-y-2 mt-4">
                     <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
                         Pomodoro Timer
@@ -282,7 +283,7 @@ export default function Pomodoro() {
                             {isBreak ? '☕ Break Time' : '🎯 Focus Session'} · Cycle {currentCycle}
                         </div>
 
-                        {/* Circular Timer - Now Responsive */}
+                        {/* Circular Timer */}
                         <div className="relative">
                             <svg className="w-64 h-64 md:w-80 md:h-80 transform -rotate-90" viewBox="0 0 200 200">
                                 <circle cx="100" cy="100" r="90" stroke="#E2E8F0" className="dark:stroke-slate-800" strokeWidth="8" fill="transparent" />
@@ -314,7 +315,7 @@ export default function Pomodoro() {
                             </div>
                         </div>
 
-                        {/* Control Buttons - Full width on small screens */}
+                        {/* Control Buttons */}
                         <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 w-full">
                             <button onClick={toggleTimer} className={`flex-grow md:flex-grow-0 group relative px-8 md:px-12 py-3 md:py-4 rounded-xl md:rounded-2xl font-semibold text-white transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg ${isActive ? "bg-gradient-to-r from-red-500 to-red-600" : "bg-gradient-to-r from-indigo-500 to-indigo-600"}`}>
                                 <span className="flex items-center justify-center gap-3">{isActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}{isActive ? 'Pause' : 'Start'}</span>
@@ -333,7 +334,7 @@ export default function Pomodoro() {
                     </div>
                 </div>
 
-                {/* Stats Section - Stacked on Mobile */}
+                {/* Stats Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mt-8">
                     <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-xl border border-white/20 dark:border-slate-800 p-6 md:p-8">
                         <div className="flex items-center space-x-3 mb-6">

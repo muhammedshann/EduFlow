@@ -190,8 +190,8 @@ export default function LiveTranscriptionPage() {
     };
 
     return (
-        /* FIXED: Applied Cinematic Background Gradient and small bottom padding (pb-20) */
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 px-4 py-10 pb-20 transition-colors duration-300">
+        /* FIXED: Applied Cinematic Background Gradient and increased bottom padding (pb-40) to clear dock */
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 px-4 py-10 pb-40 transition-colors duration-300">
             <div className="max-w-4xl mx-auto space-y-8">
 
                 {/* Header */}

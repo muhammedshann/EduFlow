@@ -43,8 +43,8 @@ export default function SubscriptionPlans() {
     };
 
     return (
-        /* FIXED: Applied Cinematic Background Gradient and small bottom padding (pb-20) */
-        <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 mx-auto px-4 pb-20 transition-colors duration-300">
+        /* FIXED: Applied Cinematic Background Gradient and increased bottom padding to pb-40 to clear the dock */
+        <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 mx-auto px-4 pb-40 transition-colors duration-300">
             {/* Header Section with Toggles */}
             <header className="text-center mb-4 pt-8">
                 <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1">Choose Your Credit Pack</h2>

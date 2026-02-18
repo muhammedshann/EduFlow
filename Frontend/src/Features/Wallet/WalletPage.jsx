@@ -140,8 +140,8 @@ export default function WalletPage() {
     ];
 
     return (
-        /* FIXED: Applied Cinematic Background Gradient and small bottom padding (pb-20) */
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 flex transition-colors duration-300 pb-20">
+        /* FIXED: Applied Cinematic Background Gradient and increased bottom padding to pb-40 to clear the dock */
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 flex transition-colors duration-300 pb-40">
             <div className="flex-1">
                 <header className="text-center py-8">
                     <h1 className="text-4xl font-extrabold text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text">Wallet</h1>

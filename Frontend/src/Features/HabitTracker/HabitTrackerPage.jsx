@@ -204,8 +204,8 @@ const HabitTracker = () => {
     };
 
     return (
-        // FIXED: Applied Cinematic Background Gradient and small bottom padding
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 p-4 sm:p-8 transition-colors duration-300 pb-12">
+        /* FIXED: Increased bottom padding to pb-36 for safe clearance of the floating dock */
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 p-4 sm:p-8 transition-colors duration-300 pb-36">
             <div className="max-w-6xl mx-auto">
 
                 {/* HEADER */}
@@ -273,7 +273,7 @@ const HabitTracker = () => {
                 </div>
 
                 {/* DAILY & WEEKLY STATS */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 pb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                     {/* DAILY SUMMARY */}
                     <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 p-6 sm:p-8">
                         <div className="flex items-center space-x-3 mb-6">

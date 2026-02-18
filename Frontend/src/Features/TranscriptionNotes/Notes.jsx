@@ -90,8 +90,8 @@ export default function NotesPage() {
     };
 
     return (
-        /* FIXED: Applied Cinematic Background Gradient and small bottom padding (pb-20) */
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 p-6 pb-20 transition-colors duration-300">
+        /* FIXED: Applied Cinematic Background Gradient and increased bottom padding to pb-40 */
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 p-6 pb-40 transition-colors duration-300">
             <div className="max-w-7xl mx-auto space-y-8">
 
                 {/* Header */}

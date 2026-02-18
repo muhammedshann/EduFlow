@@ -39,43 +39,37 @@ export default function Sidebar() {
 
     return (
         <LayoutGroup>
-            {/* --- ULTIMATE GLASS MOBILE DOCK (Phone Experience) --- */}
-            <nav className="lg:hidden fixed bottom-6 left-5 right-5 z-[100] bg-white/40 dark:bg-slate-950/60 backdrop-blur-3xl border border-white/20 dark:border-slate-800 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] rounded-[3rem] px-2 py-3 overflow-hidden">
-                <div className="flex items-center overflow-x-auto no-scrollbar gap-2 relative px-2">
+            {/* --- iOS STYLE MOBILE DOCK --- */}
+            <nav className="lg:hidden fixed bottom-6 left-5 right-5 z-[100] bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-800 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] rounded-[3rem] px-2 py-3 overflow-hidden">
+                <div className="flex items-center overflow-x-auto no-scrollbar gap-2 px-2 relative">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname.startsWith(item.path);
-                        const isSettings = item.label === "Settings";
                         
                         return (
                             <motion.button
                                 key={item.label}
                                 layout
-                                whileTap={{ scale: 0.9 }}
+                                whileTap={{ scale: 0.92 }}
                                 onClick={() => handleNavClick(item.path)}
-                                className={`flex items-center justify-center gap-3 py-3 px-5 rounded-full relative whitespace-nowrap transition-all
-                                ${isActive 
-                                    ? "text-white" 
-                                    : isSettings 
-                                        ? "text-indigo-600 dark:text-indigo-400 font-bold" 
-                                        : "text-slate-500 dark:text-slate-400 hover:text-indigo-600"
-                                }`}
+                                className={`flex items-center justify-center gap-3 py-3 px-5 rounded-full relative whitespace-nowrap transition-all duration-300
+                                ${isActive ? "text-white" : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-200"}`}
                             >
                                 {isActive && (
                                     <motion.div
-                                        layoutId="activePillMobile"
-                                        className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700 rounded-full z-0 shadow-lg"
-                                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                                        layoutId="iosActivePill"
+                                        className="absolute inset-0 bg-indigo-600 dark:bg-indigo-500 rounded-full z-0 shadow-lg shadow-indigo-500/30"
+                                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                     />
                                 )}
 
                                 <div className="relative z-10 flex items-center gap-2">
-                                    <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                                    <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                                     {isActive && (
                                         <motion.span
                                             initial={{ opacity: 0, x: -5 }}
                                             animate={{ opacity: 1, x: 0 }}
-                                            className="text-xs font-black tracking-tight"
+                                            className="text-xs font-bold tracking-tight"
                                         >
                                             {item.label}
                                         </motion.span>
@@ -84,108 +78,77 @@ export default function Sidebar() {
                             </motion.button>
                         );
                     })}
-                    
-                    {/* Mobile Logout: Placed at the end of the scroll for better flow */}
-                    <button
-                        onClick={() => logout()}
-                        className="flex items-center justify-center gap-2 py-3 px-5 text-red-500/80 font-bold text-xs uppercase tracking-widest whitespace-nowrap"
-                    >
-                        <LogOut size={18} />
-                        <span>Exit</span>
-                    </button>
                 </div>
             </nav>
 
-            {/* --- YOUR ORIGINAL DESKTOP SIDEBAR --- */}
+            {/* --- iOS STYLE DESKTOP RAIL --- */}
             <aside
-                className={`hidden lg:flex fixed left-0 top-0 flex-col h-full bg-white dark:bg-slate-900 transition-all duration-500 ease-in-out z-[50] border-r border-slate-100/60 dark:border-slate-800
-                ${collapsed ? "lg:w-20" : "lg:w-72"}`}
+                className={`hidden lg:flex fixed left-0 top-0 flex-col h-full bg-white dark:bg-[#07090f] transition-all duration-500 z-[50] border-r border-slate-100 dark:border-slate-800/60
+                ${collapsed ? "w-24" : "w-80"}`}
             >
-                {/* Desktop Toggle Button */}
-                <button
-                    onClick={toggleSidebar}
-                    className="absolute -right-3 top-9 z-50 w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-indigo-600 shadow-sm transition-colors"
-                >
-                    {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-                </button>
-
-                {/* Brand Header */}
-                <div className="h-20 flex items-center px-6 shrink-0 relative">
-                    <div className={`flex items-center w-full ${collapsed ? "justify-center" : "justify-between"}`}>
-                        <div className="relative w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
-                            <Sparkles className="w-5 h-5 text-white" />
+                {/* Brand Logo Section */}
+                <div className="h-28 flex items-center px-10 shrink-0">
+                    <div className={`flex items-center gap-4 ${collapsed ? "mx-auto" : ""}`}>
+                        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-500/20">
+                            <Sparkles className="w-6 h-6 text-white" />
                         </div>
                         {!collapsed && (
-                            <span className="text-slate-800 dark:text-slate-100 font-extrabold text-xl tracking-tight">
-                                EduFlow<span className="text-indigo-600">.</span>
-                            </span>
+                            <div className="flex flex-col">
+                                <span className="text-slate-800 dark:text-white font-black text-xl tracking-tighter leading-none">
+                                    EduFlow<span className="text-indigo-600">.</span>
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1 opacity-60">Control</span>
+                            </div>
                         )}
                     </div>
                 </div>
 
-                {/* Navigation with Liquid Slide Effect */}
-                <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto no-scrollbar">
+                {/* Navigation Rail */}
+                <nav className="flex-1 px-6 py-4 space-y-2 overflow-y-auto no-scrollbar">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname.startsWith(item.path);
+                        
                         return (
                             <div
                                 key={item.label}
                                 onClick={() => handleNavClick(item.path)}
-                                role="button"
-                                className={`group flex items-center w-full px-3 py-3 rounded-xl transition-all duration-500 relative cursor-pointer outline-none mb-1
-                                ${isActive
-                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100 dark:shadow-none"
-                                    : "text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-slate-800/50"
-                                }`}
+                                className={`group flex items-center w-full px-4 py-4 rounded-2xl transition-all duration-300 relative cursor-pointer
+                                ${isActive ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600" : "text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}
                             >
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="desktopActive"
-                                        className="absolute inset-0 bg-indigo-600 rounded-xl z-0"
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                <Icon className={`${collapsed ? 'mx-auto' : 'mr-3'} w-5 h-5 shrink-0 transition-transform duration-300 group-hover:scale-110 relative z-10`} />
-                                {!collapsed && (
-                                    <span className={`truncate text-sm font-medium tracking-wide relative z-10 ${isActive ? "text-white" : "text-slate-600 dark:text-slate-300"}`}>
-                                        {item.label}
-                                    </span>
-                                )}
+                                <Icon className={`${collapsed ? 'mx-auto' : 'mr-5'} w-5 h-5 transition-transform group-hover:scale-110`} />
+                                {!collapsed && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
+                                {isActive && !collapsed && <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-indigo-600 rounded-r-full" />}
                             </div>
                         );
                     })}
                 </nav>
 
-                {/* Boutique Credit Card */}
-                <div className="p-4 space-y-4">
-                    <div className={`transition-all duration-500 rounded-2xl border border-indigo-50 dark:border-slate-700
-                        ${collapsed ? "p-2 bg-white dark:bg-slate-800" : "p-4 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900"}`}>
+                {/* Token Balance Card */}
+                <div className="p-8">
+                    <div className={`rounded-[2.5rem] transition-all duration-500 overflow-hidden relative
+                        ${collapsed ? "p-3 bg-slate-50 dark:bg-slate-800" : "p-7 bg-indigo-600 shadow-2xl text-white"}`}>
                         {!collapsed ? (
-                            <div className="relative z-10">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-400">Balance</span>
-                                    <Wallet className="w-3.5 h-3.5 text-indigo-400" />
+                            <>
+                                <div className="relative z-10">
+                                    <div className="flex justify-between items-center opacity-70 mb-4">
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Balance</span>
+                                        <Wallet size={16} />
+                                    </div>
+                                    <div className="text-4xl font-black">{userCredits?.remaining_credits || 0}</div>
                                 </div>
-                                <div className="flex items-end gap-1.5">
-                                    <span className="text-2xl font-black text-slate-800 dark:text-slate-100 tabular-nums">{userCredits?.remaining_credits || 0}</span>
-                                    <span className="text-slate-400 text-[10px] font-bold mb-1.5">TOKENS</span>
-                                </div>
-                            </div>
+                                <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
+                            </>
                         ) : (
-                            <div className="flex flex-col items-center py-2 gap-1">
-                                 <Wallet className="w-4 h-4 text-indigo-500" />
-                                 <span className="text-[10px] font-black text-slate-800 dark:text-slate-100">{userCredits?.remaining_credits || 0}</span>
+                            <div className="flex flex-col items-center gap-2">
+                                <Wallet size={18} className="text-indigo-500" />
+                                <span className="text-[10px] font-black">{userCredits?.remaining_credits || 0}</span>
                             </div>
                         )}
                     </div>
 
-                    <button
-                        onClick={() => logout()}
-                        className={`flex items-center group transition-all duration-300 rounded-xl w-full
-                        ${collapsed ? "justify-center p-3 text-slate-400 hover:text-red-500" : "px-4 py-3 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 font-semibold text-sm"}`}
-                    >
-                        <LogOut className={`w-5 h-5 ${collapsed ? '' : 'mr-3'} transition-transform group-hover:rotate-12`} />
+                    <button onClick={logout} className="mt-8 flex items-center w-full px-6 py-4 text-slate-400 hover:text-red-500 transition-colors font-bold text-xs uppercase tracking-widest">
+                        <LogOut size={18} className={collapsed ? 'mx-auto' : 'mr-5'} />
                         {!collapsed && <span>Sign Out</span>}
                     </button>
                 </div>

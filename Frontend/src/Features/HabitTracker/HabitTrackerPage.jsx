@@ -3,7 +3,7 @@ import { Plus, TrendingUp, CheckCircle, Flame, Heart, Info, Trash2, X } from 'lu
 import { useDispatch } from 'react-redux';
 import { AddHabit, FetchHabit, StreakStatsHabit, ToggleHabit, WeeklyStatsHabit, DeleteHabit } from '../../Redux/HabitTrackerSlice';
 import { DeleteConfirmModal } from '../../Components/ConfirmDelete';
-
+import { motion, AnimatePresence } from "framer-motion";
 
 const HabitTracker = () => {
     const dispatch = useDispatch();
@@ -105,7 +105,7 @@ const HabitTracker = () => {
         const isDone = habit.done_today ?? habit.doneToday ?? false;
 
         return (
-            <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-slate-800 last:border-b-0 hover:bg-purple-50/50 dark:hover:bg-slate-800/50 transition duration-150">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-slate-800 last:border-b-0 hover:bg-purple-50/50 dark:hover:bg-indigo-500/5 transition duration-150">
                 <div className="flex items-center flex-1 min-w-0">
                     <label className="flex items-center cursor-pointer">
                         <input
@@ -182,7 +182,7 @@ const HabitTracker = () => {
                     placeholder="Enter new habit name"
                     value={habitTitle}
                     onChange={(e) => setHabitTitle(e.target.value)}
-                    className="p-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-purple-500 focus:border-purple-500 outline-none"
+                    className="p-3 border border-gray-200 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all"
                 />
 
                 <input
@@ -190,54 +190,56 @@ const HabitTracker = () => {
                     placeholder="Optional description"
                     value={habitDescription}
                     onChange={(e) => setHabitDescription(e.target.value)}
-                    className="p-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-purple-500 focus:border-purple-500 outline-none"
+                    className="p-3 border border-gray-200 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all"
                 />
 
                 <button
                     onClick={handleSave}
-                    className="flex items-center justify-center px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-150 text-sm"
+                    className="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black rounded-xl shadow-lg shadow-purple-500/20 hover:from-purple-700 hover:to-indigo-700 transition duration-150 text-xs uppercase tracking-widest"
                 >
-                    <CheckCircle className="w-4 h-4 mr-1" /> Save Habit
+                    <CheckCircle className="w-4 h-4 mr-2" /> Save Habit
                 </button>
             </div>
         );
     };
 
     return (
-        <div className="w-full p-4 sm:p-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 p-4 sm:p-8 transition-colors duration-300 pb-32">
             <div className="max-w-6xl mx-auto">
 
                 {/* HEADER */}
                 <header className="text-center py-6">
-                    <h1 className="text-3xl font-extrabold text-purple-800 dark:text-white">Habit Tracker</h1>
-                    <p className="text-gray-500 dark:text-slate-400 mt-1">Build consistent daily habits and track your progress</p>
+                    <h1 className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">
+                        Habit Tracker<span className="text-purple-600">.</span>
+                    </h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Build consistency and master your routine</p>
                 </header>
 
                 {/* TODAY STATS */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-6 mb-8 border border-gray-100 dark:border-slate-800">
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-8 mb-8 border border-white/20 dark:border-slate-800">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                         <div>
-                            <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100">Today's Progress</h2>
-                            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Focusing on building these healthy habits!</p>
+                            <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Today's Progress</h2>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Focusing on your healthy habits!</p>
                         </div>
 
-                        <div className="flex items-center space-x-4 mt-3 sm:mt-0">
-                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                {completedHabitsToday}/{totalHabits}
+                        <div className="flex items-center space-x-6 mt-4 sm:mt-0">
+                            <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                                {completedHabitsToday}<span className="text-slate-400 text-xl mx-1">/</span>{totalHabits}
                             </div>
 
-                            <div className="relative w-16 h-16">
+                            <div className="relative w-20 h-20">
                                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                    <circle cx="50" cy="50" r="45" fill="transparent" stroke="#E5E7EB" strokeWidth="10" className="dark:stroke-slate-800" />
+                                    <circle cx="50" cy="50" r="42" fill="transparent" stroke="#E2E8F0" strokeWidth="8" className="dark:stroke-slate-800" />
                                     <circle
-                                        cx="50" cy="50" r="45" fill="transparent" stroke="#10B981" strokeWidth="10"
-                                        strokeDasharray={2 * Math.PI * 45}
-                                        strokeDashoffset={2 * Math.PI * 45 * (1 - completionPercentage / 100)}
+                                        cx="50" cy="50" r="42" fill="transparent" stroke="#10B981" strokeWidth="8"
+                                        strokeDasharray={2 * Math.PI * 42}
+                                        strokeDashoffset={2 * Math.PI * 42 * (1 - completionPercentage / 100)}
                                         strokeLinecap="round"
-                                        className="transition-all duration-700 ease-in-out"
+                                        className="transition-all duration-1000 ease-in-out"
                                     />
                                 </svg>
-                                <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-green-600 dark:text-green-400">
+                                <span className="absolute inset-0 flex items-center justify-center text-xs font-black text-emerald-600 dark:text-emerald-400">
                                     {completionPercentage}%
                                 </span>
                             </div>
@@ -246,24 +248,35 @@ const HabitTracker = () => {
                 </div>
 
                 {/* HABIT LIST */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 mb-8">
-                    <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-slate-800">
-                        <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100">Daily Habits</h2>
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 mb-8 overflow-hidden">
+                    <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-slate-800">
+                        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Daily Habits</h2>
                         <button
                             onClick={() => setIsAddingHabit(prev => !prev)}
-                            className="flex items-center px-4 py-2 bg-purple-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400 font-semibold rounded-full hover:bg-purple-200 dark:hover:bg-slate-700 transition duration-150 text-sm shadow-sm"
+                            className="flex items-center px-6 py-2.5 bg-purple-100 dark:bg-indigo-500/10 text-purple-600 dark:text-indigo-400 font-black text-xs uppercase tracking-widest rounded-full hover:bg-purple-200 dark:hover:bg-indigo-500/20 transition duration-150 shadow-sm"
                         >
-                            <Plus className="w-4 h-4 mr-1" /> {isAddingHabit ? 'Close' : 'Add Habit'}
+                            <Plus className="w-4 h-4 mr-2" /> {isAddingHabit ? 'Close' : 'Add Habit'}
                         </button>
                     </div>
 
-                    {isAddingHabit && <AddHabitInput />}
+                    <AnimatePresence>
+                        {isAddingHabit && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                            >
+                                <AddHabitInput />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <div className="divide-y divide-gray-100 dark:divide-slate-800">
                         {habits.length === 0 ? (
-                            <div className="flex items-center justify-center p-8 text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-900/50">
-                                <Info className="w-5 h-5 text-purple-400 mr-2" />
-                                <p className="font-medium">No habits found. Click 'Add Habit' to start tracking!</p>
+                            <div className="flex flex-col items-center justify-center p-12 text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/50">
+                                <Info className="w-8 h-8 text-purple-400 mb-3 opacity-50" />
+                                <p className="font-bold tracking-tight text-center italic">No habits found. Click 'Add Habit' to start your journey!</p>
                             </div>
                         ) : (
                             habits.map(habit => <DailyHabitItem key={habit.id} habit={habit} />)
@@ -272,38 +285,38 @@ const HabitTracker = () => {
                 </div>
 
                 {/* DAILY & WEEKLY STATS */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 pb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                     {/* DAILY SUMMARY */}
-                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 p-6 sm:p-8">
+                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 p-8">
                         <div className="flex items-center space-x-3 mb-6">
                             <Heart className="w-6 h-6 text-pink-500" />
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">
-                                Daily Summary <span className="text-sm text-gray-500 dark:text-slate-400 ml-2">({dailySummary.date})</span>
+                            <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+                                Daily Summary <span className="text-xs text-slate-400 font-bold ml-2">({dailySummary.date})</span>
                             </h3>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="flex justify-between border-b border-gray-100 dark:border-slate-800 pb-2">
-                                <span className="font-medium text-gray-700 dark:text-slate-300">Total Habits Tracked</span>
-                                <span className="text-lg font-semibold text-gray-900 dark:text-white">{dailySummary.total_habits}</span>
+                        <div className="space-y-5">
+                            <div className="flex justify-between items-center border-b border-gray-100 dark:border-slate-800 pb-3">
+                                <span className="text-sm font-bold text-slate-600 dark:text-slate-400">Total Tracked</span>
+                                <span className="text-xl font-black text-slate-800 dark:text-white">{dailySummary.total_habits}</span>
                             </div>
-                            <div className="flex justify-between border-b border-gray-100 dark:border-slate-800 pb-2">
-                                <span className="font-medium text-gray-700 dark:text-slate-300">Habits Completed Today</span>
-                                <span className="text-2xl font-bold text-pink-600">{dailySummary.completed_habits}</span>
+                            <div className="flex justify-between items-center border-b border-gray-100 dark:border-slate-800 pb-3">
+                                <span className="text-sm font-bold text-slate-600 dark:text-slate-400">Completed Today</span>
+                                <span className="text-3xl font-black text-pink-600">{dailySummary.completed_habits}</span>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="font-medium text-gray-700 dark:text-slate-300">Streak</span>
-                                <span className="text-lg font-semibold text-pink-600">{longestStreak} days</span>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm font-bold text-slate-600 dark:text-slate-400">Streak</span>
+                                <span className="text-xl font-black text-pink-600">{longestStreak} days</span>
                             </div>
 
-                            <div className="mt-6 pt-2">
-                                <div className="w-full bg-gray-200 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+                            <div className="mt-8 pt-4">
+                                <div className="w-full bg-slate-200 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
                                     <div
-                                        className="h-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-700"
-                                        style={{ width: `${Math.min((dailySummary.completed_habits / dailySummary.total_habits) * 100, 100)}%` }}
+                                        className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-1000"
+                                        style={{ width: `${Math.min((dailySummary.completed_habits / (dailySummary.total_habits || 1)) * 100, 100)}%` }}
                                     ></div>
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-2 text-right">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3 text-right">
                                     {dailySummary.completed_habits}/{dailySummary.total_habits} habits completed
                                 </p>
                             </div>
@@ -311,25 +324,25 @@ const HabitTracker = () => {
                     </div>
 
                     {/* WEEKLY STATS */}
-                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 p-6 sm:p-8">
+                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 p-8">
                         <div className="flex items-center space-x-3 mb-6">
-                            <TrendingUp className="w-6 h-6 text-green-500" />
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">Weekly Completion Rate</h3>
+                            <TrendingUp className="w-6 h-6 text-emerald-500" />
+                            <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Weekly Overview</h3>
                         </div>
 
                         <div className="space-y-4">
                             {Array.isArray(weeklyOverview) &&
                                 weeklyOverview.map(item => (
                                     <div key={item.date} className="flex items-center justify-between">
-                                        <span className="font-medium text-gray-700 dark:text-slate-300 w-10">{item.date}</span>
-                                        <div className="flex items-center space-x-2 w-full max-w-xs">
-                                            <div className="bg-gray-200 dark:bg-slate-800 h-2 rounded-full flex-grow overflow-hidden">
+                                        <span className="text-xs font-black text-slate-500 uppercase w-10">{item.date}</span>
+                                        <div className="flex items-center space-x-3 w-full max-w-xs">
+                                            <div className="bg-slate-200 dark:bg-slate-800 h-2 rounded-full flex-grow overflow-hidden">
                                                 <div
-                                                    className="h-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-700"
+                                                    className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-green-500 transition-all duration-1000"
                                                     style={{ width: `${Math.min(item.completion_percent, 100)}%` }}
                                                 ></div>
                                             </div>
-                                            <span className="text-xs text-gray-600 dark:text-slate-400 w-10 text-right">{item.completion_percent}%</span>
+                                            <span className="text-[10px] font-black text-slate-400 w-10 text-right">{item.completion_percent}%</span>
                                         </div>
                                     </div>
                                 ))}

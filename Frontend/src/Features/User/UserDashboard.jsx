@@ -9,7 +9,8 @@ import {
     CreditCard,
     LogOut,
     Settings,
-    Notebook
+    Notebook,
+    Sparkles
 } from "lucide-react";
 import { useUser } from "../../Context/UserContext";
 import { useEffect, useState } from "react";
@@ -17,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { WeeklyStatsHabit } from "../../Redux/HabitTrackerSlice";
 import { FetchDailyStats } from "../../Redux/PomodoroSlice";
 import { FetchNotes } from "../../Redux/LiveTranscriptionSlice";
+import { motion } from "framer-motion";
 
 export default function UserDashboard() {
     const [TodayHabitPercentage, setTodayHabitPercentage] = useState(0);
@@ -27,18 +29,23 @@ export default function UserDashboard() {
     const dispatch = useDispatch();
     const { user, logout } = useUser();
 
-    // -- Reusable Card --
+    // Cinematic Constants
+    const SOFT_BG = "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20";
+    const CARD_BG = "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl";
+    const BORDER_COLOR = "border-slate-200 dark:border-slate-800";
+
+    // -- Reusable Boutique Card --
     const Card = ({ children, className }) => (
-        <div className={`bg-white dark:bg-slate-800 shadow-sm md:shadow-md dark:shadow-slate-900/50 rounded-xl p-4 transition-colors duration-300 ${className}`}>
+        <div className={`${CARD_BG} border ${BORDER_COLOR} shadow-xl rounded-[2rem] p-6 transition-all duration-300 ${className}`}>
             {children}
         </div>
     );
 
-    // -- Reusable Button --
+    // -- Reusable iOS Style Button --
     const Button = ({ children, className, onClick }) => (
         <button
             onClick={onClick}
-            className={`px-4 py-3 md:py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors duration-200 text-sm md:text-base ${className}`}
+            className={`px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border ${BORDER_COLOR} transition-all duration-200 text-sm font-bold tracking-tight ${className}`}
         >
             {children}
         </button>
@@ -67,207 +74,141 @@ export default function UserDashboard() {
     }, []);
 
     return (
-        // FIXED: p-15 is not standard. Changed to p-4 for mobile, p-8 for laptop.
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300 p-4 md:p-8 space-y-6 md:space-y-8 pb-24 md:pb-8">
+        <div className={`min-h-screen ${SOFT_BG} transition-colors duration-300 p-4 md:p-10 space-y-8 pb-32`}>
             
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
-                {/* User Info */}
-                <div className="flex items-center space-x-3 md:space-x-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex items-center space-x-4">
                     <div
-                        className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-purple-500 transition-all flex-shrink-0"
+                        className="w-16 h-16 rounded-[1.5rem] overflow-hidden cursor-pointer border-2 border-white/20 shadow-2xl hover:scale-105 transition-all flex-shrink-0"
                         onClick={() => navigate('/settings/')}
                     >
                         {user.profilePic ? (
-                            <img
-                                src={user.profilePic}
-                                alt="Profile"
-                                className="w-full h-full object-cover"
-                            />
+                            <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                            <div className="bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm md:text-lg font-bold w-full h-full">
+                            <div className="bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white text-xl font-black w-full h-full">
                                 {`${user.firstname?.[0] || ""}${user.lastname?.[0] || ""}`.toUpperCase()}
                             </div>
                         )}
                     </div>
 
-                    <div className="flex-1 min-w-0"> {/* min-w-0 allows text truncation */}
-                        {/* FIXED: Smaller text on mobile (text-xl) */}
-                        <h1 className="text-xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400 truncate">
-                            Hi, {user ? user.username : 'Alex'}!
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-white tracking-tighter">
+                            Hi, {user ? user.username : 'Shan'}<span className="text-indigo-600">.</span>
                         </h1>
-                        <p className="text-sm md:text-base text-gray-500 dark:text-slate-400 truncate">
-                            Let's be productive today.
-                        </p>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">Ready for a productive day?</p>
                     </div>
                 </div>
 
-                {/* Action Buttons - Stacked horizontally on mobile now */}
-                <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 bg-white dark:bg-slate-800 md:bg-transparent md:dark:bg-transparent p-2 md:p-0 rounded-xl shadow-sm md:shadow-none">
-                    <div className="flex items-center gap-2">
-                        <button 
-                            className="p-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition" 
-                            onClick={() => navigate('/notification/')}
-                        >
-                            <Bell className="h-5 w-5 md:h-6 md:w-6" />
-                        </button>
-
-                        <button 
-                            className="p-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition" 
-                            onClick={() => navigate('/settings/')}
-                        >
-                            <Settings className="w-5 h-5 md:w-6 md:h-6" />
-                        </button>
-                    </div>
-
-                    {/* Separator for mobile */}
-                    <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 md:hidden"></div>
-                    
-                    <button 
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 transition text-sm font-medium" 
-                        onClick={() => logout()}
-                    >
-                        <LogOut className="w-4 h-4 md:w-5 md:h-5" />
-                        <span className="md:inline">Logout</span>
+                <div className="flex items-center gap-3">
+                    <button className="p-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 border ${BORDER_COLOR} text-slate-400 hover:text-indigo-500 transition-all" onClick={() => navigate('/notification/')}>
+                        <Bell size={20} />
+                    </button>
+                    <button className="p-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 border ${BORDER_COLOR} text-slate-400 hover:text-indigo-500 transition-all" onClick={() => navigate('/settings/')}>
+                        <Settings size={20} />
+                    </button>
+                    <button className="flex items-center gap-2 px-5 py-3 rounded-2xl text-rose-500 font-black text-xs uppercase tracking-widest bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 transition-all" onClick={() => logout()}>
+                        <LogOut size={16} />
+                        <span>Exit</span>
                     </button>
                 </div>
             </div>
 
-            {/* Quick Stats Grid - 2 columns on mobile, 4 on desktop */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                <Card>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Today's Focus</p>
-                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TodayPomodoroCount}</p>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Pomodoros</p>
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                    { label: "Focus", val: TodayPomodoroCount, unit: "Sessions", icon: Timer, color: "text-purple-500", bg: "dark:bg-purple-500/10" },
+                    { label: "Habits", val: `${TodayHabitPercentage}%`, unit: "Completed", icon: CheckSquare, color: "text-emerald-500", bg: "dark:bg-emerald-500/10" },
+                    { label: "Credits", val: userCredits?.remaining_credits || 0, unit: "Tokens", icon: CreditCard, color: "text-blue-500", bg: "dark:bg-blue-500/10" },
+                    { label: "Total", val: TotalNotes, unit: "Notes", icon: Mic, color: "text-indigo-500", bg: "dark:bg-indigo-500/10" },
+                ].map((stat, i) => (
+                    <Card key={i}>
+                        <div className="flex flex-col gap-4">
+                            <div className={`p-3 rounded-2xl w-fit ${stat.bg} ${stat.color} border ${BORDER_COLOR}`}>
+                                <stat.icon size={24} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{stat.label}</p>
+                                <p className="text-3xl font-black text-slate-800 dark:text-white">{stat.val}</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">{stat.unit}</p>
+                            </div>
                         </div>
-                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
-                            <Timer className="h-5 w-5 md:h-8 md:w-8 text-purple-500 dark:text-purple-400" />
-                        </div>
-                    </div>
-                </Card>
-
-                <Card>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Habits</p>
-                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TodayHabitPercentage}%</p>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Completed</p>
-                        </div>
-                        <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg w-fit">
-                            <CheckSquare className="h-5 w-5 md:h-8 md:w-8 text-green-500 dark:text-green-400" />
-                        </div>
-                    </div>
-                </Card>
-
-                <Card>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Credits</p>
-                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{userCredits?.remaining_credits || 0}</p>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Remaining</p>
-                        </div>
-                        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg w-fit">
-                            <CreditCard className="h-5 w-5 md:h-8 md:w-8 text-blue-500 dark:text-blue-400" />
-                        </div>
-                    </div>
-                </Card>
-
-                <Card>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Total</p>
-                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TotalNotes}</p>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Notes</p>
-                        </div>
-                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
-                            <Mic className="h-5 w-5 md:h-8 md:w-8 text-purple-500 dark:text-purple-400" />
-                        </div>
-                    </div>
-                </Card>
+                    </Card>
+                ))}
             </div>
 
-            {/* Main Features Grid - 1 col mobile, 2 col desktop */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Main Features Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
-                {/* Transcription */}
-                <Card className="border-l-4 border-purple-500">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <Mic className="h-5 w-5 mr-2 text-purple-500" />
-                        Smart Notes
-                    </h2>
+                {/* Smart Notes */}
+                <Card className="border-t-4 border-t-purple-600">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-purple-500/10 rounded-xl text-purple-600"><Mic size={20}/></div>
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight text-lg md:text-xl">Smart Notes</h2>
+                    </div>
                     <div className="space-y-3">
                         <NavLink to="/smart-note/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 md:h-12 active:scale-95 transition-transform">
-                                <Mic className="h-4 w-4 mr-3 text-purple-500" />
-                                Start Live/Upload Note
+                            <Button className="w-full justify-start gap-3 active:scale-95 transition-all">
+                                <Sparkles size={16} className="text-purple-500" /> Start New Session
                             </Button>
                         </NavLink>
                         <NavLink to="/notes/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 md:h-12 active:scale-95 transition-transform">
-                                <Notebook className="h-4 w-4 mr-3 text-purple-500" />
-                                My Notebooks
+                            <Button className="w-full justify-start gap-3 active:scale-95 transition-all">
+                                <Notebook size={16} className="text-purple-500" /> Access Notebooks
                             </Button>
                         </NavLink>
                     </div>
                 </Card>
 
                 {/* AI Assistant */}
-                <Card className="border-l-4 border-blue-500">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <MessageSquare className="h-5 w-5 mr-2 text-blue-500" />
-                        AI Assistant
-                    </h2>
-                    <div className="space-y-3">
+                <Card className="border-t-4 border-t-blue-600">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-blue-500/10 rounded-xl text-blue-600"><MessageSquare size={20}/></div>
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">AI Assistant</h2>
+                    </div>
+                    <div className="space-y-4">
                         <NavLink to="/chat-bot/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
-                                <MessageSquare className="h-4 w-4 mr-3 text-blue-500" />
-                                Chat with AI
+                            <Button className="w-full justify-start gap-3 active:scale-95 transition-all">
+                                <MessageSquare size={16} className="text-blue-500" /> Chat with AI
                             </Button>
                         </NavLink>
-                        <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400 px-1">
-                            Ask questions about your studies anytime.
-                        </p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1 leading-relaxed">Personal tutor available 24/7</p>
                     </div>
                 </Card>
 
                 {/* Focus & Habits */}
-                <Card className="border-l-4 border-green-500">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <Timer className="h-5 w-5 mr-2 text-green-500" />
-                        Focus & Habits
-                    </h2>
+                <Card className="border-t-4 border-t-emerald-600">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-600"><Timer size={20}/></div>
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight text-lg md:text-xl">Productivity</h2>
+                    </div>
                     <div className="space-y-3">
                         <NavLink to="/promodoro/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
-                                <Timer className="h-4 w-4 mr-3 text-green-500" />
-                                Pomodoro Timer
+                            <Button className="w-full justify-start gap-3 active:scale-95 transition-all">
+                                <Timer size={16} className="text-emerald-500" /> Pomodoro Timer
                             </Button>
                         </NavLink>
                         <NavLink to="/habit-tracker/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
-                                <CheckSquare className="h-4 w-4 mr-3 text-green-500" />
-                                Habit Tracker
+                            <Button className="w-full justify-start gap-3 active:scale-95 transition-all">
+                                <CheckSquare size={16} className="text-emerald-500" /> Daily Habits
                             </Button>
                         </NavLink>
                     </div>
                 </Card>
 
                 {/* Community */}
-                <Card className="border-l-4 border-pink-500">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <Users className="h-5 w-5 mr-2 text-pink-500" />
-                        Community
-                    </h2>
-                    <div className="space-y-3">
+                <Card className="border-t-4 border-t-pink-600">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-pink-500/10 rounded-xl text-pink-600"><Users size={20}/></div>
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Communities</h2>
+                    </div>
+                    <div className="space-y-4">
                         <NavLink to="/groups/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
-                                <Users className="h-4 w-4 mr-3 text-pink-500" />
-                                Study Groups
+                            <Button className="w-full justify-start gap-3 active:scale-95 transition-all">
+                                <Users size={16} className="text-pink-500" /> Study Groups
                             </Button>
                         </NavLink>
-                        <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400 px-1">Connect and learn with friends.</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1 leading-relaxed">Learn faster together</p>
                     </div>
                 </Card>
             </div>

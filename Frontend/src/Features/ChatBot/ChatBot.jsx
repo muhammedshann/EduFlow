@@ -123,12 +123,12 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="w-full h-full relative">
+        <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden font-sans">
             
-            {/* Header */}
-            <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between flex-shrink-0 z-10 bg-white/50 dark:bg-slate-950/50 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
+            {/* Standardized Glassmorphism Header */}
+            <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between flex-shrink-0 z-10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none">
+                    <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/30">
                         <Sparkles className="text-white w-5 h-5" />
                     </div>
                     <div>
@@ -139,7 +139,7 @@ export default function ChatPage() {
 
                 <div className="flex items-center gap-2 md:gap-4">
                     {noteTitle && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-indigo-600 dark:text-indigo-400 shadow-sm">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-indigo-600 dark:text-indigo-400 shadow-sm">
                             <Info size={14} className="hidden sm:block" />
                             <span className="max-w-[100px] md:max-w-[200px] truncate">{noteTitle}</span>
                             <button onClick={() => navigate('/chat-bot/')} className="hover:text-rose-500 transition-colors">
@@ -163,8 +163,8 @@ export default function ChatPage() {
                 <div className="w-full max-w-4xl mx-auto space-y-6 md:space-y-8 mt-6">
                     
                     {messages.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                            <div className="w-16 h-16 bg-white dark:bg-slate-900 rounded-3xl flex items-center justify-center shadow-xl shadow-slate-200 dark:shadow-none border border-slate-100 dark:border-slate-800 mb-6">
+                        <div className="flex flex-col items-center justify-center py-20 text-center">
+                            <div className="w-16 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl flex items-center justify-center shadow-xl border border-slate-100 dark:border-slate-800 mb-6">
                                 <Zap className="text-indigo-600 dark:text-indigo-400 w-8 h-8" />
                             </div>
                             <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2">How can I help you?</h2>
@@ -178,8 +178,8 @@ export default function ChatPage() {
                         <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} items-end gap-3`}>
                             <div className={`px-5 md:px-6 py-3 md:py-4 rounded-3xl text-[15px] leading-relaxed shadow-sm border transition-all duration-300 ${
                                 m.role === "user" 
-                                ? "bg-indigo-600 text-white border-indigo-500 rounded-br-none" 
-                                : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 rounded-bl-none"
+                                ? "bg-indigo-600 text-white border-indigo-500 rounded-br-none shadow-lg shadow-indigo-500/20" 
+                                : "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 rounded-bl-none"
                             } max-w-[90%] md:max-w-[80%] min-w-[50px]`}>
                                 <div className={`prose prose-sm max-w-none ${m.role === "user" ? "prose-invert text-white" : "dark:text-slate-200 dark:prose-invert prose-indigo"}`}>
                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -192,7 +192,7 @@ export default function ChatPage() {
                     
                     {isLoading && (
                         <div className="flex justify-start animate-in fade-in duration-300">
-                            <div className="px-6 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl rounded-bl-none shadow-sm flex gap-1.5 items-center">
+                            <div className="px-6 py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-3xl rounded-bl-none shadow-sm flex gap-1.5 items-center">
                                 <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></div>
                                 <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
                                 <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
@@ -207,7 +207,7 @@ export default function ChatPage() {
             <div className="absolute bottom-6 md:bottom-10 left-0 right-0 px-4 md:px-8 z-20 pointer-events-none">
                 <form 
                     onSubmit={sendMessage} 
-                    className="max-w-3xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[28px] p-2 shadow-2xl shadow-indigo-100 dark:shadow-slate-950 pointer-events-auto transition-all focus-within:border-indigo-400 dark:focus-within:border-indigo-500"
+                    className="max-w-3xl mx-auto flex items-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-[28px] p-2 shadow-2xl shadow-slate-200 dark:shadow-slate-950 pointer-events-auto transition-all focus-within:border-indigo-400 dark:focus-within:border-indigo-500"
                 >
                     <input
                         type="text"
@@ -220,7 +220,7 @@ export default function ChatPage() {
                     <button 
                         type="submit" 
                         disabled={isLoading || !input.trim()} 
-                        className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center transition-all disabled:opacity-30 shadow-lg shadow-indigo-100 dark:shadow-none active:scale-95"
+                        className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center transition-all disabled:opacity-30 shadow-lg shadow-indigo-500/20 active:scale-95"
                     >
                         {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4 md:w-5 md:h-5" />}
                     </button>

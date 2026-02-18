@@ -121,7 +121,7 @@ export default function ChatPage() {
     };
 
     return (
-        /* FIXED: Applied Cinematic Background Gradient and added pb-12 for bottom gap */
+        /* FIXED: Added Cinematic Background Gradient and pb-12 for bottom safety zone */
         <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden pb-12">
             
             {/* Chat Body Container */}

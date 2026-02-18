@@ -241,6 +241,7 @@ class GenerateOtpView(APIView):
             sent_otp_email(email, otp, subject)
             return Response({
                 "message": "OTP sent successfully",
+                "created_at": now,
             }, status=status.HTTP_200_OK)
         except Exception:
             return Response({"message": "Failed to send email."}, status=503)

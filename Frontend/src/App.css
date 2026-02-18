@@ -1,9 +1,11 @@
+/* --- 1. Snappy Cinematic Loader --- */
 .loader {
   width: 48px;
   height: 48px;
   display: inline-block;
   position: relative;
 }
+
 .loader::after,
 .loader::before {
   content: '';  
@@ -11,12 +13,14 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 2px solid #FFF;
+  /* Added a subtle indigo glow to match your brand */
+  border: 2px solid #6366f1; 
   position: absolute;
   left: 0;
   top: 0;
   animation: animloader 2s linear infinite;
 }
+
 .loader::after {
   animation-delay: 1s;
 }
@@ -27,28 +31,46 @@
     opacity: 1;
   }
   100% {
-    transform: scale(1);
+    transform: scale(1.5); /* Slightly larger for a more "dissolving" feel */
     opacity: 0;
   }
 }
-/* Premium Glassmorphism Depth */
+
+/* --- 2. Glassmorphism 3.0 (Mobile Dock) --- */
 .backdrop-blur-3xl {
+  /* High-end saturation and blur logic */
   backdrop-filter: blur(50px) saturate(200%);
   -webkit-backdrop-filter: blur(50px) saturate(200%);
 }
 
-/* Ensure mobile content clears the floating dock */
+/* --- 3. Mobile Ergonomics & Safe Areas --- */
 @media (max-width: 1023px) {
   body {
+    /* Large padding to ensure content clears the floating dock */
     padding-bottom: 140px; 
   }
 }
 
-/* Hide scrollbars for the horizontal mobile nav */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+/* Safe area handling for modern smartphones */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
 }
+
+/* --- 4. Smooth Horizontal Navigation --- */
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Hide scrollbars for Chrome/Safari */
+}
+
 .no-scrollbar {
   -ms-overflow-style: none; /* IE/Edge */
   scrollbar-width: none;    /* Firefox */
+  -webkit-overflow-scrolling: touch; /* Momentum scrolling for a "phone app" feel */
+  scroll-behavior: smooth;
+}
+
+/* --- 5. Boutique Credit Card Decor (Desktop) --- */
+.glass-glow {
+  position: absolute;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, transparent 70%);
+  pointer-events: none;
 }

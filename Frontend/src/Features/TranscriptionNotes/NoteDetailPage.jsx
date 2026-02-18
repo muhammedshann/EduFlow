@@ -135,7 +135,7 @@ export default function NoteDetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 px-6 py-16 transition-colors duration-300">
+        <div className="w-full p-4 sm:p-8">
             <div className="max-w-3xl mx-auto">
 
                 {/* Top bar */}

@@ -46,7 +46,7 @@ export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg p-6 animate-fadeIn border dark:border-slate-800">
+            <div className="w-full p-4 sm:p-8">
 
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">

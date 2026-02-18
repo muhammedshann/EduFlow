@@ -123,7 +123,7 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="flex flex-col h-screen bg-[#F8FAFC] dark:bg-slate-950 transition-colors duration-300 relative overflow-hidden font-sans">
+        <div className="w-full h-full relative">
             
             {/* Header */}
             <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between flex-shrink-0 z-10 bg-white/50 dark:bg-slate-950/50 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">

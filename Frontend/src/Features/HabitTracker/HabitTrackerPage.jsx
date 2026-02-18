@@ -204,7 +204,7 @@ const HabitTracker = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 p-4 sm:p-8 transition-colors duration-300">
+        <div className="w-full p-4 sm:p-8">
             <div className="max-w-6xl mx-auto">
 
                 {/* HEADER */}

@@ -191,7 +191,7 @@ export default function LiveTranscriptionPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#faf7ff] dark:bg-slate-950 px-4 py-10 transition-colors duration-300">
+        <div className="w-full p-4 sm:p-8">
             <div className="max-w-4xl mx-auto space-y-8">
 
                 {/* Header */}

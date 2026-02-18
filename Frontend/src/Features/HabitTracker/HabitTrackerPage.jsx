@@ -204,7 +204,7 @@ const HabitTracker = () => {
     };
 
     return (
-        /* FIXED: Increased bottom padding to pb-36 for safe clearance of the floating dock */
+        /* FIXED: Added large pb-36 padding to ensure all summary sections clear the floating dock */
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 p-4 sm:p-8 transition-colors duration-300 pb-36">
             <div className="max-w-6xl mx-auto">
 

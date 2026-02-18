@@ -31,45 +31,24 @@
     opacity: 0;
   }
 }
-/* --- Global Sidebar Transitions --- */
-aside {
-  will-change: width, transform;
-  backface-visibility: hidden;
+/* Premium Glassmorphism Depth */
+.backdrop-blur-3xl {
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
 }
 
-/* --- Mobile Dock Styling (The "Expensive" Look) --- */
-.no-scrollbar::-webkit-scrollbar {
-  display: none; /* Hide scrollbar for Chrome/Safari */
-}
-
-.no-scrollbar {
-  -ms-overflow-style: none;  /* IE/Edge */
-  scrollbar-width: none;     /* Firefox */
-  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
-}
-
-/* Handle iPhone safe areas for the bottom nav */
-.pb-safe {
-  padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
-}
-
-/* Glassmorphism Refinement */
-.backdrop-blur-2xl {
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-}
-
-/* --- Layout Adjustments --- */
-/* Prevent content from being hidden behind the mobile nav */
+/* Ensure mobile content clears the floating dock */
 @media (max-width: 1023px) {
-  main, .page-content {
-    padding-bottom: 120px;
+  body {
+    padding-bottom: 140px; 
   }
 }
 
-/* Ensure Desktop sidebar doesn't overlap on very small laptops */
-@media (min-width: 1024px) and (max-width: 1280px) {
-  .lg-w-72 {
-    width: 260px;
-  }
+/* Hide scrollbars for the horizontal mobile nav */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;    /* Firefox */
 }

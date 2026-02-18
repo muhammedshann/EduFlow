@@ -1,6 +1,11 @@
 import requests
 import os
 import time
+from dotenv import load_dotenv
+
+load_dotenv()
+
+print("gemini api code> ",os.getenv("GEMINI_API_KEY"))
 
 GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/"

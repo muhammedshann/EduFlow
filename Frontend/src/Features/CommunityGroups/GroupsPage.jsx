@@ -67,7 +67,7 @@ const MessageBubble = ({ message, onImageClick }) => {
 };
 
 // 2. Create Group Modal
-const CreateGroupModal = ({ open, onClose, onSubmit }) => {
+export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
     const [formData, setFormData] = useState({ name: "", description: "", type: "public" });
     if (!open) return null;
     

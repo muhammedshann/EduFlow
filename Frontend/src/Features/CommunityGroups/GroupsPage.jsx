@@ -149,7 +149,9 @@ const ImagePreviewModal = ({ image, onClose }) => {
 const GroupsPage = () => {
     // Left Pane State (List)
     const [allData, setAllData] = useState({ created: [], joined: [], public: [] });
-    const [activeTab, setActiveTab] = useState("All");
+    
+    // Default to Joined instead of All
+    const [activeTab, setActiveTab] = useState("Joined");
     const [searchQuery, setSearchQuery] = useState("");
     const [openCreateModal, setOpenCreateModal] = useState(false);
 
@@ -245,12 +247,11 @@ const GroupsPage = () => {
         } catch (err) { console.error(err); }
     };
 
-    // Filter Logic
+    // Filter Logic updated to remove "All"
     const filterFn = (g) => g.name.toLowerCase().includes(searchQuery.toLowerCase());
     const displayList = activeTab === "Discover" ? allData.public.filter(filterFn) : 
                         activeTab === "Created" ? allData.created.filter(filterFn) : 
-                        activeTab === "Joined" ? allData.joined.filter(filterFn) : 
-                        [...allData.joined, ...allData.created].filter(filterFn);
+                        allData.joined.filter(filterFn); // Defaults to Joined
 
     return (
         <div className={`flex h-screen overflow-hidden ${SOFT_BG} font-sans`}>
@@ -279,7 +280,8 @@ const GroupsPage = () => {
                     </div>
 
                     <div className="flex gap-2 pb-4 overflow-x-auto no-scrollbar">
-                        {["All", "Joined", "Created", "Discover"].map((tab) => (
+                        {/* Removed "All" tab */}
+                        {["Joined", "Created", "Discover"].map((tab) => (
                             <button key={tab} onClick={() => setActiveTab(tab)} className={`px-5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${activeTab === tab ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-none" : "bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-200"}`}>
                                 {tab}
                             </button>
@@ -288,7 +290,8 @@ const GroupsPage = () => {
                 </div>
 
                 {/* Sidebar List */}
-                <div className="flex-grow overflow-y-auto no-scrollbar">
+                {/* Added pb-32 to clear the bottom dock so you can see all items */}
+                <div className="flex-grow overflow-y-auto no-scrollbar pb-32">
                     {displayList.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 px-10 text-center opacity-40">
                             <LayoutGrid size={48} strokeWidth={1} />
@@ -349,7 +352,8 @@ const GroupsPage = () => {
                         </div>
 
                         {/* Chat Input */}
-                        <div className="p-4 md:p-6 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+                        {/* Added pb-28 md:pb-32 to clear the global app dock at the bottom */}
+                        <div className="p-4 md:p-6 pb-28 md:pb-32 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
                             <div className="max-w-4xl mx-auto flex items-center bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-[24px] p-2 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-400 transition-all">
                                 <label className="cursor-pointer p-3 text-slate-400 hover:text-indigo-600 transition-colors">
                                     <ImageIcon size={20} />
@@ -366,7 +370,8 @@ const GroupsPage = () => {
                     </>
                 ) : (
                     // Empty State (Desktop)
-                    <div className="h-full flex flex-col items-center justify-center text-center p-12">
+                    // Added pb-32 here too just in case
+                    <div className="h-full flex flex-col items-center justify-center text-center p-12 pb-32">
                         <div className="w-24 h-24 bg-indigo-50 dark:bg-slate-900 rounded-[2.5rem] flex items-center justify-center mb-6 border border-slate-100 dark:border-slate-800"><MessageSquare size={40} className="text-indigo-600" /></div>
                         <h2 className="text-2xl font-black text-slate-800 dark:text-white">EduFlow Hub</h2>
                         <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-sm">Select a community from the sidebar to start collaborating, sharing ideas, and learning together.</p>

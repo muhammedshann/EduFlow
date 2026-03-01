@@ -9,7 +9,12 @@ import {
     CreditCard,
     LogOut,
     Settings,
-    Notebook
+    Notebook,
+    Search,
+    BookOpen,
+    Zap,
+    CheckCircle2,
+    ArrowUp
 } from "lucide-react";
 import { useUser } from "../../Context/UserContext";
 import { useEffect, useState } from "react";
@@ -27,18 +32,18 @@ export default function UserDashboard() {
     const dispatch = useDispatch();
     const { user, logout } = useUser();
 
-    // -- Reusable Card (Kept exactly as original) --
+    // Enhanced Interactive Card Component
     const Card = ({ children, className }) => (
-        <div className={`bg-white dark:bg-slate-800 shadow-sm md:shadow-md dark:shadow-slate-900/50 rounded-xl p-4 transition-colors duration-300 ${className}`}>
+        <div className={`group bg-[#131823] border border-white/5 rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1.5 hover:border-white/10 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] ${className}`}>
             {children}
         </div>
     );
 
-    // -- Reusable Button (Kept exactly as original) --
-    const Button = ({ children, className, onClick }) => (
+    // Enhanced Interactive Button Component
+    const CardButton = ({ children, onClick }) => (
         <button
             onClick={onClick}
-            className={`px-4 py-3 md:py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors duration-200 text-sm md:text-base ${className}`}
+            className="w-full py-2.5 mt-auto bg-[#1C2230] hover:bg-[#2A344A] group-hover:bg-[#252C3D] group-hover:text-white active:scale-95 text-gray-300 text-sm font-medium rounded-xl transition-all duration-200"
         >
             {children}
         </button>
@@ -48,7 +53,7 @@ export default function UserDashboard() {
         try {
             const HabitResponse = await dispatch(WeeklyStatsHabit()).unwrap();
             const PomodoroResponse = await dispatch(FetchDailyStats()).unwrap();
-            setTodayPomodoroCount(PomodoroResponse.sessions_completed)
+            setTodayPomodoroCount(PomodoroResponse.sessions_completed);
 
             const todayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date().getDay()];
             const todayStats = HabitResponse.find(day => day.date === todayName);
@@ -64,210 +69,214 @@ export default function UserDashboard() {
 
     useEffect(() => {
         fetch();
-    }, []);
+    }, [dispatch]);
 
     return (
-        // FIXED: Only the background class is updated here to match other pages
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 p-4 md:p-8 space-y-6 md:space-y-8 pb-24 md:pb-8">
+        <div className="min-h-screen bg-[#0B0F19] text-white p-6 md:p-10 font-sans selection:bg-purple-500/30">
             
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
-                {/* User Info */}
-                <div className="flex items-center space-x-3 md:space-x-4">
-                    <div
-                        className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-purple-500 transition-all flex-shrink-0"
+            {/* --- Top Header Section --- */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+                {/* Greeting & Quote */}
+                <div className="transform transition-all hover:translate-x-1 duration-300">
+                    <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-white mb-1.5 cursor-default">
+                        Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400">{user ? user.username : 'Alex'}</span>!
+                    </h1>
+                    <p className="text-sm text-gray-400 italic font-serif cursor-default">
+                        "The only way to do great work is to love what you do."
+                    </p>
+                </div>
+
+                {/* Top Right Controls */}
+                <div className="flex items-center gap-4 md:gap-6">
+                    {/* Search Bar */}
+                    <div className="relative hidden md:block w-64 group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 transition-colors group-focus-within:text-purple-500" />
+                        <input 
+                            type="text" 
+                            placeholder="Search notes..." 
+                            className="w-full bg-[#1C2230] text-gray-200 rounded-full py-2.5 pl-10 pr-4 text-sm outline-none border border-transparent focus:border-purple-500/50 focus:bg-[#131823] focus:ring-4 focus:ring-purple-500/10 transition-all duration-300 placeholder-gray-500"
+                        />
+                    </div>
+
+                    {/* Notification Bell */}
+                    <button 
+                        className="relative p-2.5 rounded-full bg-[#1C2230] text-gray-400 hover:text-white hover:bg-[#252C3D] active:scale-90 transition-all duration-200"
+                        onClick={() => navigate('/notification/')}
+                    >
+                        <Bell className="h-5 w-5" />
+                        <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-pink-500 border-2 border-[#1C2230] animate-pulse"></span>
+                    </button>
+
+                    {/* Profile Picture */}
+                    <div 
+                        className="w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-[#1C2230] hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:scale-105 active:scale-95 transition-all duration-300 flex-shrink-0"
                         onClick={() => navigate('/settings/')}
                     >
-                        {user.profilePic ? (
-                            <img
-                                src={user.profilePic}
-                                alt="Profile"
-                                className="w-full h-full object-cover"
-                            />
+                        {user?.profilePic ? (
+                            <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" />
                         ) : (
-                            <div className="bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm md:text-lg font-bold w-full h-full">
-                                {`${user.firstname?.[0] || ""}${user.lastname?.[0] || ""}`.toUpperCase()}
+                            <div className="bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-semibold w-full h-full">
+                                {`${user?.firstname?.[0] || ""}${user?.lastname?.[0] || ""}`.toUpperCase() || "U"}
                             </div>
                         )}
                     </div>
 
-                    <div className="flex-1 min-w-0"> 
-                        <h1 className="text-xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400 truncate">
-                            Hi, {user ? user.username : 'Alex'}!
-                        </h1>
-                        <p className="text-sm md:text-base text-gray-500 dark:text-slate-400 truncate">
-                            Let's be productive today.
-                        </p>
-                    </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 bg-white dark:bg-slate-800 md:bg-transparent md:dark:bg-transparent p-2 md:p-0 rounded-xl shadow-sm md:shadow-none">
-                    <div className="flex items-center gap-2">
-                        <button 
-                            className="p-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition" 
-                            onClick={() => navigate('/notification/')}
-                        >
-                            <Bell className="h-5 w-5 md:h-6 md:w-6" />
-                        </button>
-
-                        <button 
-                            className="p-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition" 
-                            onClick={() => navigate('/settings/')}
-                        >
-                            <Settings className="w-5 h-5 md:w-6 md:h-6" />
-                        </button>
-                    </div>
-
-                    <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 md:hidden"></div>
-                    
+                    {/* Logout Button */}
                     <button 
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 transition text-sm font-medium" 
                         onClick={() => logout()}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 active:scale-95 text-sm font-medium transition-all duration-200"
                     >
-                        <LogOut className="w-4 h-4 md:w-5 md:h-5" />
-                        <span className="md:inline">Logout</span>
+                        <LogOut className="h-4 w-4" />
+                        <span className="hidden md:inline">Logout</span>
                     </button>
                 </div>
             </div>
 
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                <Card>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Today's Focus</p>
-                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TodayPomodoroCount}</p>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Pomodoros</p>
+            {/* --- Stats Row --- */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {/* Focus Stat */}
+                <Card className="flex flex-col justify-between h-32 cursor-default">
+                    <div className="flex justify-between items-start">
+                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase group-hover:text-gray-400 transition-colors">Today's Focus</span>
+                        <div className="p-1.5 bg-[#172622] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                            <Timer className="h-4 w-4 text-[#4ADE80]" />
                         </div>
-                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
-                            <Timer className="h-5 w-5 md:h-8 md:w-8 text-purple-500 dark:text-purple-400" />
+                    </div>
+                    <div>
+                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-[#4ADE80] transition-colors">{TodayPomodoroCount}</div>
+                        <div className="flex items-center text-xs text-[#4ADE80]">
+                            <ArrowUp className="h-3 w-3 mr-1 animate-bounce" />
+                            +2 from yesterday
                         </div>
                     </div>
                 </Card>
 
-                <Card>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Habits</p>
-                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TodayHabitPercentage}%</p>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Completed</p>
+                {/* Habit Streak Stat */}
+                <Card className="flex flex-col justify-between h-32 cursor-default">
+                    <div className="flex justify-between items-start">
+                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase group-hover:text-gray-400 transition-colors">Habit Streak</span>
+                        <div className="p-1.5 bg-[#1F1829] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
+                            <CheckCircle2 className="h-4 w-4 text-[#A855F7]" />
                         </div>
-                        <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg w-fit">
-                            <CheckSquare className="h-5 w-5 md:h-8 md:w-8 text-green-500 dark:text-green-400" />
+                    </div>
+                    <div>
+                        <div className="text-3xl font-bold text-white mb-2 group-hover:text-[#A855F7] transition-colors">{TodayHabitPercentage}%</div>
+                        <div className="w-full bg-[#1C2230] rounded-full h-1.5 overflow-hidden">
+                            <div 
+                                className="bg-gradient-to-r from-purple-600 to-[#A855F7] h-1.5 rounded-full shadow-[0_0_10px_#A855F7] transition-all duration-1000 ease-out" 
+                                style={{ width: `${TodayHabitPercentage}%` }}
+                            ></div>
                         </div>
                     </div>
                 </Card>
 
-                <Card>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Credits</p>
-                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{userCredits?.remaining_credits || 0}</p>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Remaining</p>
+                {/* AI Credits Stat */}
+                <Card className="flex flex-col justify-between h-32 cursor-default">
+                    <div className="flex justify-between items-start">
+                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase group-hover:text-gray-400 transition-colors">AI Credits</span>
+                        <div className="p-1.5 bg-[#162032] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+                            <Zap className="h-4 w-4 text-[#3B82F6]" />
                         </div>
-                        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg w-fit">
-                            <CreditCard className="h-5 w-5 md:h-8 md:w-8 text-blue-500 dark:text-blue-400" />
-                        </div>
+                    </div>
+                    <div>
+                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-[#3B82F6] transition-colors">{userCredits?.remaining_credits || 0}</div>
+                        <div className="text-xs text-gray-500">Pro Plan Active</div>
                     </div>
                 </Card>
 
-                <Card>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Total</p>
-                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{TotalNotes}</p>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-500">Notes</p>
+                {/* Total Notes Stat */}
+                <Card className="flex flex-col justify-between h-32 cursor-default">
+                    <div className="flex justify-between items-start">
+                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase group-hover:text-gray-400 transition-colors">Total Notes</span>
+                        <div className="p-1.5 bg-[#291725] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                            <Notebook className="h-4 w-4 text-[#EC4899]" />
                         </div>
-                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
-                            <Mic className="h-5 w-5 md:h-8 md:w-8 text-purple-500 dark:text-purple-400" />
-                        </div>
+                    </div>
+                    <div>
+                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-[#EC4899] transition-colors">{TotalNotes}</div>
+                        <div className="text-xs text-gray-500">3 new this week</div>
                     </div>
                 </Card>
             </div>
 
-            {/* Main Features Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* --- Action Cards Grid --- */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
-                {/* Transcription */}
-                <Card className="border-l-4 border-purple-500">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <Mic className="h-5 w-5 mr-2 text-purple-500" />
-                        Smart Notes
-                    </h2>
-                    <div className="space-y-3">
-                        <NavLink to="/smart-note/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 md:h-12 active:scale-95 transition-transform">
-                                <Mic className="h-4 w-4 mr-3 text-purple-500" />
-                                Start Live/Upload Note
-                            </Button>
-                        </NavLink>
-                        <NavLink to="/notes/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 md:h-12 active:scale-95 transition-transform">
-                                <Notebook className="h-4 w-4 mr-3 text-purple-500" />
-                                My Notebooks
-                            </Button>
-                        </NavLink>
+                {/* Notebooks Card */}
+                <Card className="flex flex-col h-[200px]">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="p-2 bg-[#1B1A28] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#A855F7]/20">
+                            <BookOpen className="h-5 w-5 text-[#A855F7]" />
+                        </div>
+                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#A855F7]">Smart Notes</span>
                     </div>
+                    <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
+                        <h3 className="text-lg font-semibold text-white mb-1">Notebooks</h3>
+                        <p className="text-sm text-gray-400">{TotalNotes} notes total across categories</p>
+                    </div>
+                    <CardButton onClick={() => navigate('/notes/')}>Open</CardButton>
                 </Card>
 
-                {/* AI Assistant */}
-                <Card className="border-l-4 border-blue-500">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <MessageSquare className="h-5 w-5 mr-2 text-blue-500" />
-                        AI Assistant
-                    </h2>
-                    <div className="space-y-3">
-                        <NavLink to="/chat-bot/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
-                                <MessageSquare className="h-4 w-4 mr-3 text-blue-500" />
-                                Chat with AI
-                            </Button>
-                        </NavLink>
-                        <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400 px-1">
-                            Ask questions about your studies anytime.
-                        </p>
+                {/* Focus Timer Card */}
+                <Card className="flex flex-col h-[200px]">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="p-2 bg-[#172622] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#4ADE80]/20">
+                            <Timer className="h-5 w-5 text-[#4ADE80]" />
+                        </div>
+                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#4ADE80]">Active Session</span>
                     </div>
+                    <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
+                        <h3 className="text-lg font-semibold text-white mb-1">Focus Timer</h3>
+                        <p className="text-sm text-gray-400">Ready to start your next session</p>
+                    </div>
+                    <CardButton onClick={() => navigate('/promodoro/')}>Launch</CardButton>
                 </Card>
 
-                {/* Focus & Habits */}
-                <Card className="border-l-4 border-green-500">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <Timer className="h-5 w-5 mr-2 text-green-500" />
-                        Focus & Habits
-                    </h2>
-                    <div className="space-y-3">
-                        <NavLink to="/promodoro/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
-                                <Timer className="h-4 w-4 mr-3 text-green-500" />
-                                Pomodoro Timer
-                            </Button>
-                        </NavLink>
-                        <NavLink to="/habit-tracker/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
-                                <CheckSquare className="h-4 w-4 mr-3 text-green-500" />
-                                Habit Tracker
-                            </Button>
-                        </NavLink>
+                {/* Habit Tracker Card */}
+                <Card className="flex flex-col h-[200px]">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="p-2 bg-[#291725] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#EC4899]/20">
+                            <CheckCircle2 className="h-5 w-5 text-[#EC4899]" />
+                        </div>
+                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#EC4899]">Daily Progress</span>
                     </div>
+                    <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
+                        <h3 className="text-lg font-semibold text-white mb-1">Habit Tracker</h3>
+                        <p className="text-sm text-gray-400">{TodayHabitPercentage}% completed today</p>
+                    </div>
+                    <CardButton onClick={() => navigate('/habit-tracker/')}>Open</CardButton>
                 </Card>
 
-                {/* Community */}
-                <Card className="border-l-4 border-pink-500">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-                        <Users className="h-5 w-5 mr-2 text-pink-500" />
-                        Community
-                    </h2>
-                    <div className="space-y-3">
-                        <NavLink to="/groups/" className="block">
-                            <Button className="w-full justify-start flex items-center h-12 active:scale-95 transition-transform">
-                                <Users className="h-4 w-4 mr-3 text-pink-500" />
-                                Study Groups
-                            </Button>
-                        </NavLink>
-                        <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400 px-1">Connect and learn with friends.</p>
+                {/* AI Chat Card */}
+                <Card className="flex flex-col h-[200px]">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="p-2 bg-[#162032] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#3B82F6]/20">
+                            <Zap className="h-5 w-5 text-[#3B82F6]" />
+                        </div>
+                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#3B82F6]">AI Online</span>
                     </div>
+                    <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
+                        <h3 className="text-lg font-semibold text-white mb-1">AI Chat</h3>
+                        <p className="text-sm text-gray-400">Ready to assist with your notes</p>
+                    </div>
+                    <CardButton onClick={() => navigate('/chat-bot/')}>Launch</CardButton>
                 </Card>
+
+                {/* Community Groups Card */}
+                <Card className="flex flex-col h-[200px]">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="p-2 bg-[#291725] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#EC4899]/20">
+                            <Users className="h-5 w-5 text-[#EC4899]" />
+                        </div>
+                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#EC4899]">Active Groups</span>
+                    </div>
+                    <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
+                        <h3 className="text-lg font-semibold text-white mb-1">Community Groups</h3>
+                        <p className="text-sm text-gray-400">Connect with members active in study groups</p>
+                    </div>
+                    <CardButton onClick={() => navigate('/groups/')}>Open</CardButton>
+                </Card>
+
             </div>
         </div>
     );

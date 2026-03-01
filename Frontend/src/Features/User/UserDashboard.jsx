@@ -10,11 +10,11 @@ import {
     LogOut,
     Settings,
     Notebook,
-    Search,
     BookOpen,
     Zap,
     CheckCircle2,
-    ArrowUp
+    ArrowUp,
+    PlayCircle
 } from "lucide-react";
 import { useUser } from "../../Context/UserContext";
 import { useEffect, useState } from "react";
@@ -72,32 +72,23 @@ export default function UserDashboard() {
     }, [dispatch]);
 
     return (
-        <div className="min-h-screen bg-[#0B0F19] text-white p-6 md:p-10 font-sans selection:bg-purple-500/30">
+        <div className="min-h-screen bg-[#0B0F19] text-white p-6 md:p-10 font-sans selection:bg-purple-500/30 pb-24 md:pb-10">
             
             {/* --- Top Header Section --- */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
                 {/* Greeting & Quote */}
                 <div className="transform transition-all hover:translate-x-1 duration-300">
                     <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-white mb-1.5 cursor-default">
-                        Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400">{user ? user.username : 'Alex'}</span>!
+                        Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400">{user ? user.username : 'Kingboy'}</span>!
                     </h1>
                     <p className="text-sm text-gray-400 italic font-serif cursor-default">
                         "The only way to do great work is to love what you do."
                     </p>
                 </div>
 
-                {/* Top Right Controls */}
-                <div className="flex items-center gap-4 md:gap-6">
-                    {/* Search Bar */}
-                    <div className="relative hidden md:block w-64 group">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 transition-colors group-focus-within:text-purple-500" />
-                        <input 
-                            type="text" 
-                            placeholder="Search notes..." 
-                            className="w-full bg-[#1C2230] text-gray-200 rounded-full py-2.5 pl-10 pr-4 text-sm outline-none border border-transparent focus:border-purple-500/50 focus:bg-[#131823] focus:ring-4 focus:ring-purple-500/10 transition-all duration-300 placeholder-gray-500"
-                        />
-                    </div>
-
+                {/* Top Right Controls (Search Removed) */}
+                <div className="flex items-center justify-between md:justify-end gap-3 md:gap-5 w-full lg:w-auto">
+                    
                     {/* Notification Bell */}
                     <button 
                         className="relative p-2.5 rounded-full bg-[#1C2230] text-gray-400 hover:text-white hover:bg-[#252C3D] active:scale-90 transition-all duration-200"
@@ -106,6 +97,16 @@ export default function UserDashboard() {
                         <Bell className="h-5 w-5" />
                         <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-pink-500 border-2 border-[#1C2230] animate-pulse"></span>
                     </button>
+
+                    {/* Settings */}
+                    <button 
+                        className="p-2.5 rounded-full bg-[#1C2230] text-gray-400 hover:text-white hover:bg-[#252C3D] active:scale-90 transition-all duration-200"
+                        onClick={() => navigate('/settings/')}
+                    >
+                        <Settings className="h-5 w-5 hover:rotate-90 transition-transform duration-500" />
+                    </button>
+
+                    <div className="h-8 w-px bg-white/10 hidden md:block mx-1"></div>
 
                     {/* Profile Picture */}
                     <div 
@@ -194,15 +195,15 @@ export default function UserDashboard() {
                     </div>
                     <div>
                         <div className="text-3xl font-bold text-white mb-1 group-hover:text-[#EC4899] transition-colors">{TotalNotes}</div>
-                        <div className="text-xs text-gray-500">3 new this week</div>
+                        <div className="text-xs text-gray-500">Recorded & saved</div>
                     </div>
                 </Card>
             </div>
 
-            {/* --- Action Cards Grid --- */}
+            {/* --- Main Action Cards Grid (6 Cards) --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
-                {/* Notebooks Card */}
+                {/* 1. Notebooks Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
                         <div className="p-2 bg-[#1B1A28] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#A855F7]/20">
@@ -217,7 +218,22 @@ export default function UserDashboard() {
                     <CardButton onClick={() => navigate('/notes/')}>Open</CardButton>
                 </Card>
 
-                {/* Focus Timer Card */}
+                {/* 2. Live/Upload Smart Note Card */}
+                <Card className="flex flex-col h-[200px]">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="p-2 bg-[#1B1A28] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#A855F7]/20">
+                            <Mic className="h-5 w-5 text-[#A855F7]" />
+                        </div>
+                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#A855F7]">Transcription</span>
+                    </div>
+                    <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
+                        <h3 className="text-lg font-semibold text-white mb-1">Smart Recording</h3>
+                        <p className="text-sm text-gray-400">Start live note or upload an audio file</p>
+                    </div>
+                    <CardButton onClick={() => navigate('/smart-note/')}>Launch</CardButton>
+                </Card>
+
+                {/* 3. Focus Timer Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
                         <div className="p-2 bg-[#172622] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#4ADE80]/20">
@@ -232,7 +248,7 @@ export default function UserDashboard() {
                     <CardButton onClick={() => navigate('/promodoro/')}>Launch</CardButton>
                 </Card>
 
-                {/* Habit Tracker Card */}
+                {/* 4. Habit Tracker Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
                         <div className="p-2 bg-[#291725] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#EC4899]/20">
@@ -247,22 +263,22 @@ export default function UserDashboard() {
                     <CardButton onClick={() => navigate('/habit-tracker/')}>Open</CardButton>
                 </Card>
 
-                {/* AI Chat Card */}
+                {/* 5. AI Chat Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
                         <div className="p-2 bg-[#162032] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#3B82F6]/20">
-                            <Zap className="h-5 w-5 text-[#3B82F6]" />
+                            <MessageSquare className="h-5 w-5 text-[#3B82F6]" />
                         </div>
                         <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#3B82F6]">AI Online</span>
                     </div>
                     <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
                         <h3 className="text-lg font-semibold text-white mb-1">AI Chat</h3>
-                        <p className="text-sm text-gray-400">Ready to assist with your notes</p>
+                        <p className="text-sm text-gray-400">Ready to assist with your studies</p>
                     </div>
                     <CardButton onClick={() => navigate('/chat-bot/')}>Launch</CardButton>
                 </Card>
 
-                {/* Community Groups Card */}
+                {/* 6. Community Groups Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
                         <div className="p-2 bg-[#291725] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#EC4899]/20">
@@ -272,7 +288,7 @@ export default function UserDashboard() {
                     </div>
                     <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
                         <h3 className="text-lg font-semibold text-white mb-1">Community Groups</h3>
-                        <p className="text-sm text-gray-400">Connect with members active in study groups</p>
+                        <p className="text-sm text-gray-400">Connect and learn with friends</p>
                     </div>
                     <CardButton onClick={() => navigate('/groups/')}>Open</CardButton>
                 </Card>

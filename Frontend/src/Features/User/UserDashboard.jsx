@@ -31,22 +31,40 @@ export default function UserDashboard() {
     const dispatch = useDispatch();
     const { user, logout } = useUser();
 
-    // Theme-Aware Interactive Card
-    const Card = ({ children, className }) => (
-        <div className={`group bg-white dark:bg-[#131823] border border-slate-200/60 dark:border-white/5 rounded-2xl p-5 shadow-sm dark:shadow-none transition-all duration-300 hover:-translate-y-1.5 hover:border-purple-300 dark:hover:border-white/10 hover:shadow-lg hover:shadow-purple-500/10 dark:hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] ${className}`}>
-            {children}
-        </div>
-    );
+    // Theme & Color-Aware Interactive Card
+    const Card = ({ children, className, color = "purple" }) => {
+        const borderColors = {
+            purple: "hover:border-purple-300 hover:shadow-purple-500/10",
+            blue: "hover:border-blue-300 hover:shadow-blue-500/10",
+            green: "hover:border-green-300 hover:shadow-green-500/10",
+            pink: "hover:border-pink-300 hover:shadow-pink-500/10",
+        };
 
-    // Theme-Aware Interactive Button
-    const CardButton = ({ children, onClick }) => (
-        <button
-            onClick={onClick}
-            className="w-full py-2.5 mt-auto bg-slate-50 dark:bg-[#1C2230] hover:bg-slate-100 dark:hover:bg-[#2A344A] group-hover:bg-purple-50 dark:group-hover:bg-[#252C3D] group-hover:text-purple-700 dark:group-hover:text-white active:scale-95 text-slate-600 dark:text-gray-300 text-sm font-medium rounded-xl transition-all duration-200"
-        >
-            {children}
-        </button>
-    );
+        return (
+            <div className={`group bg-white dark:bg-[#131823] border border-slate-200/60 dark:border-white/5 rounded-2xl p-5 shadow-sm dark:shadow-none transition-all duration-300 hover:-translate-y-1.5 dark:hover:border-white/10 dark:hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] ${borderColors[color]} ${className}`}>
+                {children}
+            </div>
+        );
+    };
+
+    // Theme & Color-Aware Interactive Button
+    const CardButton = ({ children, onClick, color = "purple" }) => {
+        const buttonColors = {
+            purple: "group-hover:bg-purple-50 group-hover:text-purple-700",
+            blue: "group-hover:bg-blue-50 group-hover:text-blue-700",
+            green: "group-hover:bg-green-50 group-hover:text-green-700",
+            pink: "group-hover:bg-pink-50 group-hover:text-pink-700",
+        };
+
+        return (
+            <button
+                onClick={onClick}
+                className={`w-full py-2.5 mt-auto bg-slate-50 dark:bg-[#1C2230] hover:bg-slate-100 dark:hover:bg-[#2A344A] dark:group-hover:bg-[#252C3D] dark:group-hover:text-white active:scale-95 text-slate-600 dark:text-gray-300 text-sm font-medium rounded-xl transition-all duration-200 ${buttonColors[color]}`}
+            >
+                {children}
+            </button>
+        );
+    };
 
     const fetch = async () => {
         try {
@@ -87,7 +105,6 @@ export default function UserDashboard() {
 
                 {/* Top Right Controls */}
                 <div className="flex items-center justify-between md:justify-end gap-3 md:gap-5 w-full lg:w-auto">
-                    
                     {/* Notification Bell */}
                     <button 
                         className="relative p-2.5 rounded-full bg-white dark:bg-[#1C2230] border border-slate-200 dark:border-transparent shadow-sm dark:shadow-none text-slate-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#252C3D] active:scale-90 transition-all duration-200"
@@ -134,8 +151,8 @@ export default function UserDashboard() {
 
             {/* --- Stats Row --- */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                {/* Focus Stat */}
-                <Card className="flex flex-col justify-between h-32 cursor-default">
+                {/* Focus Stat (Green) */}
+                <Card color="green" className="flex flex-col justify-between h-32 cursor-default">
                     <div className="flex justify-between items-start">
                         <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase group-hover:text-slate-700 dark:group-hover:text-gray-400 transition-colors">Today's Focus</span>
                         <div className="p-1.5 bg-green-100 dark:bg-[#172622] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
@@ -151,8 +168,8 @@ export default function UserDashboard() {
                     </div>
                 </Card>
 
-                {/* Habit Streak Stat */}
-                <Card className="flex flex-col justify-between h-32 cursor-default">
+                {/* Habit Streak Stat (Purple) */}
+                <Card color="purple" className="flex flex-col justify-between h-32 cursor-default">
                     <div className="flex justify-between items-start">
                         <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase group-hover:text-slate-700 dark:group-hover:text-gray-400 transition-colors">Habit Streak</span>
                         <div className="p-1.5 bg-purple-100 dark:bg-[#1F1829] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
@@ -170,8 +187,8 @@ export default function UserDashboard() {
                     </div>
                 </Card>
 
-                {/* AI Credits Stat */}
-                <Card className="flex flex-col justify-between h-32 cursor-default">
+                {/* AI Credits Stat (Blue) */}
+                <Card color="blue" className="flex flex-col justify-between h-32 cursor-default">
                     <div className="flex justify-between items-start">
                         <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase group-hover:text-slate-700 dark:group-hover:text-gray-400 transition-colors">AI Credits</span>
                         <div className="p-1.5 bg-blue-100 dark:bg-[#162032] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
@@ -184,8 +201,8 @@ export default function UserDashboard() {
                     </div>
                 </Card>
 
-                {/* Total Notes Stat */}
-                <Card className="flex flex-col justify-between h-32 cursor-default">
+                {/* Total Notes Stat (Pink) */}
+                <Card color="pink" className="flex flex-col justify-between h-32 cursor-default">
                     <div className="flex justify-between items-start">
                         <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase group-hover:text-slate-700 dark:group-hover:text-gray-400 transition-colors">Total Notes</span>
                         <div className="p-1.5 bg-pink-100 dark:bg-[#291725] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
@@ -202,8 +219,8 @@ export default function UserDashboard() {
             {/* --- Main Action Cards Grid (6 Cards) --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
-                {/* 1. Notebooks Card */}
-                <Card className="flex flex-col h-[200px]">
+                {/* 1. Notebooks Card (Purple) */}
+                <Card color="purple" className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
                         <div className="p-2 bg-purple-100 dark:bg-[#1B1A28] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-purple-200 dark:group-hover:bg-[#A855F7]/20">
                             <BookOpen className="h-5 w-5 text-purple-600 dark:text-[#A855F7]" />
@@ -214,26 +231,26 @@ export default function UserDashboard() {
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Notebooks</h3>
                         <p className="text-sm text-slate-500 dark:text-gray-400">{TotalNotes} notes total across categories</p>
                     </div>
-                    <CardButton onClick={() => navigate('/notes/')}>Open</CardButton>
+                    <CardButton color="purple" onClick={() => navigate('/notes/')}>Open</CardButton>
                 </Card>
 
-                {/* 2. Live/Upload Smart Note Card */}
-                <Card className="flex flex-col h-[200px]">
+                {/* 2. Live/Upload Smart Note Card (Blue) */}
+                <Card color="blue" className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
-                        <div className="p-2 bg-purple-100 dark:bg-[#1B1A28] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-purple-200 dark:group-hover:bg-[#A855F7]/20">
-                            <Mic className="h-5 w-5 text-purple-600 dark:text-[#A855F7]" />
+                        <div className="p-2 bg-blue-100 dark:bg-[#162032] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-blue-200 dark:group-hover:bg-[#3B82F6]/20">
+                            <Mic className="h-5 w-5 text-blue-600 dark:text-[#3B82F6]" />
                         </div>
-                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase transition-colors group-hover:text-purple-600 dark:group-hover:text-[#A855F7]">Transcription</span>
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase transition-colors group-hover:text-blue-600 dark:group-hover:text-[#3B82F6]">Transcription</span>
                     </div>
                     <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Smart Recording</h3>
                         <p className="text-sm text-slate-500 dark:text-gray-400">Start live note or upload an audio file</p>
                     </div>
-                    <CardButton onClick={() => navigate('/smart-note/')}>Launch</CardButton>
+                    <CardButton color="blue" onClick={() => navigate('/smart-note/')}>Launch</CardButton>
                 </Card>
 
-                {/* 3. Focus Timer Card */}
-                <Card className="flex flex-col h-[200px]">
+                {/* 3. Focus Timer Card (Green) */}
+                <Card color="green" className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
                         <div className="p-2 bg-green-100 dark:bg-[#172622] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-green-200 dark:group-hover:bg-[#4ADE80]/20">
                             <Timer className="h-5 w-5 text-green-600 dark:text-[#4ADE80]" />
@@ -244,11 +261,11 @@ export default function UserDashboard() {
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Focus Timer</h3>
                         <p className="text-sm text-slate-500 dark:text-gray-400">Ready to start your next session</p>
                     </div>
-                    <CardButton onClick={() => navigate('/promodoro/')}>Launch</CardButton>
+                    <CardButton color="green" onClick={() => navigate('/promodoro/')}>Launch</CardButton>
                 </Card>
 
-                {/* 4. Habit Tracker Card */}
-                <Card className="flex flex-col h-[200px]">
+                {/* 4. Habit Tracker Card (Pink) */}
+                <Card color="pink" className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
                         <div className="p-2 bg-pink-100 dark:bg-[#291725] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-pink-200 dark:group-hover:bg-[#EC4899]/20">
                             <CheckCircle2 className="h-5 w-5 text-pink-600 dark:text-[#EC4899]" />
@@ -259,11 +276,11 @@ export default function UserDashboard() {
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Habit Tracker</h3>
                         <p className="text-sm text-slate-500 dark:text-gray-400">{TodayHabitPercentage}% completed today</p>
                     </div>
-                    <CardButton onClick={() => navigate('/habit-tracker/')}>Open</CardButton>
+                    <CardButton color="pink" onClick={() => navigate('/habit-tracker/')}>Open</CardButton>
                 </Card>
 
-                {/* 5. AI Chat Card */}
-                <Card className="flex flex-col h-[200px]">
+                {/* 5. AI Chat Card (Blue) */}
+                <Card color="blue" className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
                         <div className="p-2 bg-blue-100 dark:bg-[#162032] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-blue-200 dark:group-hover:bg-[#3B82F6]/20">
                             <MessageSquare className="h-5 w-5 text-blue-600 dark:text-[#3B82F6]" />
@@ -274,11 +291,11 @@ export default function UserDashboard() {
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">AI Chat</h3>
                         <p className="text-sm text-slate-500 dark:text-gray-400">Ready to assist with your studies</p>
                     </div>
-                    <CardButton onClick={() => navigate('/chat-bot/')}>Launch</CardButton>
+                    <CardButton color="blue" onClick={() => navigate('/chat-bot/')}>Launch</CardButton>
                 </Card>
 
-                {/* 6. Community Groups Card */}
-                <Card className="flex flex-col h-[200px]">
+                {/* 6. Community Groups Card (Pink) */}
+                <Card color="pink" className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
                         <div className="p-2 bg-pink-100 dark:bg-[#291725] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-pink-200 dark:group-hover:bg-[#EC4899]/20">
                             <Users className="h-5 w-5 text-pink-600 dark:text-[#EC4899]" />
@@ -289,7 +306,7 @@ export default function UserDashboard() {
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Community Groups</h3>
                         <p className="text-sm text-slate-500 dark:text-gray-400">Connect and learn with friends</p>
                     </div>
-                    <CardButton onClick={() => navigate('/groups/')}>Open</CardButton>
+                    <CardButton color="pink" onClick={() => navigate('/groups/')}>Open</CardButton>
                 </Card>
 
             </div>

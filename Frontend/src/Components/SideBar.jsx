@@ -24,7 +24,7 @@ export default function Sidebar() {
         { label: "Habits", icon: Calendar, path: '/habit-tracker/' },
         { label: "Groups", icon: Users, path: '/groups/' },
         { label: "Notes", icon: FileText, path: '/notes/' },
-        { label: "Wallet", icon: Wallet, path: '/wallet/' },
+        // { label: "Wallet", icon: Wallet, path: '/wallet/' },
         { label: "Settings", icon: Settings, path: '/settings/' },
     ];
 
@@ -42,12 +42,12 @@ export default function Sidebar() {
                     layout
                     className="pointer-events-auto flex items-center gap-1 p-2 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-800 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] rounded-[2.5rem] max-w-full overflow-x-auto no-scrollbar"
                 >
-                    {/* Brand Logo (Hidden on very small screens to save space) */}
+                    {/* Brand Logo (Hidden on very small screens to save space)
                     <div className="hidden sm:flex items-center justify-center px-3 border-r border-slate-200 dark:border-slate-800 mr-1">
                         <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg shadow-indigo-500/30">
                             <Sparkles className="w-4 h-4 text-white" />
                         </div>
-                    </div>
+                    </div> */}
 
                     {navItems.map((item) => {
                         const Icon = item.icon;

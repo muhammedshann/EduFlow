@@ -55,18 +55,10 @@ class GoogleLoginView(SocialLoginView):
                     google_requests.Request(),
                     settings.SOCIALACCOUNT_PROVIDERS['google']['APP']['client_id']
                 )
-                logger.info(f"Token verified for email: {idinfo.get('email')}")
             except ValueError as e:
                 return Response({'error': f'Invalid token: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
             email = idinfo.get('email')
-            google_id = idinfo.get('sub')
-            picture_url = idinfo.get('picture')
-
-            if not email:
-                return Response({'error': 'Email not provided by Google'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Get or create user
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
@@ -75,62 +67,159 @@ class GoogleLoginView(SocialLoginView):
                     'last_name': idinfo.get('family_name', ''),
                 }
             )
-            if created:
-                user.set_unusable_password()
-                user.save()
-                logger.info(f"New user created: {email}")
 
-            update_last_login(None, user)
+            # Sync User Data logic (Pic, SocialAccount, etc. as per your original)
+            user.last_login = timezone.now()
+            user.save(update_fields=["last_login"])
 
-            # Save profile picture if not exists
-            if picture_url and not user.profile_pic:
-                try:
-                    response = requests.get(picture_url)
-                    if response.status_code == 200:
-                        file_name = f"{user.username}_google.jpg"
-                        user.profile_pic.save(file_name, ContentFile(response.content), save=True)
-                        logger.info(f"Saved Google profile pic for {user.username}")
-                except Exception as e:
-                    logger.error(f"Error saving Google profile pic: {str(e)}")
+            # Match the profile pic URI logic from LoginView
+            profile_pic_url = request.build_absolute_uri(user.profile_pic.url) if user.profile_pic else None
 
-            # Create or update social account
-            social_account, created = SocialAccount.objects.get_or_create(
-                user=user,
-                provider='google',
-                defaults={'uid': google_id, 'extra_data': idinfo}
-            )
-            if not created and social_account.uid != google_id:
-                social_account.uid = google_id
-                social_account.extra_data = idinfo
-                social_account.save()
+            user_data = {
+                'id': user.id,
+                'username': user.username,
+                'firstname': user.first_name,
+                'lastname': user.last_name,
+                'email': user.email,
+                'profilePic': profile_pic_url,
+                'isActive': user.is_active,
+            }
 
-            # Generate JWT tokens
+            # Generate Tokens
             refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
-            refresh_token = str(refresh)
+            accessToken = str(refresh.access_token)
+            refreshToken = str(refresh)
 
-            # Response with user info
             response = Response({
                 'message': "Google login successful",
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'firstname': user.first_name,
-                    'lastname': user.last_name,
-                    'profilePic': request.build_absolute_uri(user.profile_pic.url) if user.profile_pic else None
-                }
-            }, status=status.HTTP_200_OK)
+                'user': user_data,
+                'access': accessToken, # Return in body for frontend state
+                'refresh': refreshToken,
+            })
 
-            # Set JWT cookies
-            response.set_cookie('access', access_token, httponly=True, max_age=15*60, samesite='Lax')
-            response.set_cookie('refresh', refresh_token, httponly=True, max_age=7*24*60*60, samesite='Lax')
+            # --- MATCHING COOKIE CONFIGURATION ---
+            # These must match your LoginView exactly
+            cookie_kwargs = {
+                'httponly': True,
+                'secure': True,
+                'samesite': "None",
+                'domain': ".fresheasy.online",
+            }
+
+            response.set_cookie(
+                key="access",
+                value=accessToken,
+                max_age=15 * 60,
+                **cookie_kwargs
+            )
+
+            response.set_cookie(
+                key="refresh",
+                value=refreshToken,
+                max_age=7 * 24 * 60 * 60,
+                **cookie_kwargs
+            )
 
             return response
 
         except Exception as e:
             logger.error(f"Google login error: {str(e)}", exc_info=True)
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+# class GoogleLoginView(SocialLoginView):
+#     adapter_class = GoogleOAuth2Adapter
+#     client_class = OAuth2Client
+#     callback_url = "http://localhost:5173"
+
+#     def post(self, request, *args, **kwargs):
+#         try:
+#             token = request.data.get('access_token') or request.data.get('id_token')
+#             if not token:
+#                 return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+#             # Verify Google token
+#             try:
+#                 idinfo = id_token.verify_oauth2_token(
+#                     token,
+#                     google_requests.Request(),
+#                     settings.SOCIALACCOUNT_PROVIDERS['google']['APP']['client_id']
+#                 )
+#                 logger.info(f"Token verified for email: {idinfo.get('email')}")
+#             except ValueError as e:
+#                 return Response({'error': f'Invalid token: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+#             email = idinfo.get('email')
+#             google_id = idinfo.get('sub')
+#             picture_url = idinfo.get('picture')
+
+#             if not email:
+#                 return Response({'error': 'Email not provided by Google'}, status=status.HTTP_400_BAD_REQUEST)
+
+#             # Get or create user
+#             user, created = User.objects.get_or_create(
+#                 email=email,
+#                 defaults={
+#                     'username': email.split('@')[0],
+#                     'first_name': idinfo.get('given_name', ''),
+#                     'last_name': idinfo.get('family_name', ''),
+#                 }
+#             )
+#             if created:
+#                 user.set_unusable_password()
+#                 user.save()
+#                 logger.info(f"New user created: {email}")
+
+#             update_last_login(None, user)
+
+#             # Save profile picture if not exists
+#             if picture_url and not user.profile_pic:
+#                 try:
+#                     response = requests.get(picture_url)
+#                     if response.status_code == 200:
+#                         file_name = f"{user.username}_google.jpg"
+#                         user.profile_pic.save(file_name, ContentFile(response.content), save=True)
+#                         logger.info(f"Saved Google profile pic for {user.username}")
+#                 except Exception as e:
+#                     logger.error(f"Error saving Google profile pic: {str(e)}")
+
+#             # Create or update social account
+#             social_account, created = SocialAccount.objects.get_or_create(
+#                 user=user,
+#                 provider='google',
+#                 defaults={'uid': google_id, 'extra_data': idinfo}
+#             )
+#             if not created and social_account.uid != google_id:
+#                 social_account.uid = google_id
+#                 social_account.extra_data = idinfo
+#                 social_account.save()
+
+#             # Generate JWT tokens
+#             refresh = RefreshToken.for_user(user)
+#             access_token = str(refresh.access_token)
+#             refresh_token = str(refresh)
+
+#             # Response with user info
+#             response = Response({
+#                 'message': "Google login successful",
+#                 'user': {
+#                     'id': user.id,
+#                     'username': user.username,
+#                     'email': user.email,
+#                     'firstname': user.first_name,
+#                     'lastname': user.last_name,
+#                     'profilePic': request.build_absolute_uri(user.profile_pic.url) if user.profile_pic else None
+#                 }
+#             }, status=status.HTTP_200_OK)
+
+#             # Set JWT cookies
+#             response.set_cookie('access', access_token, httponly=True, max_age=15*60, samesite='Lax')
+#             response.set_cookie('refresh', refresh_token, httponly=True, max_age=7*24*60*60, samesite='Lax')
+
+#             return response
+
+#         except Exception as e:
+#             logger.error(f"Google login error: {str(e)}", exc_info=True)
+#             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class MeView(APIView):
     authentication_classes = [CookieJWTAuthentication]

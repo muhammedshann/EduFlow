@@ -13,8 +13,7 @@ import {
     BookOpen,
     Zap,
     CheckCircle2,
-    ArrowUp,
-    PlayCircle
+    ArrowUp
 } from "lucide-react";
 import { useUser } from "../../Context/UserContext";
 import { useEffect, useState } from "react";
@@ -32,18 +31,18 @@ export default function UserDashboard() {
     const dispatch = useDispatch();
     const { user, logout } = useUser();
 
-    // Enhanced Interactive Card Component
+    // Theme-Aware Interactive Card
     const Card = ({ children, className }) => (
-        <div className={`group bg-[#131823] border border-white/5 rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1.5 hover:border-white/10 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] ${className}`}>
+        <div className={`group bg-white dark:bg-[#131823] border border-slate-200/60 dark:border-white/5 rounded-2xl p-5 shadow-sm dark:shadow-none transition-all duration-300 hover:-translate-y-1.5 hover:border-purple-300 dark:hover:border-white/10 hover:shadow-lg hover:shadow-purple-500/10 dark:hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] ${className}`}>
             {children}
         </div>
     );
 
-    // Enhanced Interactive Button Component
+    // Theme-Aware Interactive Button
     const CardButton = ({ children, onClick }) => (
         <button
             onClick={onClick}
-            className="w-full py-2.5 mt-auto bg-[#1C2230] hover:bg-[#2A344A] group-hover:bg-[#252C3D] group-hover:text-white active:scale-95 text-gray-300 text-sm font-medium rounded-xl transition-all duration-200"
+            className="w-full py-2.5 mt-auto bg-slate-50 dark:bg-[#1C2230] hover:bg-slate-100 dark:hover:bg-[#2A344A] group-hover:bg-purple-50 dark:group-hover:bg-[#252C3D] group-hover:text-purple-700 dark:group-hover:text-white active:scale-95 text-slate-600 dark:text-gray-300 text-sm font-medium rounded-xl transition-all duration-200"
         >
             {children}
         </button>
@@ -72,45 +71,45 @@ export default function UserDashboard() {
     }, [dispatch]);
 
     return (
-        <div className="min-h-screen bg-[#0B0F19] text-white p-6 md:p-10 font-sans selection:bg-purple-500/30 pb-24 md:pb-10">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 text-slate-900 dark:text-white p-6 md:p-10 font-sans selection:bg-purple-500/30 pb-24 md:pb-10 transition-colors duration-300">
             
             {/* --- Top Header Section --- */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
                 {/* Greeting & Quote */}
                 <div className="transform transition-all hover:translate-x-1 duration-300">
-                    <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-white mb-1.5 cursor-default">
-                        Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400">{user ? user.username : 'Kingboy'}</span>!
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1.5 cursor-default text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 dark:from-gray-100 dark:to-gray-400">
+                        Welcome back, {user ? user.username : 'Kingboy'}!
                     </h1>
-                    <p className="text-sm text-gray-400 italic font-serif cursor-default">
+                    <p className="text-sm text-slate-500 dark:text-gray-400 italic font-serif cursor-default">
                         "The only way to do great work is to love what you do."
                     </p>
                 </div>
 
-                {/* Top Right Controls (Search Removed) */}
+                {/* Top Right Controls */}
                 <div className="flex items-center justify-between md:justify-end gap-3 md:gap-5 w-full lg:w-auto">
                     
                     {/* Notification Bell */}
                     <button 
-                        className="relative p-2.5 rounded-full bg-[#1C2230] text-gray-400 hover:text-white hover:bg-[#252C3D] active:scale-90 transition-all duration-200"
+                        className="relative p-2.5 rounded-full bg-white dark:bg-[#1C2230] border border-slate-200 dark:border-transparent shadow-sm dark:shadow-none text-slate-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#252C3D] active:scale-90 transition-all duration-200"
                         onClick={() => navigate('/notification/')}
                     >
                         <Bell className="h-5 w-5" />
-                        <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-pink-500 border-2 border-[#1C2230] animate-pulse"></span>
+                        <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-pink-500 border-2 border-white dark:border-[#1C2230] animate-pulse"></span>
                     </button>
 
                     {/* Settings */}
                     <button 
-                        className="p-2.5 rounded-full bg-[#1C2230] text-gray-400 hover:text-white hover:bg-[#252C3D] active:scale-90 transition-all duration-200"
+                        className="p-2.5 rounded-full bg-white dark:bg-[#1C2230] border border-slate-200 dark:border-transparent shadow-sm dark:shadow-none text-slate-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#252C3D] active:scale-90 transition-all duration-200"
                         onClick={() => navigate('/settings/')}
                     >
                         <Settings className="h-5 w-5 hover:rotate-90 transition-transform duration-500" />
                     </button>
 
-                    <div className="h-8 w-px bg-white/10 hidden md:block mx-1"></div>
+                    <div className="h-8 w-px bg-slate-300 dark:bg-white/10 hidden md:block mx-1"></div>
 
                     {/* Profile Picture */}
                     <div 
-                        className="w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-[#1C2230] hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:scale-105 active:scale-95 transition-all duration-300 flex-shrink-0"
+                        className="w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-white dark:border-[#1C2230] shadow-sm dark:shadow-none hover:border-purple-500 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:scale-105 active:scale-95 transition-all duration-300 flex-shrink-0"
                         onClick={() => navigate('/settings/')}
                     >
                         {user?.profilePic ? (
@@ -125,7 +124,7 @@ export default function UserDashboard() {
                     {/* Logout Button */}
                     <button 
                         onClick={() => logout()}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 active:scale-95 text-sm font-medium transition-all duration-200"
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 active:scale-95 text-sm font-medium transition-all duration-200"
                     >
                         <LogOut className="h-4 w-4" />
                         <span className="hidden md:inline">Logout</span>
@@ -138,14 +137,14 @@ export default function UserDashboard() {
                 {/* Focus Stat */}
                 <Card className="flex flex-col justify-between h-32 cursor-default">
                     <div className="flex justify-between items-start">
-                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase group-hover:text-gray-400 transition-colors">Today's Focus</span>
-                        <div className="p-1.5 bg-[#172622] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                            <Timer className="h-4 w-4 text-[#4ADE80]" />
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase group-hover:text-slate-700 dark:group-hover:text-gray-400 transition-colors">Today's Focus</span>
+                        <div className="p-1.5 bg-green-100 dark:bg-[#172622] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                            <Timer className="h-4 w-4 text-green-600 dark:text-[#4ADE80]" />
                         </div>
                     </div>
                     <div>
-                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-[#4ADE80] transition-colors">{TodayPomodoroCount}</div>
-                        <div className="flex items-center text-xs text-[#4ADE80]">
+                        <div className="text-3xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-green-600 dark:group-hover:text-[#4ADE80] transition-colors">{TodayPomodoroCount}</div>
+                        <div className="flex items-center text-xs text-green-600 dark:text-[#4ADE80]">
                             <ArrowUp className="h-3 w-3 mr-1 animate-bounce" />
                             +2 from yesterday
                         </div>
@@ -155,16 +154,16 @@ export default function UserDashboard() {
                 {/* Habit Streak Stat */}
                 <Card className="flex flex-col justify-between h-32 cursor-default">
                     <div className="flex justify-between items-start">
-                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase group-hover:text-gray-400 transition-colors">Habit Streak</span>
-                        <div className="p-1.5 bg-[#1F1829] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
-                            <CheckCircle2 className="h-4 w-4 text-[#A855F7]" />
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase group-hover:text-slate-700 dark:group-hover:text-gray-400 transition-colors">Habit Streak</span>
+                        <div className="p-1.5 bg-purple-100 dark:bg-[#1F1829] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
+                            <CheckCircle2 className="h-4 w-4 text-purple-600 dark:text-[#A855F7]" />
                         </div>
                     </div>
                     <div>
-                        <div className="text-3xl font-bold text-white mb-2 group-hover:text-[#A855F7] transition-colors">{TodayHabitPercentage}%</div>
-                        <div className="w-full bg-[#1C2230] rounded-full h-1.5 overflow-hidden">
+                        <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-[#A855F7] transition-colors">{TodayHabitPercentage}%</div>
+                        <div className="w-full bg-slate-100 dark:bg-[#1C2230] rounded-full h-1.5 overflow-hidden">
                             <div 
-                                className="bg-gradient-to-r from-purple-600 to-[#A855F7] h-1.5 rounded-full shadow-[0_0_10px_#A855F7] transition-all duration-1000 ease-out" 
+                                className="bg-gradient-to-r from-purple-500 to-[#A855F7] h-1.5 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)] transition-all duration-1000 ease-out" 
                                 style={{ width: `${TodayHabitPercentage}%` }}
                             ></div>
                         </div>
@@ -174,28 +173,28 @@ export default function UserDashboard() {
                 {/* AI Credits Stat */}
                 <Card className="flex flex-col justify-between h-32 cursor-default">
                     <div className="flex justify-between items-start">
-                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase group-hover:text-gray-400 transition-colors">AI Credits</span>
-                        <div className="p-1.5 bg-[#162032] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
-                            <Zap className="h-4 w-4 text-[#3B82F6]" />
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase group-hover:text-slate-700 dark:group-hover:text-gray-400 transition-colors">AI Credits</span>
+                        <div className="p-1.5 bg-blue-100 dark:bg-[#162032] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+                            <Zap className="h-4 w-4 text-blue-600 dark:text-[#3B82F6]" />
                         </div>
                     </div>
                     <div>
-                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-[#3B82F6] transition-colors">{userCredits?.remaining_credits || 0}</div>
-                        <div className="text-xs text-gray-500">Pro Plan Active</div>
+                        <div className="text-3xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-[#3B82F6] transition-colors">{userCredits?.remaining_credits || 0}</div>
+                        <div className="text-xs text-slate-500 dark:text-gray-500">Pro Plan Active</div>
                     </div>
                 </Card>
 
                 {/* Total Notes Stat */}
                 <Card className="flex flex-col justify-between h-32 cursor-default">
                     <div className="flex justify-between items-start">
-                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase group-hover:text-gray-400 transition-colors">Total Notes</span>
-                        <div className="p-1.5 bg-[#291725] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
-                            <Notebook className="h-4 w-4 text-[#EC4899]" />
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase group-hover:text-slate-700 dark:group-hover:text-gray-400 transition-colors">Total Notes</span>
+                        <div className="p-1.5 bg-pink-100 dark:bg-[#291725] rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                            <Notebook className="h-4 w-4 text-pink-600 dark:text-[#EC4899]" />
                         </div>
                     </div>
                     <div>
-                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-[#EC4899] transition-colors">{TotalNotes}</div>
-                        <div className="text-xs text-gray-500">Recorded & saved</div>
+                        <div className="text-3xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-pink-600 dark:group-hover:text-[#EC4899] transition-colors">{TotalNotes}</div>
+                        <div className="text-xs text-slate-500 dark:text-gray-500">Recorded & saved</div>
                     </div>
                 </Card>
             </div>
@@ -206,14 +205,14 @@ export default function UserDashboard() {
                 {/* 1. Notebooks Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
-                        <div className="p-2 bg-[#1B1A28] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#A855F7]/20">
-                            <BookOpen className="h-5 w-5 text-[#A855F7]" />
+                        <div className="p-2 bg-purple-100 dark:bg-[#1B1A28] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-purple-200 dark:group-hover:bg-[#A855F7]/20">
+                            <BookOpen className="h-5 w-5 text-purple-600 dark:text-[#A855F7]" />
                         </div>
-                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#A855F7]">Smart Notes</span>
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase transition-colors group-hover:text-purple-600 dark:group-hover:text-[#A855F7]">Smart Notes</span>
                     </div>
                     <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">Notebooks</h3>
-                        <p className="text-sm text-gray-400">{TotalNotes} notes total across categories</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Notebooks</h3>
+                        <p className="text-sm text-slate-500 dark:text-gray-400">{TotalNotes} notes total across categories</p>
                     </div>
                     <CardButton onClick={() => navigate('/notes/')}>Open</CardButton>
                 </Card>
@@ -221,14 +220,14 @@ export default function UserDashboard() {
                 {/* 2. Live/Upload Smart Note Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
-                        <div className="p-2 bg-[#1B1A28] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#A855F7]/20">
-                            <Mic className="h-5 w-5 text-[#A855F7]" />
+                        <div className="p-2 bg-purple-100 dark:bg-[#1B1A28] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-purple-200 dark:group-hover:bg-[#A855F7]/20">
+                            <Mic className="h-5 w-5 text-purple-600 dark:text-[#A855F7]" />
                         </div>
-                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#A855F7]">Transcription</span>
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase transition-colors group-hover:text-purple-600 dark:group-hover:text-[#A855F7]">Transcription</span>
                     </div>
                     <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">Smart Recording</h3>
-                        <p className="text-sm text-gray-400">Start live note or upload an audio file</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Smart Recording</h3>
+                        <p className="text-sm text-slate-500 dark:text-gray-400">Start live note or upload an audio file</p>
                     </div>
                     <CardButton onClick={() => navigate('/smart-note/')}>Launch</CardButton>
                 </Card>
@@ -236,14 +235,14 @@ export default function UserDashboard() {
                 {/* 3. Focus Timer Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
-                        <div className="p-2 bg-[#172622] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#4ADE80]/20">
-                            <Timer className="h-5 w-5 text-[#4ADE80]" />
+                        <div className="p-2 bg-green-100 dark:bg-[#172622] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-green-200 dark:group-hover:bg-[#4ADE80]/20">
+                            <Timer className="h-5 w-5 text-green-600 dark:text-[#4ADE80]" />
                         </div>
-                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#4ADE80]">Active Session</span>
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase transition-colors group-hover:text-green-600 dark:group-hover:text-[#4ADE80]">Active Session</span>
                     </div>
                     <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">Focus Timer</h3>
-                        <p className="text-sm text-gray-400">Ready to start your next session</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Focus Timer</h3>
+                        <p className="text-sm text-slate-500 dark:text-gray-400">Ready to start your next session</p>
                     </div>
                     <CardButton onClick={() => navigate('/promodoro/')}>Launch</CardButton>
                 </Card>
@@ -251,14 +250,14 @@ export default function UserDashboard() {
                 {/* 4. Habit Tracker Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
-                        <div className="p-2 bg-[#291725] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#EC4899]/20">
-                            <CheckCircle2 className="h-5 w-5 text-[#EC4899]" />
+                        <div className="p-2 bg-pink-100 dark:bg-[#291725] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-pink-200 dark:group-hover:bg-[#EC4899]/20">
+                            <CheckCircle2 className="h-5 w-5 text-pink-600 dark:text-[#EC4899]" />
                         </div>
-                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#EC4899]">Daily Progress</span>
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase transition-colors group-hover:text-pink-600 dark:group-hover:text-[#EC4899]">Daily Progress</span>
                     </div>
                     <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">Habit Tracker</h3>
-                        <p className="text-sm text-gray-400">{TodayHabitPercentage}% completed today</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Habit Tracker</h3>
+                        <p className="text-sm text-slate-500 dark:text-gray-400">{TodayHabitPercentage}% completed today</p>
                     </div>
                     <CardButton onClick={() => navigate('/habit-tracker/')}>Open</CardButton>
                 </Card>
@@ -266,14 +265,14 @@ export default function UserDashboard() {
                 {/* 5. AI Chat Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
-                        <div className="p-2 bg-[#162032] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#3B82F6]/20">
-                            <MessageSquare className="h-5 w-5 text-[#3B82F6]" />
+                        <div className="p-2 bg-blue-100 dark:bg-[#162032] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-blue-200 dark:group-hover:bg-[#3B82F6]/20">
+                            <MessageSquare className="h-5 w-5 text-blue-600 dark:text-[#3B82F6]" />
                         </div>
-                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#3B82F6]">AI Online</span>
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase transition-colors group-hover:text-blue-600 dark:group-hover:text-[#3B82F6]">AI Online</span>
                     </div>
                     <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">AI Chat</h3>
-                        <p className="text-sm text-gray-400">Ready to assist with your studies</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">AI Chat</h3>
+                        <p className="text-sm text-slate-500 dark:text-gray-400">Ready to assist with your studies</p>
                     </div>
                     <CardButton onClick={() => navigate('/chat-bot/')}>Launch</CardButton>
                 </Card>
@@ -281,14 +280,14 @@ export default function UserDashboard() {
                 {/* 6. Community Groups Card */}
                 <Card className="flex flex-col h-[200px]">
                     <div className="flex justify-between items-center mb-6">
-                        <div className="p-2 bg-[#291725] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#EC4899]/20">
-                            <Users className="h-5 w-5 text-[#EC4899]" />
+                        <div className="p-2 bg-pink-100 dark:bg-[#291725] rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-pink-200 dark:group-hover:bg-[#EC4899]/20">
+                            <Users className="h-5 w-5 text-pink-600 dark:text-[#EC4899]" />
                         </div>
-                        <span className="text-[11px] font-bold tracking-wider text-gray-500 uppercase transition-colors group-hover:text-[#EC4899]">Active Groups</span>
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-gray-500 uppercase transition-colors group-hover:text-pink-600 dark:group-hover:text-[#EC4899]">Active Groups</span>
                     </div>
                     <div className="mb-4 transform transition-transform duration-300 group-hover:translate-x-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">Community Groups</h3>
-                        <p className="text-sm text-gray-400">Connect and learn with friends</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Community Groups</h3>
+                        <p className="text-sm text-slate-500 dark:text-gray-400">Connect and learn with friends</p>
                     </div>
                     <CardButton onClick={() => navigate('/groups/')}>Open</CardButton>
                 </Card>

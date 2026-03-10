@@ -48,7 +48,7 @@ export const UserProvider = ({ children }) => {
             console.error("Logout API failed:", err);
         } finally {
             setUser(null); 
-            window.location.href = "/login"; 
+            // window.location.href = "/auth/"; 
         }
     };
 

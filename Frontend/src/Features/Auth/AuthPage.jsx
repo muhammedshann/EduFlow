@@ -4,247 +4,333 @@ import { useDispatch } from "react-redux";
 import { Login, SignUp } from "../../Redux/AuthSlice";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../Context/UserContext";
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from "@react-oauth/google";
 import api from "../../api/axios";
 import { showNotification } from "../../Redux/NotificationSlice";
 
 function LoginPage() {
+
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [focusedField, setFocusedField] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+
     const { setUser } = useUser();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    // const [alert, setAlert] = useState({ message: '', type: '', show: false });
+
     const [formData, setFormData] = useState({
-        first_name: "", last_name: "", username: "", email: "", password: "", register: true
+        first_name: "",
+        last_name: "",
+        username: "",
+        email: "",
+        password: "",
+        register: true
     });
 
+    const [errors, setErrors] = useState({});
+
+    /* ---------------- VALIDATION ---------------- */
+
+    const validators = {
+
+        first_name: (v) => {
+            if (!v.trim()) return "First name required";
+            if (!/^[A-Za-z]{2,30}$/.test(v)) return "Only letters (2-30 chars)";
+            return "";
+        },
+
+        last_name: (v) => {
+            if (!v.trim()) return "Last name required";
+            if (!/^[A-Za-z]{2,30}$/.test(v)) return "Only letters (2-30 chars)";
+            return "";
+        },
+
+        username: (v) => {
+            if (!v.trim()) return "Username required";
+            if (!/^[A-Za-z][A-Za-z0-9_]{3,19}$/.test(v))
+                return "4-20 chars, start with letter, only letters/numbers/_";
+            return "";
+        },
+
+        email: (v) => {
+            if (!v.trim()) return "Email required";
+            if (!/^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(v))
+                return "Invalid email";
+            return "";
+        },
+
+        password: (v) => {
+            if (!v.trim()) return "Password required";
+
+            if (!/^(?=.*[a-z])/.test(v)) return "Must include lowercase";
+            if (!/^(?=.*[A-Z])/.test(v)) return "Must include uppercase";
+            if (!/^(?=.*\d)/.test(v)) return "Must include number";
+            if (!/^(?=.*[@$!%*?&])/.test(v)) return "Must include special char";
+            if (v.length < 8) return "Minimum 8 characters";
+
+            return "";
+        }
+
+    };
+
+    const validateField = (name, value) => {
+        if (!validators[name]) return "";
+
+        const error = validators[name](value);
+
+        setErrors((prev) => ({
+            ...prev,
+            [name]: error
+        }));
+
+        return error;
+    };
+
+    const validateForm = () => {
+
+        let newErrors = {};
+
+        Object.keys(validators).forEach((field) => {
+
+            if (isLogin && (field === "first_name" || field === "last_name" || field === "email"))
+                return;
+
+            const error = validators[field](formData[field] || "");
+
+            if (error) newErrors[field] = error;
+
+        });
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    /* ---------------- INPUT ---------------- */
+
+    const handleInputChange = (e) => {
+
+        const { name, value } = e.target;
+
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value
+        }));
+
+        validateField(name, value);
+    };
+
+    /* ---------------- GOOGLE LOGIN ---------------- */
+
     const handleGoogleLogin = async (credentialResponse) => {
+
         setIsLoading(true);
+
         try {
-            const response = await api.post('accounts/auth/social/google/', {
-                access_token: credentialResponse.credential,
+
+            const response = await api.post("accounts/auth/social/google/", {
+                access_token: credentialResponse.credential
             });
+
             if (response.status === 200) {
                 setUser(response.data.user);
-                // setAlert({ message: 'Google login successful!', type: 'success', show: true });
-                setTimeout(() => navigate('/dashboard'), 1000);
+                setTimeout(() => navigate("/dashboard"), 1000);
             }
-        } catch (error) {
-            // setAlert({ message: 'Google login failed.', type: 'error', show: true });
+
         } finally {
             setIsLoading(false);
         }
     };
 
+    /* ---------------- SUBMIT ---------------- */
+
     const handleSubmit = async (e) => {
+
         e.preventDefault();
 
-        const { username, email, password } = formData;
-
-        // --- Strict Validation Logic ---
-        if (isLogin) {
-            if (!username || !password) {
-                dispatch(showNotification({ message: "Username and password required", type: "error" }));
-                return;
-            }
-        } else {
-            // 1. Basic Presence Check (No empty strings or just spaces)
-            if (!username?.trim() || !email?.trim() || !password?.trim()) {
-                dispatch(showNotification({ message: "All fields are required", type: "error" }));
-                return;
-            }
-
-            // 2. Strict Username Validation
-            // Rules: 3-20 chars, starts with a letter, only letters, numbers, and underscores. No only-symbols.
-            const usernameRegex = /^[A-Za-z][A-Za-z0-9_]{2,19}$/;
-            if (!usernameRegex.test(username)) {
-                dispatch(showNotification({ 
-                    message: "Username must be 3-20 characters, start with a letter, and contain no special symbols except underscores.", 
-                    type: "error" 
-                }));
-                return;
-            }
-
-            // 3. Strict Email Validation
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            if (!emailRegex.test(email)) {
-                dispatch(showNotification({ message: "Please enter a valid email address", type: "error" }));
-                return;
-            }
-
-            // 4. Strict Password Validation
-            // Rules: Min 8 chars, at least one letter and one number.
-            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
-            if (!passwordRegex.test(password)) {
-                dispatch(showNotification({ 
-                    message: "Password must be at least 8 characters and include both letters and numbers.", 
-                    type: "error" 
-                }));
-                return;
-            }
+        if (!validateForm()) {
+            dispatch(showNotification({
+                message: "Please fix form errors",
+                type: "error"
+            }));
+            return;
         }
-        // --- End Validation ---
 
         setIsLoading(true);
+
         try {
+
             if (isLogin) {
-                const loginData = { username, password };
-                const result = await dispatch(Login(loginData)).unwrap();
-                dispatch(showNotification({ message: "Login successful", type: "success" }));
+
+                const result = await dispatch(
+                    Login({
+                        username: formData.username,
+                        password: formData.password
+                    })
+                ).unwrap();
+
+                dispatch(showNotification({
+                    message: "Login successful",
+                    type: "success"
+                }));
+
                 setUser(result.user);
-                navigate('/dashboard/');
+                navigate("/dashboard/");
+
                 return;
             }
 
             const result = await dispatch(SignUp(formData)).unwrap();
-            dispatch(showNotification({ message: "Account created! Verification required.", type: "success" }));
-            navigate('/otp/', { 
-                state: { 
-                    email: formData.email, 
-                    created: result.created_time, 
-                    type: 'register' 
-                } 
-            });
-        } catch (err) {
-            dispatch(showNotification({ 
-                message: err?.message || "An error occurred during authentication", 
-                type: "error" 
+
+            dispatch(showNotification({
+                message: "Account created! Verification required.",
+                type: "success"
             }));
+
+            navigate("/otp/", {
+                state: {
+                    email: formData.email,
+                    created: result.created_time,
+                    type: "register"
+                }
+            });
+
+        } catch (err) {
+
+            dispatch(showNotification({
+                message: err?.message || "Authentication error",
+                type: "error"
+            }));
+
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleInputChange = (e) => {
-        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    };
-
     return (
-        <div className="h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 flex items-center justify-center p-2 transition-colors duration-500 overflow-hidden">
-            <div className="w-full max-w-md animate-in fade-in zoom-in duration-300">
-                
-                {/* {alert.show && (
-                    <div className={`fixed bottom-4 right-4 max-w-md p-3 rounded-xl shadow-2xl z-50 transition-all ${
-                        alert.type === "success" ? "bg-emerald-500" : "bg-rose-500"
-                    } text-white`}>
-                        <p className="text-xs font-bold">{alert.message}</p>
-                    </div>
-                )} */}
+        <div className="h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 flex items-center justify-center p-2 overflow-hidden">
 
-                {/* Branding Section */}
-                <div className="text-center mb-4 transition-colors duration-300">
-                    <div className="relative inline-block mb-2">
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl blur-lg opacity-50"></div>
-                        <div className="relative w-12 h-12 bg-gradient-to-br from-purple-600 via-blue-600 to-purple-700 rounded-xl flex items-center justify-center shadow-2xl">
-                            <span className="text-white font-bold text-xl">EF</span>
+            <div className="w-full max-w-md">
+
+                <form onSubmit={handleSubmit} className="p-6 pt-2 space-y-3">
+
+                    {!isLogin && (
+                        <div className="grid grid-cols-2 gap-3">
+
+                            <InputField
+                                label="First"
+                                name="first_name"
+                                icon={<User />}
+                                value={formData.first_name}
+                                onChange={handleInputChange}
+                                error={errors.first_name}
+                                focused={focusedField}
+                                setFocused={setFocusedField}
+                            />
+
+                            <InputField
+                                label="Last"
+                                name="last_name"
+                                icon={<User />}
+                                value={formData.last_name}
+                                onChange={handleInputChange}
+                                error={errors.last_name}
+                                focused={focusedField}
+                                setFocused={setFocusedField}
+                            />
+
                         </div>
-                    </div>
-                    <h1 className="text-3xl font-black bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent transition-colors duration-300">
-                        EduFlow
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-[11px] font-bold mt-1 flex items-center justify-center gap-1 uppercase tracking-tighter transition-colors duration-300">
-                        <Sparkles className="w-3 h-3 text-purple-500" />
-                        AI-Powered Productivity Suite
-                    </p>
-                </div>
+                    )}
 
-                {/* Main Auth Card */}
-                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-[2rem] shadow-2xl dark:shadow-indigo-500/10 border border-white dark:border-slate-800 overflow-hidden transition-all duration-500">
-                    
-                    {/* Tab Switcher */}
-                    <div className="p-1.5 bg-slate-100/50 dark:bg-slate-800/50 m-3 rounded-xl transition-colors duration-300">
-                        <div className="relative flex p-0.5">
-                            <div className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-white dark:bg-slate-700 rounded-lg shadow-sm transition-all duration-300 ease-out ${
-                                isLogin ? 'left-0.5' : 'left-[calc(50%+1px)]'
-                            }`} />
-                            <button onClick={() => setIsLogin(true)} className={`relative flex-1 py-1.5 text-xs font-bold transition-all duration-300 ${isLogin ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>Sign In</button>
-                            <button onClick={() => setIsLogin(false)} className={`relative flex-1 py-1.5 text-xs font-bold transition-all duration-300 ${!isLogin ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>Sign Up</button>
+                    {!isLogin && (
+                        <InputField
+                            label="Email"
+                            name="email"
+                            type="email"
+                            icon={<Mail />}
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            error={errors.email}
+                            focused={focusedField}
+                            setFocused={setFocusedField}
+                        />
+                    )}
+
+                    <InputField
+                        label="Username"
+                        name="username"
+                        icon={<User />}
+                        value={formData.username}
+                        onChange={handleInputChange}
+                        error={errors.username}
+                        focused={focusedField}
+                        setFocused={setFocusedField}
+                    />
+
+                    <div>
+
+                        <label className="text-[10px] font-bold">Password</label>
+
+                        <div className="relative">
+
+                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" />
+
+                            <input
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                className="w-full pl-10 pr-10 py-2.5 rounded-xl"
+                            />
+
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2"
+                            >
+                                {showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
+                            </button>
+
                         </div>
-                    </div>
 
-                    {/* Form Content */}
-                    <form onSubmit={handleSubmit} className="p-6 pt-2 space-y-3 transition-colors duration-300">
-                        {!isLogin && (
-                            <div className="grid grid-cols-2 gap-3 transition-colors duration-300">
-                                <InputField label="First" name="first_name" icon={<User />} value={formData.first_name} onChange={handleInputChange} focused={focusedField} setFocused={setFocusedField} />
-                                <InputField label="Last" name="last_name" icon={<User />} value={formData.last_name} onChange={handleInputChange} focused={focusedField} setFocused={setFocusedField} />
-                            </div>
+                        {errors.password && (
+                            <p className="text-red-500 text-[10px]">{errors.password}</p>
                         )}
-                        
-                        {!isLogin && (
-                             <InputField label="Email" name="email" type="email" icon={<Mail />} value={formData.email} onChange={handleInputChange} focused={focusedField} setFocused={setFocusedField} />
-                        )}
 
-                        <InputField label="Username" name="username" icon={<User />} value={formData.username} onChange={handleInputChange} focused={focusedField} setFocused={setFocusedField} />
+                    </div>
 
-                        <div className="space-y-1 transition-colors duration-300">
-                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider transition-colors duration-300">Password</label>
-                            <div className={`relative transition-all duration-300 ${focusedField === 'password' ? 'scale-[1.01]' : ''}`}>
-                                <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-300 ${focusedField === 'password' ? 'text-indigo-500 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`} />
-                                <input
-                                    name="password"
-                                    type={showPassword ? "text" : "password"}
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                    onFocus={() => setFocusedField('password')}
-                                    onBlur={() => setFocusedField(null)}
-                                    className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 dark:focus:border-indigo-400 rounded-xl outline-none transition-all text-slate-800 dark:text-white text-xs"
-                                    placeholder="••••••••"
-                                />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors duration-300">
-                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </button>
-                            </div>
-                        </div>
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full py-3 bg-indigo-600 text-white rounded-xl"
+                    >
+                        {isLoading ? "Loading..." : isLogin ? "Sign In" : "Start Journey"}
+                    </button>
 
-                        {isLogin && (
-                            <div className="flex justify-end !mt-1 transition-colors duration-300">
-                                <button type="button" onClick={() => navigate("/enter-email/")} className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors duration-300">Forgot password?</button>
-                            </div>
-                        )}
+                    <div className="flex justify-center">
+                        <GoogleLogin onSuccess={handleGoogleLogin}/>
+                    </div>
 
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-100 dark:shadow-none transition-all transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
-                        >
-                            {isLoading ? <Loader2 className="animate-spin w-4 h-4" /> : (
-                                <>
-                                    <span>{isLogin ? "Sign In" : "Start Journey"}</span>
-                                    <ArrowRight className="w-4 h-4" />
-                                </>
-                            )}
-                        </button>
+                </form>
 
-                        <div className="relative py-1 transition-colors duration-300">
-                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-800 transition-colors duration-300"></div></div>
-                            <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-tight"><span className="bg-white dark:bg-slate-900 px-3 text-slate-400 dark:text-slate-500 transition-colors duration-300">Or continue</span></div>
-                        </div>
-
-                        <div className="flex justify-center rounded-xl overflow-hidden transition-all scale-95">
-                            <GoogleLogin onSuccess={handleGoogleLogin} theme={document.documentElement.classList.contains('dark') ? 'filled_blue' : 'outline'} width="380px" />
-                        </div>
-                    </form>
-                </div>
-
-                {/* Footer Toggle */}
-                <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors duration-300">
-                    {isLogin ? "New here?" : "Already joined?"}{" "}
-                    <button onClick={() => setIsLogin(!isLogin)} className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline transition-colors duration-300">{isLogin ? "Sign up" : "Sign in"}</button>
-                </p>
             </div>
         </div>
     );
 }
 
-const InputField = ({ label, name, type = "text", icon, value, onChange, focused, setFocused }) => (
-    <div className="space-y-1 flex-1 transition-colors duration-300">
-        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider transition-colors duration-300">{label}</label>
-        <div className={`relative transition-all duration-300 ${focused === name ? 'scale-[1.01]' : ''}`}>
-            {React.cloneElement(icon, { className: `absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-300 ${focused === name ? 'text-indigo-500 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'}` })}
+const InputField = ({ label, name, type = "text", icon, value, onChange, error, focused, setFocused }) => (
+
+    <div className="space-y-1 flex-1">
+
+        <label className="text-[10px] font-bold">{label}</label>
+
+        <div className="relative">
+
+            {React.cloneElement(icon, {
+                className: "absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4"
+            })}
+
             <input
                 name={name}
                 type={type}
@@ -252,15 +338,16 @@ const InputField = ({ label, name, type = "text", icon, value, onChange, focused
                 onChange={onChange}
                 onFocus={() => setFocused(name)}
                 onBlur={() => setFocused(null)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 dark:focus:border-indigo-400 rounded-xl outline-none transition-all text-slate-800 dark:text-white text-xs"
-                placeholder={label}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl"
             />
-        </div>
-    </div>
-);
 
-const Loader2 = ({ className }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        </div>
+
+        {error && (
+            <p className="text-red-500 text-[10px]">{error}</p>
+        )}
+
+    </div>
 );
 
 export default LoginPage;

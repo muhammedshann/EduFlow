@@ -10,7 +10,7 @@ urlpatterns = [
     path('wallet/',WalletDetailView.as_view(),name='WalletDetail'),
     path('pomodoro/',PomodoroView.as_view(),name='PomodoroView'),
     path('groups/',AdminGroupView.as_view(),name='PomodoroView'),
-    path('groups/delete/',AdminGroupDeleteView.as_view(),name='AdminGroupDeleteView'),
+    path('groups/delete/<int:id>/', AdminGroupDeleteView.as_view()),
     path('habits/',AdminHabitView.as_view(),name='AdminHabitView'),
     path('notes/', AdminFetchNotesView.as_view(), name="fetch-all-notes"),
     path('live-transcription/', AdminLiveTranscriptionView.as_view(), name="fetch-all-live-transcriptions"),

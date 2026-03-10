@@ -171,23 +171,15 @@ class AdminGroupView(APIView):
 class AdminGroupDeleteView(APIView):
     permission_classes = [IsAdminUser]
 
-    def delete(self, request):
-        group_id = request.data.get("id")
-
-        if not group_id:
-            return Response({"error": "Group ID is required"}, status=400)
-
+    def delete(self, request, id):
         try:
-            group = Group.objects.get(id=group_id)
+            group = Group.objects.get(id=id)
         except Group.DoesNotExist:
             return Response({"error": "Group not found"}, status=404)
 
         group.delete()
 
-        return Response(
-            {"message": "Group has been deleted successfully"},
-            status=200
-        )
+        return Response({"message": "Group deleted"}, status=200)
 
 class AdminHabitView(APIView):
     permission_classes = [IsAdminUser]

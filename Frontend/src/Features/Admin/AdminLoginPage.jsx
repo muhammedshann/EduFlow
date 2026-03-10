@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react";
+import { Lock, User, Eye, EyeOff, ArrowRight, Sparkles, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../Context/UserContext";
@@ -14,35 +14,31 @@ function AdminLoginPage() {
     const navigate = useNavigate();
     const { setUser } = useUser();
 
-    const [alert, setAlert] = useState({
-        message: "",
-        type: "",
-        show: false
-    });
-
-    const [formData, setFormData] = useState({
-        username: "",
-        password: "",
-    });
+    const [alert, setAlert] = useState({ message: "", show: false });
+    const [formData, setFormData] = useState({ username: "", password: "" });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!formData.username || !formData.password) {
+            setAlert({ message: "All fields are required.", show: true });
+            return;
+        }
+        
         setIsLoading(true);
+        setAlert({ ...alert, show: false });
 
         try {
             const result = await dispatch(AdminLogin(formData)).unwrap();
 
             if (!result.user?.is_superuser) {
-                throw "You are not authorized as an admin.";
+                throw "Access Denied: Non-admin account.";
             }
-            console.log(result);
             
             setUser(result.user);
             navigate("/admin/dashboard/");
         } catch (err) {
             setAlert({
-                message: typeof err === "string" ? err : "Invalid admin credentials",
-                type: "error",
+                message: typeof err === "string" ? err : "Invalid credentials or server error.",
                 show: true
             });
         } finally {
@@ -51,125 +47,125 @@ function AdminLoginPage() {
     };
 
     const handleInputChange = (e) => {
-        setFormData(prev => ({
-            ...prev,
-            [e.target.name]: e.target.value
-        }));
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center p-4 transition-colors duration-300">
+        <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center p-4 selection:bg-purple-500/30">
+            {/* Background Decorative Elements */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/20 rounded-full blur-[120px] animate-pulse"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/20 rounded-full blur-[120px]"></div>
+            </div>
 
-            <div className="w-full max-w-md">
-
-                {/* Alert */}
+            <div className="w-full max-w-[400px] relative z-10">
+                {/* Error Alert */}
                 {alert.show && (
-                    <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 animate-in slide-in-from-bottom-2">
-                        <div className="flex justify-between items-center">
-                            <p className="text-sm">{alert.message}</p>
-                            <button
-                                onClick={() => setAlert({ ...alert, show: false })}
-                                className="ml-3 text-white hover:text-red-200"
-                            >
-                                ✕
-                            </button>
-                        </div>
+                    <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <p className="text-xs font-semibold">{alert.message}</p>
+                        <button onClick={() => setAlert({ ...alert, show: false })} className="ml-auto opacity-60 hover:opacity-100">✕</button>
                     </div>
                 )}
 
-                {/* Logo */}
-                <div className="text-center mb-6">
-                    <div className="relative inline-block mb-3">
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur-xl opacity-50 animate-pulse"></div>
-                        <div className="relative w-16 h-16 bg-gradient-to-br from-purple-600 via-blue-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-xl">
-                            <span className="text-white font-bold text-2xl">AD</span>
+                {/* Branding Section */}
+                <div className="text-center mb-8">
+                    <div className="relative inline-block group">
+                        <div className="absolute inset-0 bg-purple-600 rounded-2xl blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                        <div className="relative w-16 h-16 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center shadow-2xl">
+                            <ShieldCheck className="w-8 h-8 text-purple-500" />
                         </div>
                     </div>
-
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 bg-clip-text text-transparent">
-                        Admin Portal
+                    <h1 className="mt-4 text-2xl font-black text-white tracking-tight uppercase">
+                        Admin <span className="text-purple-500">Console</span>
                     </h1>
-
-                    <p className="text-gray-600 dark:text-slate-400 text-sm flex justify-center gap-1 transition-colors">
-                        <Sparkles className="w-4 h-4 text-purple-500" />
-                        Secure Dashboard Access
+                    <p className="text-slate-500 text-[10px] font-bold mt-1 uppercase tracking-[0.2em] flex justify-center items-center gap-2">
+                        <span className="w-8 h-[1px] bg-slate-800"></span>
+                        Authorization Required
+                        <span className="w-8 h-[1px] bg-slate-800"></span>
                     </p>
                 </div>
 
-                {/* Main Card */}
-                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 dark:border-slate-700 overflow-hidden transition-colors duration-300">
-
-                    {/* FORM */}
-                    <div className="p-6 space-y-4">
-
-                        {/* USERNAME */}
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-700 dark:text-slate-300 transition-colors">Username</label>
-                            <div className={`relative transition-transform duration-200 ${focusedField === "username" ? "scale-[1.02]" : ""}`}>
-                                <User className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${
-                                    focusedField === "username" ? "text-purple-500" : "text-gray-400 dark:text-slate-500"
-                                }`} />
+                {/* Main Auth Card */}
+                <div className="bg-slate-900/50 backdrop-blur-3xl rounded-[2rem] shadow-2xl border border-white/5 overflow-hidden">
+                    <form onSubmit={handleSubmit} className="p-8 space-y-5">
+                        
+                        {/* Username Input */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase ml-1 tracking-widest">Operator ID</label>
+                            <div className={`relative group transition-all duration-300 ${focusedField === "username" ? "translate-x-1" : ""}`}>
+                                <User className={`absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === "username" ? "text-purple-500" : "text-slate-600"}`} />
                                 <input
                                     name="username"
                                     type="text"
+                                    required
                                     value={formData.username}
-                                    placeholder="admin username"
+                                    placeholder="Username"
                                     onChange={handleInputChange}
                                     onFocus={() => setFocusedField("username")}
                                     onBlur={() => setFocusedField(null)}
-                                    className="w-full pl-9 pr-3 py-2.5 border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl focus:border-purple-500 dark:focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-900/30 outline-none transition-all placeholder-gray-400 dark:placeholder-slate-600"
+                                    className="w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 focus:border-purple-500/50 rounded-xl outline-none text-white text-xs placeholder:text-slate-700 transition-all"
                                 />
                             </div>
                         </div>
 
-                        {/* PASSWORD */}
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-700 dark:text-slate-300 transition-colors">Password</label>
-
-                            <div className={`relative transition-transform duration-200 ${focusedField === "password" ? "scale-[1.02]" : ""}`}>
-                                <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${
-                                    focusedField === "password" ? "text-purple-500" : "text-gray-400 dark:text-slate-500"
-                                }`} />
-
+                        {/* Password Input */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase ml-1 tracking-widest">Access Key</label>
+                            <div className={`relative group transition-all duration-300 ${focusedField === "password" ? "translate-x-1" : ""}`}>
+                                <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === "password" ? "text-purple-500" : "text-slate-600"}`} />
                                 <input
                                     name="password"
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="••••••••"
+                                    required
                                     value={formData.password}
+                                    placeholder="••••••••"
                                     onChange={handleInputChange}
                                     onFocus={() => setFocusedField("password")}
                                     onBlur={() => setFocusedField(null)}
-                                    className="w-full pl-9 pr-10 py-2.5 border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl focus:border-purple-500 dark:focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-900/30 outline-none transition-all placeholder-gray-400 dark:placeholder-slate-600"
+                                    className="w-full pl-11 pr-12 py-3 bg-slate-950/50 border border-slate-800 focus:border-purple-500/50 rounded-xl outline-none text-white text-xs placeholder:text-slate-700 transition-all"
                                 />
-
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-purple-500 transition-colors"
                                 >
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
                             </div>
                         </div>
 
-                        {/* LOGIN BUTTON */}
+                        {/* Submit Button */}
                         <button
-                            onClick={handleSubmit}
+                            type="submit"
                             disabled={isLoading}
-                            className="w-full bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-center gap-2 disabled:opacity-70 disabled:hover:scale-100"
+                            className="w-full !mt-8 relative group"
                         >
-                            {isLoading ? (
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            ) : (
-                                <>
-                                    Sign In
-                                    <ArrowRight className="w-4 h-4" />
-                                </>
-                            )}
+                            <div className="absolute inset-0 bg-purple-600 rounded-xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                            <div className="relative bg-purple-600 hover:bg-purple-500 text-white py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2">
+                                {isLoading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <>
+                                        Establish Connection
+                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </div>
                         </button>
-                    </div>
-                </div>
 
+                        <div className="text-center !mt-6">
+                            <p className="text-[9px] text-slate-600 font-bold uppercase tracking-tighter">
+                                Authorized Personnel Only • IP Logged
+                            </p>
+                        </div>
+                    </form>
+                </div>
+                
+                {/* Footer Info */}
+                <p className="mt-8 text-center text-[10px] text-slate-700 font-medium">
+                    Protected by EduFlow Security Architecture v3.0
+                </p>
             </div>
         </div>
     );

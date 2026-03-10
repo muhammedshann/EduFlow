@@ -7,6 +7,9 @@ from .gemini_service import call_gemini
 from apps.accounts.models import UserCredits
 from apps.subscriptions.models import CreditUsageHistory
 from django.db import models
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -17,8 +20,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
-        message = data.get("message")
+        try:
+            data = json.loads(text_data)
+        except json.JSONDecodeError:
+            return
+
+        message = data.get("message", "").strip()
         context = data.get("context", "")
         note_title = data.get("note_title", "")
 
@@ -35,14 +42,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
 
         prompt = f"Note: {note_title}\nContext: {context}\nQuestion: {message}" if context else message
-        print("promt from chat bot message user: ",prompt)
+        logger.info(f"Sending prompt to AI: {prompt[:50]}...") # Truncated for clean logs
         
-        reply = await sync_to_async(call_gemini, thread_sensitive=False)(prompt)
-        print('reply from ai :', reply)
+        # We removed sync_to_async because call_gemini is now fully asynchronous!
+        reply = await call_gemini(prompt)
 
         if "❌" not in reply and "⚠️" not in reply:
             self.chatbot_obj = await self.finalise_transaction(check_result['mode'])
-            
             await self.save_request_reply(message, reply)
 
             await self.send(text_data=json.dumps({

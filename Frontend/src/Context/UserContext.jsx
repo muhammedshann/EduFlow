@@ -45,9 +45,10 @@ export const UserProvider = ({ children }) => {
         try {
             await api.post("accounts/logout/");
         } catch (err) {
-            console.error("Logout API failed, but clearing local state anyway:", err);
+            console.error("Logout API failed:", err);
         } finally {
-            setUser(null);
+            setUser(null); 
+            window.location.href = "/login"; 
         }
     };
 

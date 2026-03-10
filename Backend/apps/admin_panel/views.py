@@ -58,17 +58,19 @@ class adminLoginView(APIView):
             key='access',
             value=accessToken,
             httponly=True,
-            secure=False,
-            samesite='Lax',
-            max_age=15*60
+            secure=True,
+            samesite='None',
+            max_age=15*60,
+            domain=".fresheasy.online"
         )
         response.set_cookie(
             key='refresh',
             value=refreshToken,
             httponly=True,
-            samesite='Lax',
+            secure=True,
+            samesite='None',
             max_age=7*24*60*60,
-            secure=False,
+            domain=".fresheasy.online"
         )
         return response
 

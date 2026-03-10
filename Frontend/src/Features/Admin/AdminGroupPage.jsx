@@ -53,7 +53,7 @@ const GroupRow = ({ group }) => {
 
     const handleDeleteGroup = async (id) => {
         try {
-            await dispatch(AdminHanldeGroupDelete({ id })).unwrap();
+            await dispatch(AdminHanldeGroupDelete( id )).unwrap();
         } catch (err) {
             console.error("Group delete failed", err);
         } finally {

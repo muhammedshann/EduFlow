@@ -20,7 +20,7 @@ import { AdminStatCard } from './AdminUserPage';
 function DeleteModal({ onClose, onConfirm }) {
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-sm border border-gray-100 dark:border-slate-700 transition-colors duration-300">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-sm border border-gray-100 dark:border-slate-700 transition-colors duration-300">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
                     Delete Group?
                 </h2>
@@ -47,17 +47,17 @@ function DeleteModal({ onClose, onConfirm }) {
     );
 }
 
-const GroupRow = ({ group }) => {
+const GroupRow = ({ group, onDeleteSuccess }) => {
     const dispatch = useDispatch();
     const [showDeleteConfirm, setshowDeleteConfirm] = useState(false);
 
     const handleDeleteGroup = async (id) => {
         try {
-            await dispatch(AdminHanldeGroupDelete( id )).unwrap();
+            await dispatch(AdminHanldeGroupDelete(id)).unwrap();
+            onDeleteSuccess(id); 
         } catch (err) {
             console.error("Group delete failed", err);
         } finally {
-            window.location.reload();
             setshowDeleteConfirm(false);
         }
     };
@@ -108,7 +108,6 @@ const GroupRow = ({ group }) => {
 };
 
 export default function GroupsManagement() {
-
     const [searchTerm, setSearchTerm] = useState('');
     const [groupsData, setGroupsData] = useState([]);
     const [filteredGroups, setFilteredGroups] = useState([]);
@@ -119,6 +118,20 @@ export default function GroupsManagement() {
     });
 
     const dispatch = useDispatch();
+
+    /* ---------- NEW: Delete Success Handler ---------- */
+    const handleDeleteSuccess = (id) => {
+        // Filter out the deleted group from the local states
+        const updatedData = groupsData.filter(group => group.id !== id);
+        setGroupsData(updatedData);
+        setFilteredGroups(updatedData.filter(group => group.name.toLowerCase().includes(searchTerm.toLowerCase())));
+        
+        // Update Stats locally
+        setStats({
+            totalGroups: updatedData.length,
+            activeGroups: updatedData.filter(g => g.status === "active").length,
+        });
+    };
 
     const handleSearch = (e) => {
         const term = e.target.value.toLowerCase();
@@ -131,8 +144,6 @@ export default function GroupsManagement() {
 
     const fetchData = async () => {
         const response = await dispatch(AdminGroup()).unwrap();
-        console.log(response);
-        
         const groups = response.groups;
         setGroupsData(groups);
         setFilteredGroups(groups);
@@ -153,7 +164,7 @@ export default function GroupsManagement() {
     const handleCreateGroup = async (data) => {
         try {
             await dispatch(CreateGroup(data)).unwrap();
-            await fetchData(); // refresh list
+            await fetchData(); 
             setOpenCreateModal(false);
         } catch (err) {
             console.error("Create group failed:", err);
@@ -227,7 +238,11 @@ export default function GroupsManagement() {
                 <div className="divide-y divide-gray-100 dark:divide-slate-700">
                     {filteredGroups.length > 0 ? (
                         filteredGroups.map(group => (
-                            <GroupRow key={group.id} group={group} />
+                            <GroupRow 
+                                key={group.id} 
+                                group={group} 
+                                onDeleteSuccess={handleDeleteSuccess} /* Passing the new handler */
+                            />
                         ))
                     ) : (
                         <p className="text-center text-gray-500 dark:text-slate-500 py-8">No groups found.</p>

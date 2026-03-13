@@ -31,6 +31,7 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = ["api.eduflow.muhammedshan.info",
     "www.eduflow.muhammedshan.info",
+    "eduflow.muhammedshan.info",
     "muhammedshan.info",
     '54.81.80.38',
     'localhost', '127.0.0.1'

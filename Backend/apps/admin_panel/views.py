@@ -61,7 +61,7 @@ class adminLoginView(APIView):
             secure=True,
             samesite='None',
             max_age=15*60,
-            domain=".eduflow.muhammedshan.info"
+            domain=".muhammedshan.info"
         )
         response.set_cookie(
             key='refresh',
@@ -70,7 +70,7 @@ class adminLoginView(APIView):
             secure=True,
             samesite='None',
             max_age=7*24*60*60,
-            domain=".eduflow.muhammedshan.info"
+            domain=".muhammedshan.info"
         )
         return response
 

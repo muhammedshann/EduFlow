@@ -103,7 +103,7 @@ class GoogleLoginView(SocialLoginView):
                 'httponly': True,
                 'secure': True,
                 'samesite': "None",
-                'domain': ".eduflow.muhammedshan.info",
+                'domain': ".muhammedshan.info",
             }
 
             response.set_cookie(
@@ -394,7 +394,7 @@ class LoginView(APIView):
                 httponly=True,
                 secure=True,
                 samesite="None",
-                domain=".eduflow.muhammedshan.info",
+                domain=".muhammedshan.info",
                 max_age=15 * 60,
             )
 
@@ -404,7 +404,7 @@ class LoginView(APIView):
                 httponly=True,
                 secure=True,
                 samesite="None",
-                domain=".eduflow.muhammedshan.info",
+                domain=".muhammedshan.info",
                 max_age=7 * 24 * 60 * 60,
             )
             return response

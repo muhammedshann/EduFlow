@@ -395,6 +395,7 @@ class LoginView(APIView):
                 secure=True,
                 samesite="None",
                 domain=".muhammedshan.info",
+                path="/",
                 max_age=15 * 60,
             )
 
@@ -405,8 +406,29 @@ class LoginView(APIView):
                 secure=True,
                 samesite="None",
                 domain=".muhammedshan.info",
+                path="/",
                 max_age=7 * 24 * 60 * 60,
             )
+
+            # response.set_cookie(
+            #     key="access",
+            #     value=accessToken,
+            #     httponly=True,
+            #     secure=True,
+            #     samesite="None",
+            #     domain=".muhammedshan.info",
+            #     max_age=15 * 60,
+            # )
+
+            # response.set_cookie(
+            #     key="refresh",
+            #     value=refreshToken,
+            #     httponly=True,
+            #     secure=True,
+            #     samesite="None",
+            #     domain=".muhammedshan.info",
+            #     max_age=7 * 24 * 60 * 60,
+            # )
             return response
 
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

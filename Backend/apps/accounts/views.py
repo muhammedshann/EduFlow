@@ -491,7 +491,7 @@ class LogoutView(APIView):
 
         # FIXED: Must match the domain and path used in LoginView
         cookie_settings = {
-            'domain': ".eduflow.muhammedshan.info",
+            'domain': ".muhammedshan.info",
             'path': "/",
             'samesite': "None",
         }

@@ -29,9 +29,9 @@ SECRET_KEY = config("SECRET_KEY", default="fallback-secret")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ['api.fresheasy.online',
-    "www.fresheasy.online",
-    "fresheasy.online",
+ALLOWED_HOSTS = ["api.eduflow.muhammedshan.info",
+    "www.eduflow.muhammedshan.info",
+    "muhammedshan.info",
     '54.81.80.38',
     'localhost', '127.0.0.1'
     ]
@@ -173,14 +173,14 @@ AUTH_USER_MODEL = 'accounts.User'
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "https://eduflow-ivory.vercel.app",
-    "https://fresheasy.online",
-    "https://www.fresheasy.online",
+    "https://eduflow.muhammedshan.info",
+    "https://www.eduflow.muhammedshan.info"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://eduflow-ivory.vercel.app",
-    "https://fresheasy.online",
-    "https://www.fresheasy.online",
+    "https://eduflow.muhammedshan.info",
+    "https://www.eduflow.muhammedshan.info",
 ]
 
 # Allow credentials if needed
@@ -271,11 +271,11 @@ CSRF_COOKIE_HTTPONLY = False
 
 # CORS_ALLOW_ALL_ORIGINS = True
 
-SESSION_COOKIE_DOMAIN = ".fresheasy.online"
-CSRF_COOKIE_DOMAIN = ".fresheasy.online"
+SESSION_COOKIE_DOMAIN = ".eduflow.muhammedshan.info"
+CSRF_COOKIE_DOMAIN = ".eduflow.muhammedshan.info"
 
-LOGIN_REDIRECT_URL = "https://fresheasy.online"
-ACCOUNT_LOGOUT_REDIRECT_URL = "https://fresheasy.online"
+LOGIN_REDIRECT_URL = "https://eduflow.muhammedshan.info"
+ACCOUNT_LOGOUT_REDIRECT_URL = "https://eduflow.muhammedshan.info"
 
 
 # media

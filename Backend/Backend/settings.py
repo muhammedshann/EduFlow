@@ -271,8 +271,8 @@ CSRF_COOKIE_HTTPONLY = False
 
 # CORS_ALLOW_ALL_ORIGINS = True
 
-SESSION_COOKIE_DOMAIN = ".eduflow.muhammedshan.info"
-CSRF_COOKIE_DOMAIN = ".eduflow.muhammedshan.info"
+SESSION_COOKIE_DOMAIN = ".muhammedshan.info"
+CSRF_COOKIE_DOMAIN = ".muhammedshan.info"
 
 LOGIN_REDIRECT_URL = "https://eduflow.muhammedshan.info"
 ACCOUNT_LOGOUT_REDIRECT_URL = "https://eduflow.muhammedshan.info"

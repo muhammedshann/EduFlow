@@ -68,19 +68,31 @@ export default function ChatPage() {
     }, [messages, dispatch]);
 
     useEffect(() => {
-        socket.current = new WebSocket("wss://api.eduflow.muhammedshan.info/ws/chat-bot/");
-        socket.current.onmessage = (event) => {
+        const ws = new WebSocket("wss://api.eduflow.muhammedshan.info/ws/chat-bot/");
+        socket.current = ws;
+
+        ws.onopen = () => {
+            console.log("✅ WS connected, readyState:", ws.readyState);
+        };
+
+        ws.onerror = (err) => {
+            console.error("❌ WS error:", err);
+        };
+
+        ws.onclose = (event) => {
+            // This gives you the exact failure reason
+            console.warn("WS closed — code:", event.code, "reason:", event.reason, "wasClean:", event.wasClean);
+        };
+
+        ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             setIsLoading(false);
-
             if (data.type === "limit_reached") {
                 setShowLimitModal(true);
                 setMessages(prev => prev.slice(0, -1));
                 return;
             }
-
             const incomingText = data.reply || data.message || "";
-
             setMessages((prev) => {
                 const last = prev[prev.length - 1];
                 if (last && last.role === "bot") {
@@ -89,7 +101,8 @@ export default function ChatPage() {
                 return [...prev, { role: "bot", text: incomingText }];
             });
         };
-        return () => socket.current?.close();
+
+        return () => ws.close();
     }, []);
 
     const sendMessage = (e) => {
@@ -123,11 +136,11 @@ export default function ChatPage() {
     return (
         /* FIXED: Added pb-32. This container now handles the bottom spacing. */
         <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden pb-32">
-            
+
             {/* Chat Body Container */}
             <div className="flex-1 overflow-y-auto px-4 md:px-8 pt-6 scrollbar-hide">
                 <div className="w-full max-w-4xl mx-auto">
-                    
+
                     {/* Top Floating Controls */}
                     <div className="flex items-center justify-between mb-8 sticky top-0 z-20">
                         {noteTitle ? (
@@ -141,8 +154,8 @@ export default function ChatPage() {
                         ) : <div />}
 
                         {messages.length > 0 && (
-                            <button 
-                                onClick={() => setShowClearConfirm(true)} 
+                            <button
+                                onClick={() => setShowClearConfirm(true)}
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-full text-[10px] font-black text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all uppercase tracking-widest"
                             >
                                 <Trash2 size={12} /> Clear
@@ -166,11 +179,10 @@ export default function ChatPage() {
 
                         {messages.map((m, i) => (
                             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} items-end gap-3`}>
-                                <div className={`px-5 md:px-6 py-3 md:py-4 rounded-3xl text-[15px] leading-relaxed shadow-sm border transition-all duration-300 ${
-                                    m.role === "user" 
-                                    ? "bg-indigo-600 text-white border-indigo-500 rounded-br-none shadow-lg shadow-indigo-500/10" 
-                                    : "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl text-slate-700 dark:text-slate-200 border-white/20 dark:border-slate-800 rounded-bl-none"
-                                } max-w-[90%] md:max-w-[80%] min-w-[50px]`}>
+                                <div className={`px-5 md:px-6 py-3 md:py-4 rounded-3xl text-[15px] leading-relaxed shadow-sm border transition-all duration-300 ${m.role === "user"
+                                        ? "bg-indigo-600 text-white border-indigo-500 rounded-br-none shadow-lg shadow-indigo-500/10"
+                                        : "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl text-slate-700 dark:text-slate-200 border-white/20 dark:border-slate-800 rounded-bl-none"
+                                    } max-w-[90%] md:max-w-[80%] min-w-[50px]`}>
                                     <div className={`prose prose-sm max-w-none ${m.role === "user" ? "prose-invert text-white" : "dark:text-slate-200 dark:prose-invert prose-indigo"}`}>
                                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                             {m.text}
@@ -179,7 +191,7 @@ export default function ChatPage() {
                                 </div>
                             </div>
                         ))}
-                        
+
                         {isLoading && (
                             <div className="flex justify-start animate-in fade-in duration-300">
                                 <div className="px-6 py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 rounded-3xl rounded-bl-none shadow-sm flex gap-1.5 items-center">
@@ -196,8 +208,8 @@ export default function ChatPage() {
 
             {/* FIXED: Input Form is now RELATIVE and inside the padding zone */}
             <div className="relative px-4 md:px-8 z-20 mt-4">
-                <form 
-                    onSubmit={sendMessage} 
+                <form
+                    onSubmit={sendMessage}
                     className="max-w-3xl mx-auto flex items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/20 dark:border-slate-800 rounded-[28px] p-2 shadow-2xl transition-all focus-within:border-indigo-400"
                 >
                     <input
@@ -208,9 +220,9 @@ export default function ChatPage() {
                         disabled={isLoading}
                         className="flex-1 bg-transparent px-4 md:px-6 py-3 text-slate-800 dark:text-slate-100 text-sm md:text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium"
                     />
-                    <button 
-                        type="submit" 
-                        disabled={isLoading || !input.trim()} 
+                    <button
+                        type="submit"
+                        disabled={isLoading || !input.trim()}
                         className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center transition-all disabled:opacity-30 shadow-lg"
                     >
                         {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4 md:w-5 md:h-5" />}

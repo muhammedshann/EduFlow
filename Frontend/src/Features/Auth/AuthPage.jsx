@@ -179,8 +179,8 @@ function LoginPage() {
                             <div className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-white dark:bg-slate-700 rounded-lg shadow-sm transition-all duration-300 ease-out ${
                                 isLogin ? 'left-0.5' : 'left-[calc(50%+1px)]'
                             }`} />
-                            <button onClick={() => setIsLogin(true)} className={`relative flex-1 py-1.5 text-xs font-bold transition-all duration-300 ${isLogin ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>Sign In</button>
-                            <button onClick={() => setIsLogin(false)} className={`relative flex-1 py-1.5 text-xs font-bold transition-all duration-300 ${!isLogin ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>Sign Up</button>
+                            <button onClick={() => setIsLogin(true)} className={`relative flex-1 py-1.5 text-[16px] font-bold transition-all duration-300 ${isLogin ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>Sign In</button>
+                            <button onClick={() => setIsLogin(false)} className={`relative flex-1 py-1.5 text-[16px] font-bold transition-all duration-300 ${!isLogin ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>Sign Up</button>
                         </div>
                     </div>
 
@@ -210,7 +210,7 @@ function LoginPage() {
                                     onChange={handleInputChange}
                                     onFocus={() => setFocusedField('password')}
                                     onBlur={() => setFocusedField(null)}
-                                    className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 dark:focus:border-indigo-400 rounded-xl outline-none transition-all text-slate-800 dark:text-white text-xs"
+                                    className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 dark:focus:border-indigo-400 rounded-xl outline-none transition-all text-slate-800 dark:text-white text-[16px]"
                                     placeholder="••••••••"
                                 />
                                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors duration-300">
@@ -250,7 +250,7 @@ function LoginPage() {
                     </form>
                 </div>
 
-                <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors duration-300">
+                <p className="mt-4 text-center text-[16px] text-slate-500 dark:text-slate-400 transition-colors duration-300">
                     {isLogin ? "New here?" : "Already joined?"}{" "}
                     <button onClick={() => setIsLogin(!isLogin)} className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline transition-colors duration-300">{isLogin ? "Sign up" : "Sign in"}</button>
                 </p>
@@ -271,7 +271,7 @@ const InputField = ({ label, name, type = "text", icon, value, onChange, focused
                 onChange={onChange}
                 onFocus={() => setFocused(name)}
                 onBlur={() => setFocused(null)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 dark:focus:border-indigo-400 rounded-xl outline-none transition-all text-slate-800 dark:text-white text-xs"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 dark:focus:border-indigo-400 rounded-xl outline-none transition-all text-slate-800 dark:text-white text-[16px]"
                 placeholder={label}
             />
         </div>

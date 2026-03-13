@@ -303,7 +303,7 @@ export default function GroupChat() {
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder={`Message ${groupName}...`}
-                        className="flex-1 bg-transparent px-2 py-3 text-slate-700 dark:text-slate-100 text-sm md:text-base outline-none placeholder:text-slate-400"
+                        className="flex-1 bg-transparent px-2 py-3 text-slate-700 dark:text-slate-100 text-[16px] md:text-base outline-none placeholder:text-slate-400"
                     />
 
                     <button

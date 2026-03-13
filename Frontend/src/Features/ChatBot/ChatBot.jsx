@@ -71,19 +71,6 @@ export default function ChatPage() {
         const ws = new WebSocket("wss://api.eduflow.muhammedshan.info/ws/chat-bot/");
         socket.current = ws;
 
-        ws.onopen = () => {
-            console.log("✅ WS connected, readyState:", ws.readyState);
-        };
-
-        ws.onerror = (err) => {
-            console.error("❌ WS error:", err);
-        };
-
-        ws.onclose = (event) => {
-            // This gives you the exact failure reason
-            console.warn("WS closed — code:", event.code, "reason:", event.reason, "wasClean:", event.wasClean);
-        };
-
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             setIsLoading(false);
@@ -218,7 +205,7 @@ export default function ChatPage() {
                         onChange={(e) => setInput(e.target.value)}
                         placeholder={noteTitle ? "Ask about this note..." : "Ask EduFlow anything..."}
                         disabled={isLoading}
-                        className="flex-1 bg-transparent px-4 md:px-6 py-3 text-slate-800 dark:text-slate-100 text-sm md:text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium"
+                        className="flex-1 bg-transparent px-4 md:px-6 py-3 text-slate-800 dark:text-slate-100 text-[16px] md:text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium"
                     />
                     <button
                         type="submit"

@@ -15,9 +15,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = self.scope["user"]
     
-        # ADD THIS — check Daphne logs when WS connects
-        print(f"DEBUG WS CONNECT — user: {self.user}, type: {type(self.user)}")
-        
         if not self.user.is_authenticated:
             await self.close()
             return

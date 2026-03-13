@@ -49,7 +49,7 @@ export default function LiveTranscriptionPage() {
     const streamRef = useRef(null);
 
     useEffect(() => {
-        const socket = new WebSocket("wss://api.fresheasy.online/ws/live-transcribe/");
+        const socket = new WebSocket("wss://api.eduflow.muhammedshan.info/ws/live-transcribe/");
         socketRef.current = socket;
 
         socket.onmessage = (event) => {

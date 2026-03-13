@@ -103,7 +103,7 @@ class GoogleLoginView(SocialLoginView):
                 'httponly': True,
                 'secure': True,
                 'samesite': "None",
-                'domain': ".fresheasy.online",
+                'domain': ".eduflow.muhammedshan.info",
             }
 
             response.set_cookie(
@@ -394,7 +394,7 @@ class LoginView(APIView):
                 httponly=True,
                 secure=True,
                 samesite="None",
-                domain=".fresheasy.online",
+                domain=".eduflow.muhammedshan.info",
                 max_age=15 * 60,
             )
 
@@ -404,7 +404,7 @@ class LoginView(APIView):
                 httponly=True,
                 secure=True,
                 samesite="None",
-                domain=".fresheasy.online",
+                domain=".eduflow.muhammedshan.info",
                 max_age=7 * 24 * 60 * 60,
             )
             return response
@@ -469,7 +469,7 @@ class LogoutView(APIView):
 
         # FIXED: Must match the domain and path used in LoginView
         cookie_settings = {
-            'domain': ".fresheasy.online",
+            'domain': ".eduflow.muhammedshan.info",
             'path': "/",
             'samesite': "None",
         }

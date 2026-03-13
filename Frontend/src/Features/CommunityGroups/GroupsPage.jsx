@@ -198,7 +198,7 @@ const GroupsPage = () => {
                 content: msg.message, timestamp: new Date(msg.created_at), isCurrentUser: msg.username === user.username
             })));
 
-            const ws = new WebSocket(`wss://api.fresheasy.online/ws/chat/${id}/`);
+            const ws = new WebSocket(`wss://api.eduflow.muhammedshan.info/ws/chat/${id}/`);
             ws.onmessage = (e) => {
                 const data = JSON.parse(e.data);
                 setMessages(prev => [...prev, {

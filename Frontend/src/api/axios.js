@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://api.fresheasy.online/api/',
+    baseURL: 'https://api.eduflow.muhammedshan.info/api/',
     withCredentials: true, // cookies are sent automatically
     // headers: { 'Content-Type': 'application/json' },
 });
@@ -44,7 +44,7 @@ api.interceptors.response.use(
 
             try {
                 await axios.post(
-                    'https://api.fresheasy.online/api/accounts/token/refresh/',
+                    'https://api.eduflow.muhammedshan.info/api/accounts/token/refresh/',
                     {},
                     { withCredentials: true } // send cookies & receive new access cookie
                 );

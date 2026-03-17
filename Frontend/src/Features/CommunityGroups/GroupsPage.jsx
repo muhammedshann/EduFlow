@@ -3,7 +3,7 @@ import {
     Search, Users, Plus, X, LayoutGrid, 
     MessageSquare, Send, ArrowLeft, LogOut, 
     Globe, Lock, Link as LinkIcon, Image as ImageIcon, Loader2,
-    Hash, Info, CheckCircle2, UserPlus, MoreVertical, Paperclip
+    Hash, Info, CheckCircle2, UserPlus, Sparkles
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { CreateGroup, FetchGroup, fetchGroupDetails, LeaveGroup } from "../../Redux/GroupsSlice";
@@ -11,6 +11,10 @@ import { useUser } from "../../Context/UserContext";
 import api from "../../api/axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+// --- THEME CONSTANTS ---
+const PRIMARY_GRADIENT = "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500";
+const SOFT_BG = "bg-[#f8fafc] dark:bg-slate-950";
 
 // --- UTILS ---
 const formatTime = (date) => {
@@ -21,20 +25,20 @@ const formatTime = (date) => {
 
 // --- COMPONENTS ---
 
-// 1. Minimalist Message Bubble
+// 1. High-UX Message Bubble
 const MessageBubble = ({ message, onImageClick }) => {
     const isCurrentUser = message.isCurrentUser;
     return (
-        <div className={`flex w-full mb-6 ${isCurrentUser ? 'justify-end' : 'justify-start'} group animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-            <div className={`flex gap-3 max-w-[85%] md:max-w-[70%] ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div className={`flex w-full mb-6 ${isCurrentUser ? 'justify-end' : 'justify-start'} group animate-in slide-in-from-bottom-3 fade-in duration-500`}>
+            <div className={`flex items-end gap-3 max-w-[85%] md:max-w-[70%] ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
                 
-                {/* Minimal Avatar */}
+                {/* Avatar with Ring */}
                 {!isCurrentUser && (
-                    <div className="hidden sm:flex w-8 h-8 rounded-full flex-shrink-0 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 overflow-hidden items-center justify-center">
+                    <div className="hidden sm:flex w-8 h-8 rounded-full flex-shrink-0 bg-gradient-to-tr from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700 overflow-hidden shadow-md items-center justify-center ring-2 ring-white dark:ring-slate-900 z-10">
                         {message.profile_pic ? (
                             <img src={message.profile_pic} alt="avatar" className="w-full h-full object-cover" />
                         ) : (
-                            <span className="text-[11px] font-semibold text-zinc-500 uppercase">
+                            <span className="text-[10px] font-black text-slate-500 uppercase">
                                 {message.sender?.substring(0, 2)}
                             </span>
                         )}
@@ -43,33 +47,33 @@ const MessageBubble = ({ message, onImageClick }) => {
                 
                 <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
                     {!isCurrentUser && (
-                        <div className="flex items-baseline gap-2 mb-1 ml-1">
-                            <span className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+                        <div className="flex items-center gap-2 mb-1.5 ml-1">
+                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 tracking-wide">
                                 {message.sender}
                             </span>
-                            <span className="text-[11px] text-zinc-400">
+                            <span className="text-[9px] font-semibold text-slate-400">
                                 {formatTime(message.timestamp)}
                             </span>
                         </div>
                     )}
                     
-                    <div className={`relative px-4 py-3 transition-all ${
+                    <div className={`relative px-5 py-3.5 shadow-md transition-all group-hover:shadow-lg ${
                         isCurrentUser 
-                        ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm' 
-                        : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 rounded-2xl rounded-tl-sm'
+                        ? 'bg-indigo-600 text-white rounded-[24px] rounded-br-[8px]' 
+                        : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-[24px] rounded-bl-[8px] border border-slate-200/60 dark:border-slate-800'
                     }`}>
                         {message.image && (
-                            <div className="mb-3 rounded-lg overflow-hidden cursor-zoom-in ring-1 ring-black/5" onClick={() => onImageClick(message.image)}>
-                                <img src={message.image} alt="attachment" className="max-h-64 w-full object-cover hover:opacity-95 transition-opacity" />
+                            <div className="mb-3 rounded-xl overflow-hidden cursor-zoom-in ring-1 ring-black/10" onClick={() => onImageClick(message.image)}>
+                                <img src={message.image} alt="attachment" className="max-h-64 w-full object-cover hover:scale-[1.03] transition-transform duration-700 ease-out" />
                             </div>
                         )}
                         {message.content && (
-                            <div className={`text-[14px] leading-relaxed prose prose-sm max-w-none ${isCurrentUser ? 'prose-invert text-blue-50' : 'dark:prose-invert text-zinc-800 dark:text-zinc-200'}`}>
+                            <div className={`text-[14px] leading-relaxed prose prose-sm max-w-none ${isCurrentUser ? 'prose-invert text-indigo-50' : 'dark:prose-invert'}`}>
                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
                             </div>
                         )}
                         {isCurrentUser && (
-                            <div className="text-[10px] mt-1.5 flex justify-end opacity-70">
+                            <div className="text-[9px] mt-2 font-bold flex justify-end opacity-60">
                                 {formatTime(message.timestamp)}
                             </div>
                         )}
@@ -80,7 +84,7 @@ const MessageBubble = ({ message, onImageClick }) => {
     );
 };
 
-// 2. Sleek Modals
+// 2. Modals (Kept structure, enhanced visuals)
 const GroupInfoModal = ({ open, onClose, group, users_count }) => {
     if (!open || !group) return null;
     const [copied, setCopied] = useState(false);
@@ -93,51 +97,52 @@ const GroupInfoModal = ({ open, onClose, group, users_count }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[200] p-4 animate-in fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 border border-zinc-200 dark:border-zinc-800" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-4 border-b border-zinc-100 dark:border-zinc-800/50">
-                    <h3 className="font-semibold text-zinc-900 dark:text-white">Community Details</h3>
-                    <button onClick={onClose} className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors"><X size={18} /></button>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4 animate-in fade-in" onClick={onClose}>
+            <div className="bg-white dark:bg-slate-900 w-full max-w-[380px] rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white/10" onClick={e => e.stopPropagation()}>
+                <div className={`h-24 w-full ${PRIMARY_GRADIENT} relative overflow-hidden`}>
+                    <div className="absolute inset-0 bg-white/10 backdrop-blur-3xl"></div>
+                    <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/30 text-white rounded-full transition-all hover:scale-105"><X size={16} /></button>
                 </div>
-                <div className="p-6">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center border border-blue-100 dark:border-blue-800/30">
-                            <Hash size={28} className="text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold dark:text-white">{group.name}</h3>
-                            <div className="flex items-center gap-3 mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                                <span className="flex items-center gap-1">
-                                    {group.type === "public" ? <Globe size={14} /> : <Lock size={14} />}
-                                    <span className="capitalize">{group.type}</span>
-                                </span>
-                                <span>•</span>
-                                <span className="flex items-center gap-1">
-                                    <Users size={14} />
-                                    {users_count} Members
-                                </span>
-                            </div>
-                        </div>
+                
+                <div className="px-6 pb-8 -mt-10 text-center relative z-10">
+                    <div className="w-20 h-20 bg-white dark:bg-slate-900 rounded-[1.5rem] mx-auto shadow-xl flex items-center justify-center mb-4 border-[4px] border-white dark:border-slate-900 rotate-3 transition-transform hover:rotate-0 duration-300">
+                        <Users size={28} className="text-indigo-600" />
                     </div>
                     
-                    <div className="mb-6">
-                        <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Description</h4>
-                        <p className="text-sm text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-800">
-                            {group.description || "No mission statement yet."}
-                        </p>
+                    <h3 className="text-xl font-black dark:text-white tracking-tight">{group.name}</h3>
+                    
+                    <div className="flex justify-center items-center gap-6 mt-4">
+                        <div className="flex flex-col items-center">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</span>
+                            <span className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                                {group.type === "public" ? <Globe size={14} className="text-emerald-500" /> : <Lock size={14} className="text-rose-500" />}
+                                <span className="capitalize">{group.type}</span>
+                            </span>
+                        </div>
+                        <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
+                        <div className="flex flex-col items-center">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Members</span>
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">{users_count}</span>
+                        </div>
                     </div>
 
-                    <button 
-                        onClick={handleCopyLink} 
-                        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                            copied 
-                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-200 dark:border-emerald-500/20' 
-                            : 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-90'
-                        }`}
-                    >
-                        {copied ? <CheckCircle2 size={16} /> : <LinkIcon size={16} />}
-                        {copied ? "Invite Link Copied" : "Copy Invite Link"}
-                    </button>
+                    <div className="mt-8 space-y-4">
+                        <div className="text-left p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                            <p className="text-[14px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed">"{group.description || "No mission statement yet."}"</p>
+                        </div>
+                        
+                        <button 
+                            onClick={handleCopyLink} 
+                            className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-[12px] uppercase tracking-wider transition-all active:scale-95 ${
+                                copied 
+                                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
+                                : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 shadow-lg'
+                            }`}
+                        >
+                            {copied ? <CheckCircle2 size={18} /> : <LinkIcon size={18} />}
+                            {copied ? "Invite Copied!" : "Copy Invite Link"}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -156,31 +161,35 @@ export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in">
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl w-full max-w-md p-6 border border-zinc-200 dark:border-zinc-800">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-[380px] p-8 border border-slate-100 dark:border-slate-800">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-bold dark:text-white">Create New Hub</h2>
-                    <button onClick={onClose} className="p-1.5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors"><X size={18} /></button>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600">
+                            <Sparkles size={20} />
+                        </div>
+                        <h2 className="text-xl font-black dark:text-white">New Hub</h2>
+                    </div>
+                    <button onClick={onClose} className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full text-slate-500 transition-colors"><X size={16} /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Hub Name</label>
-                        <input type="text" placeholder="e.g. Python Developers" className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" onChange={(e) => setFormData({...formData, name: e.target.value})} required />
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-1.5 block">Hub Name</label>
+                        <input type="text" placeholder="e.g. Python Masters" className="w-full p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm font-medium dark:text-white outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all" onChange={(e) => setFormData({...formData, name: e.target.value})} required />
                     </div>
                     <div>
-                        <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Description</label>
-                        <textarea placeholder="What is the focus of this group?" rows={3} className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none" onChange={(e) => setFormData({...formData, description: e.target.value})} />
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-1.5 block">Description</label>
+                        <textarea placeholder="What is the focus?" rows={3} className="w-full p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm font-medium dark:text-white outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none" onChange={(e) => setFormData({...formData, description: e.target.value})} />
                     </div>
                     <div>
-                        <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Visibility</label>
-                        <select className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer" onChange={(e) => setFormData({...formData, type: e.target.value})}>
-                            <option value="public">Public (Anyone can find and join)</option>
-                            <option value="private">Private (Invite link required)</option>
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-1.5 block">Access Level</label>
+                        <select className="w-full p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm font-bold dark:text-white outline-none cursor-pointer focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all" onChange={(e) => setFormData({...formData, type: e.target.value})}>
+                            <option value="public">🌍 Public Space</option>
+                            <option value="private">🔒 Private (Invite Only)</option>
                         </select>
                     </div>
-                    <div className="pt-4 flex justify-end gap-3">
-                        <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">Cancel</button>
-                        <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">Create Hub</button>
+                    <div className="pt-4">
+                        <button type="submit" className={`w-full py-4 text-white text-sm font-black rounded-xl shadow-xl shadow-indigo-500/20 active:scale-[0.98] transition-all hover:opacity-90 ${PRIMARY_GRADIENT}`}>Launch Hub</button>
                     </div>
                 </form>
             </div>
@@ -191,9 +200,9 @@ export const CreateGroupModal = ({ open, onClose, onSubmit }) => {
 const ImagePreviewModal = ({ image, onClose }) => {
     if (!image) return null;
     return (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[120] flex items-center justify-center p-4 animate-in fade-in" onClick={onClose}>
-            <button className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors" onClick={onClose}><X size={24} /></button>
-            <img src={image} alt="preview" className="max-w-full max-h-[90vh] object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-[120] flex items-center justify-center p-4 animate-in fade-in" onClick={onClose}>
+            <button className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors backdrop-blur-md" onClick={onClose}><X size={24} /></button>
+            <img src={image} alt="preview" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()} />
         </div>
     );
 };
@@ -201,22 +210,22 @@ const ImagePreviewModal = ({ image, onClose }) => {
 const JoinConfirmModal = ({ isOpen, onClose, onConfirm, contextType }) => {
     if (!isOpen) return null;
     const isInvite = contextType === 'invite';
-    const title = isInvite ? "Invitation Received" : "Join Community";
+    const title = isInvite ? "You've Been Invited!" : "Join Community";
     const message = isInvite 
-        ? "You've been invited to join this private hub. Ready to collaborate?" 
-        : "Join this public hub to participate in the conversation.";
+        ? "You have a pending invitation to join this private workspace." 
+        : "Ready to jump in and collaborate with this public workspace?";
     
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-in fade-in">
-            <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-xl w-full max-w-sm text-center border border-zinc-200 dark:border-zinc-800">
-                <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400">
-                    <UserPlus size={24} />
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-in fade-in">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-2xl w-full max-w-[360px] text-center border border-slate-100 dark:border-slate-800">
+                <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-indigo-500 border border-indigo-100 dark:border-indigo-500/20">
+                    <UserPlus size={32} />
                 </div>
-                <h2 className="text-lg font-bold dark:text-white mb-2">{title}</h2>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">{message}</p>
-                <div className="flex gap-3 w-full">
-                    <button onClick={onClose} className="flex-1 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
-                    <button onClick={onConfirm} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">Join Hub</button>
+                <h2 className="text-xl font-black dark:text-white mb-2">{title}</h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">{message}</p>
+                <div className="flex gap-3">
+                    <button onClick={onClose} className="flex-1 py-3.5 rounded-xl border-2 border-slate-100 dark:border-slate-800 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+                    <button onClick={onConfirm} className={`flex-1 py-3.5 text-white text-sm rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95 ${PRIMARY_GRADIENT}`}>Join Hub</button>
                 </div>
             </div>
         </div>
@@ -238,8 +247,6 @@ const GroupsPage = () => {
     const [showInfo, setShowInfo] = useState(false);
     const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
-    
-    // Join Confirmation State
     const [showJoinConfirm, setShowJoinConfirm] = useState(false);
     const [pendingJoinGroupId, setPendingJoinGroupId] = useState(null);
     const [joinContext, setJoinContext] = useState("discover"); 
@@ -248,11 +255,9 @@ const GroupsPage = () => {
     const dispatch = useDispatch();
     const { user } = useUser();
 
-    // URL INVITE INTERCEPTOR
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const inviteId = params.get("invite");
-        
         if (inviteId) {
             setJoinContext("invite");
             setPendingJoinGroupId(inviteId);
@@ -270,7 +275,7 @@ const GroupsPage = () => {
     };
 
     useEffect(() => { fetchList(); }, []);
-    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'auto' }); }, [messages]);
+    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
     const openGroupChat = async (id) => {
         if (selectedGroupId === id) return;
@@ -299,15 +304,11 @@ const GroupsPage = () => {
         finally { setIsChatLoading(false); }
     };
 
-    const joinedGroupIds = new Set([
-        ...allData.joined.map(g => g.id),
-        ...allData.created.map(g => g.id)
-    ]);
+    const joinedGroupIds = new Set([...allData.joined.map(g => g.id), ...allData.created.map(g => g.id)]);
     const unjoinedPublicGroups = allData.public.filter(g => !joinedGroupIds.has(g.id));
 
     const handleSelectGroup = async (id) => {
-        const isUnjoinedPublicGroup = unjoinedPublicGroups.some(g => g.id === id);
-        if (isUnjoinedPublicGroup) {
+        if (unjoinedPublicGroups.some(g => g.id === id)) {
             setJoinContext("discover");
             setPendingJoinGroupId(id);
             setShowJoinConfirm(true);
@@ -368,41 +369,43 @@ const GroupsPage = () => {
                         allData.joined.filter(filterFn);
 
     return (
-        <div className="flex w-full h-full bg-white dark:bg-zinc-950 overflow-hidden font-sans text-zinc-900 dark:text-zinc-100">
+        /* IMPORTANT FIX: Changed h-screen to h-full. The parent container 
+           must handle the global header offset. overflow-hidden prevents body scroll. */
+        <div className={`flex w-full h-full ${SOFT_BG} font-sans overflow-hidden`}>
             
-            {/* --- SIDEBAR --- */}
-            <aside className={`w-full md:w-[320px] lg:w-[360px] flex flex-col h-full bg-zinc-50 dark:bg-zinc-900/50 border-r border-zinc-200 dark:border-zinc-800 shrink-0 ${selectedGroupId ? 'hidden md:flex' : 'flex'}`}>
+            {/* --- LEFT SIDEBAR (Fixed internal layout) --- */}
+            <aside className={`w-full lg:w-[340px] xl:w-[380px] flex flex-col h-full bg-white dark:bg-slate-900/40 border-r border-slate-200 dark:border-slate-800/60 z-30 shrink-0 ${selectedGroupId ? 'hidden lg:flex' : 'flex'}`}>
                 
-                {/* Sidebar Header */}
-                <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/50 sticky top-0 z-10">
-                    <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-xl font-bold tracking-tight">Hubs</h1>
-                        <button onClick={() => setOpenCreateModal(true)} className="p-1.5 text-zinc-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors" title="Create Hub">
-                            <Plus size={20} />
+                {/* Fixed Sidebar Header */}
+                <div className="p-5 border-b border-slate-100 dark:border-slate-800/60 shrink-0 bg-white dark:bg-slate-900/50">
+                    <div className="flex justify-between items-center mb-5">
+                        <h1 className="text-[22px] font-black tracking-tight dark:text-white">Hubs</h1>
+                        <button onClick={() => setOpenCreateModal(true)} className="p-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl shadow-md active:scale-95 transition-all hover:opacity-90">
+                            <Plus size={20} strokeWidth={2.5} />
                         </button>
                     </div>
 
-                    <div className="relative mb-4">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                    <div className="relative mb-4 group">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                         <input 
                             type="text" 
-                            placeholder="Search hubs..."
+                            placeholder="Find a community..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full py-2 pl-9 pr-3 bg-zinc-100 dark:bg-zinc-800/80 border border-transparent rounded-lg text-sm focus:border-blue-500 focus:bg-white dark:focus:bg-zinc-900 transition-all outline-none"
+                            className="w-full py-2.5 pl-10 pr-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-[14px] font-medium dark:text-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
                         />
                     </div>
 
                     {/* Segmented Control */}
-                    <div className="flex bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-lg">
+                    <div className="flex p-1 bg-slate-100 dark:bg-slate-800/80 rounded-[10px]">
                         {["Joined", "Created", "Discover"].map((tab) => (
                             <button 
                                 key={tab} 
                                 onClick={() => setActiveTab(tab)} 
-                                className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                className={`flex-1 py-1.5 text-[11px] font-black uppercase tracking-wider rounded-md transition-all duration-300 ${
                                     activeTab === tab 
-                                    ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm" 
-                                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                                    ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm scale-[1.02]" 
+                                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
                                 }`}
                             >
                                 {tab}
@@ -411,41 +414,43 @@ const GroupsPage = () => {
                     </div>
                 </div>
 
-                {/* Group List */}
-                <div className="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar">
+                {/* Independently Scrolling List */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
                     {displayList.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-40 text-center text-zinc-400">
-                            <LayoutGrid size={24} className="mb-2 opacity-50" />
-                            <p className="text-sm font-medium">No hubs found.</p>
+                        <div className="flex flex-col items-center justify-center h-full text-center opacity-50">
+                            <LayoutGrid size={40} strokeWidth={1} className="mb-4" />
+                            <p className="text-sm font-bold">No hubs found.</p>
+                            <p className="text-xs mt-1">Try a different search term.</p>
                         </div>
                     ) : (
                         displayList.map((group) => (
                             <div 
                                 key={group.id} 
                                 onClick={() => handleSelectGroup(group.id)} 
-                                className={`group flex items-center p-3 rounded-lg cursor-pointer transition-colors ${
+                                className={`group relative flex items-center p-3 rounded-2xl cursor-pointer transition-all duration-300 ${
                                     selectedGroupId === group.id 
-                                    ? 'bg-blue-50 dark:bg-blue-900/10' 
-                                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
+                                    ? 'bg-white dark:bg-slate-800 shadow-md border border-slate-200/50 dark:border-slate-700 z-10' 
+                                    : 'hover:bg-white/60 dark:hover:bg-slate-800/40 border border-transparent hover:shadow-sm'
                                 }`}
                             >
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                                {/* Active State Indicator Line */}
+                                {selectedGroupId === group.id && (
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-600 rounded-r-full" />
+                                )}
+
+                                <div className={`w-12 h-12 rounded-[14px] flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                                     selectedGroupId === group.id 
-                                    ? 'bg-blue-600 text-white' 
-                                    : 'bg-white dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700'
+                                    ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400' 
+                                    : 'bg-slate-100 dark:bg-slate-800/80 text-slate-500 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
                                 }`}>
-                                    <Hash size={18} />
+                                    <Hash size={20} strokeWidth={selectedGroupId === group.id ? 2.5 : 2} />
                                 </div>
-                                <div className="ml-3 flex-1 min-w-0">
-                                    <div className="flex justify-between items-center mb-0.5">
-                                        <h3 className={`text-sm font-semibold truncate ${selectedGroupId === group.id ? 'text-blue-700 dark:text-blue-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
-                                            {group.name}
-                                        </h3>
-                                        {group.type === "private" && <Lock size={12} className="text-zinc-400 flex-shrink-0 ml-2" />}
+                                <div className="ml-4 flex-1 min-w-0">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <h3 className={`text-[14px] font-bold truncate ${selectedGroupId === group.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'}`}>{group.name}</h3>
+                                        {group.type === "private" && <Lock size={12} className="text-slate-400 ml-2 shrink-0" />}
                                     </div>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-                                        {group.description || "Start collaborating..."}
-                                    </p>
+                                    <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 truncate">{group.description || "Start collaborating..."}</p>
                                 </div>
                             </div>
                         ))
@@ -453,39 +458,39 @@ const GroupsPage = () => {
                 </div>
             </aside>
 
-            {/* --- MAIN CHAT AREA --- */}
-            <main className={`flex-1 flex flex-col h-full relative bg-white dark:bg-zinc-950 ${!selectedGroupId ? 'hidden md:flex' : 'flex'}`}>
+            {/* --- RIGHT PANE (Strict Flex Column) --- */}
+            <main className={`flex-1 flex flex-col h-full relative bg-transparent ${!selectedGroupId ? 'hidden lg:flex' : 'flex'}`}>
                 {selectedGroupId ? (
                     <>
-                        {/* Header */}
-                        <header className="shrink-0 h-16 px-4 md:px-6 flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md z-20">
-                            <div className="flex items-center gap-3">
-                                <button onClick={() => setSelectedGroupId(null)} className="md:hidden p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white rounded-md transition-colors"><ArrowLeft size={20} /></button>
+                        {/* 1. FIXED INTERNAL HEADER */}
+                        <header className="shrink-0 h-[76px] px-6 flex justify-between items-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800 z-20">
+                            <div className="flex items-center gap-4">
+                                <button onClick={() => setSelectedGroupId(null)} className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"><ArrowLeft size={20} /></button>
                                 <div>
-                                    <h2 className="text-base font-bold flex items-center gap-2 cursor-pointer hover:underline decoration-zinc-300 dark:decoration-zinc-600 underline-offset-4" onClick={() => setShowInfo(true)}>
-                                        <Hash size={18} className="text-zinc-400" />
+                                    <h2 className="text-[17px] font-black dark:text-white flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setShowInfo(true)}>
+                                        <div className="w-6 h-6 rounded-md bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                                            <Hash size={14} />
+                                        </div>
                                         {chatDetails?.group?.name}
                                     </h2>
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 mt-1 ml-8">
+                                        <Users size={12} />
+                                        {chatDetails?.users_count} Members
+                                    </p>
                                 </div>
                             </div>
                             
-                            <div className="flex items-center gap-1">
-                                <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-zinc-500 mr-4">
-                                    <Users size={14} /> {chatDetails?.users_count}
-                                </span>
-                                <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 mr-2 hidden sm:block"></div>
-                                <button onClick={() => setShowInfo(true)} className="p-2 text-zinc-500 hover:text-blue-600 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" title="Group Info"><Info size={18}/></button>
-                                <button onClick={() => setShowLeaveConfirm(true)} className="p-2 text-zinc-500 hover:text-red-600 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" title="Leave Group"><LogOut size={18}/></button>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setShowInfo(true)} className="p-2.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-all"><Info size={20}/></button>
+                                <button onClick={() => setShowLeaveConfirm(true)} className="p-2.5 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all"><LogOut size={20}/></button>
                             </div>
                         </header>
 
-                        {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 scroll-smooth bg-zinc-50/50 dark:bg-zinc-950/50">
+                        {/* 2. SCROLLING MESSAGES (Takes remaining height perfectly) */}
+                        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 scroll-smooth custom-scrollbar">
                             <div className="max-w-4xl mx-auto flex flex-col justify-end min-h-full">
                                 {isChatLoading ? (
-                                    <div className="flex items-center justify-center h-full my-auto text-zinc-400">
-                                        <Loader2 className="animate-spin" size={28} />
-                                    </div>
+                                    <div className="flex items-center justify-center h-full my-auto text-indigo-500"><Loader2 className="animate-spin" size={36} /></div>
                                 ) : (
                                     messages.map(msg => <MessageBubble key={msg.id} message={msg} onImageClick={setPreviewImage} />)
                                 )}
@@ -493,54 +498,54 @@ const GroupsPage = () => {
                             </div>
                         </div>
 
-                        {/* Message Input Dock */}
-                        <div className="shrink-0 p-4 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800">
-                            <div className="max-w-4xl mx-auto flex items-end gap-2 bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-1.5 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all border border-transparent focus-within:border-blue-500/30">
-                                <label className="p-2.5 text-zinc-400 hover:text-blue-600 hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer rounded-lg transition-colors shrink-0">
-                                    <Paperclip size={20} />
-                                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && handleImageUpload(e.target.files[0])} />
-                                </label>
+                        {/* 3. FIXED FLOATING INPUT AREA */}
+                        <div className="shrink-0 p-4 bg-gradient-to-t from-[#f8fafc] dark:from-slate-950 via-[#f8fafc]/90 dark:via-slate-950/90 to-transparent z-20">
+                            <div className="max-w-4xl mx-auto relative group">
+                                {/* Glow Effect behind input */}
+                                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-[24px] opacity-10 group-focus-within:opacity-30 blur-lg transition-opacity duration-500" />
                                 
-                                <textarea 
-                                    value={inputValue}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            sendMessage();
-                                        }
-                                    }}
-                                    placeholder={`Message #${chatDetails?.group?.name}`}
-                                    className="flex-1 max-h-32 bg-transparent py-3 px-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none placeholder:text-zinc-500 resize-none overflow-y-auto"
-                                    rows={1}
-                                />
-                                
-                                <button 
-                                    onClick={sendMessage}
-                                    disabled={!inputValue.trim()}
-                                    className={`p-2.5 rounded-lg shrink-0 transition-colors ${
-                                        !inputValue.trim() 
-                                        ? 'text-zinc-300 dark:text-zinc-600 bg-transparent' 
-                                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
-                                    }`}
-                                >
-                                    <Send size={18} className={inputValue.trim() ? "translate-x-0.5 -translate-y-0.5" : ""} />
-                                </button>
-                            </div>
-                            <div className="max-w-4xl mx-auto mt-2 text-center text-[10px] text-zinc-400">
-                                <strong>Return</strong> to send, <strong>Shift + Return</strong> for new line. Supports Markdown.
+                                <div className="relative flex items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-[24px] p-1.5 shadow-xl transition-all group-focus-within:border-indigo-400 dark:group-focus-within:border-indigo-500/50">
+                                    <label className="p-3 text-slate-400 hover:text-indigo-600 cursor-pointer transition-colors rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800">
+                                        <ImageIcon size={20} />
+                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && handleImageUpload(e.target.files[0])} />
+                                    </label>
+                                    
+                                    <input 
+                                        type="text" 
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                                        placeholder={`Message #${chatDetails?.group?.name}`}
+                                        className="flex-1 bg-transparent px-3 py-2 text-[15px] font-medium text-slate-800 dark:text-slate-100 outline-none placeholder:text-slate-400"
+                                    />
+                                    
+                                    <button 
+                                        onClick={sendMessage}
+                                        disabled={!inputValue.trim()}
+                                        className={`w-11 h-11 rounded-[18px] flex items-center justify-center transition-all duration-300 ${
+                                            !inputValue.trim() 
+                                            ? 'text-slate-300 dark:text-slate-600 bg-transparent' 
+                                            : 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95'
+                                        }`}
+                                    >
+                                        <Send size={18} className={!inputValue.trim() ? '' : 'translate-x-[1px] -translate-y-[1px]'} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </>
                 ) : (
-                    // Empty State
-                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-zinc-50/30 dark:bg-zinc-900/10">
-                        <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-4 text-zinc-400">
-                            <MessageSquare size={28} />
+                    // Animated Empty State
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-transparent">
+                        <div className="relative mb-8 group animate-in slide-in-from-bottom-4 duration-700">
+                            <div className="absolute -inset-6 bg-gradient-to-tr from-indigo-500 to-purple-500 opacity-20 blur-2xl rounded-full group-hover:opacity-30 transition-opacity duration-700 animate-pulse" />
+                            <div className="w-24 h-24 bg-white dark:bg-slate-900 rounded-[2rem] flex items-center justify-center shadow-2xl border border-white/50 dark:border-slate-800 relative z-10">
+                                <MessageSquare size={36} className="text-indigo-600 dark:text-indigo-400" />
+                            </div>
                         </div>
-                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Select a Hub</h2>
-                        <p className="text-zinc-500 text-sm max-w-xs">
-                            Choose a community from the sidebar or discover new ones to start collaborating.
+                        <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-3 tracking-tight animate-in fade-in duration-700 delay-100">Welcome to Hubs</h2>
+                        <p className="text-slate-500 dark:text-slate-400 max-w-[320px] text-[14px] leading-relaxed font-medium animate-in fade-in duration-700 delay-200">
+                            Select a community from the sidebar to start sharing resources, tracking habits, and learning together.
                         </p>
                     </div>
                 )}
@@ -550,29 +555,20 @@ const GroupsPage = () => {
             <GroupInfoModal open={showInfo} onClose={() => setShowInfo(false)} group={chatDetails?.group} users_count={chatDetails?.users_count} />
             <CreateGroupModal open={openCreateModal} onClose={() => setOpenCreateModal(false)} onSubmit={handleCreateGroup} />
             <ImagePreviewModal image={previewImage} onClose={() => setPreviewImage(null)} />
-
-            <JoinConfirmModal
-                isOpen={showJoinConfirm}
-                onClose={() => {
-                    setShowJoinConfirm(false);
-                    setPendingJoinGroupId(null);
-                }}
-                onConfirm={confirmJoinGroup}
-                contextType={joinContext}
-            />
+            <JoinConfirmModal isOpen={showJoinConfirm} onClose={() => { setShowJoinConfirm(false); setPendingJoinGroupId(null); }} onConfirm={confirmJoinGroup} contextType={joinContext} />
 
             {/* Leave Confirmation Modal */}
             {showLeaveConfirm && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-in fade-in">
-                    <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-xl w-full max-w-sm text-center border border-zinc-200 dark:border-zinc-800">
-                        <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
-                            <LogOut size={24} />
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-in fade-in">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-2xl w-full max-w-[360px] text-center border border-white dark:border-slate-800">
+                        <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-rose-500 border border-rose-100 dark:border-rose-900/50">
+                            <LogOut size={28} />
                         </div>
-                        <h2 className="text-lg font-bold dark:text-white mb-2">Leave {chatDetails?.group?.name}?</h2>
-                        <p className="text-zinc-500 text-sm mb-6">You will need an invitation link to rejoin this group later.</p>
-                        <div className="flex gap-3 w-full">
-                            <button onClick={() => setShowLeaveConfirm(false)} className="flex-1 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
-                            <button onClick={handleLeaveGroup} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">Leave Hub</button>
+                        <h2 className="text-xl font-black dark:text-white mb-2">Leave Group?</h2>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-8">You'll need a new invite link to rejoin this space.</p>
+                        <div className="flex gap-3">
+                            <button onClick={() => setShowLeaveConfirm(false)} className="flex-1 py-3.5 rounded-xl border-2 border-slate-100 dark:border-slate-800 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+                            <button onClick={handleLeaveGroup} className="flex-1 py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/30 transition-colors active:scale-95">Leave</button>
                         </div>
                     </div>
                 </div>

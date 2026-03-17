@@ -489,7 +489,7 @@ const GroupsPage = () => {
                         </div>
 
                         {/* Floating Input Area */}
-                        <div className="px-4 py-6 pb-28 md:pb-8 bg-gradient-to-t from-[#f8fafc] dark:from-slate-950 via-[#f8fafc]/90 dark:via-slate-950/90 to-transparent">
+                        <div className="px-4 py-6 pb-32 md:pb-32 bg-gradient-to-t from-[#f8fafc] dark:from-slate-950 via-[#f8fafc]/90 dark:via-slate-950/90 to-transparent">
                             <div className="max-w-4xl mx-auto relative group">
                                 {/* Subtle glow effect behind the input */}
                                 <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-[26px] opacity-10 group-focus-within:opacity-20 blur-md transition-opacity duration-500" />

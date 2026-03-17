@@ -117,7 +117,7 @@ function App() {
             />
 
             <Route
-              path='/groups/'
+              path='/groups'
               element={
                 <ProtectedRoute>
                   <GroupsPage />

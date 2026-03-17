@@ -3,7 +3,7 @@ import {
     Search, Users, Plus, X, ChevronRight, LayoutGrid, 
     MessageSquare, Send, ArrowLeft, MoreVertical, LogOut, 
     Globe, Lock, Link as LinkIcon, Image as ImageIcon, Loader2,
-    Hash, Info, CheckCircle2
+    Hash, Info, CheckCircle2, UserPlus
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { CreateGroup, FetchGroup, fetchGroupDetails, LeaveGroup } from "../../Redux/GroupsSlice";
@@ -11,9 +11,6 @@ import { useUser } from "../../Context/UserContext";
 import api from "../../api/axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
-// --- NEW IMPORT FOR CONFIRMATION MODAL ---
-import { DeleteConfirmModal } from "../../Components/ConfirmDelete";
 
 // --- THEME CONSTANTS ---
 const PRIMARY_GRADIENT = "bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-600";
@@ -83,9 +80,10 @@ const GroupInfoModal = ({ open, onClose, group, users_count }) => {
     if (!open || !group) return null;
     const [copied, setCopied] = useState(false);
 
-    // FIXED COPY LOGIC: Creates a specific invite link based on origin and ID
+    // FIXED COPY LOGIC: Uses URL query param (?invite=id) so you don't need a special router setup
     const handleCopyLink = () => {
-        const inviteLink = `${window.location.origin}/join/${group.id}`;
+        // Creates link like: https://yourdomain.com/groups?invite=group_id
+        const inviteLink = `${window.location.origin}${window.location.pathname}?invite=${group.id}`;
         navigator.clipboard.writeText(inviteLink);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -126,7 +124,7 @@ const GroupInfoModal = ({ open, onClose, group, users_count }) => {
                             <p className="text-sm text-slate-600 dark:text-slate-400 italic">"{group.description || "No mission statement yet."}"</p>
                         </div>
                         
-                        {/* New Copy Button UI */}
+                        {/* Copy Button UI */}
                         <button 
                             onClick={handleCopyLink} 
                             className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
@@ -189,6 +187,38 @@ const ImagePreviewModal = ({ image, onClose }) => {
     );
 };
 
+// --- INLINE JOIN CONFIRMATION MODAL ---
+const JoinConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+    if (!isOpen) return null;
+    
+    return (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-in fade-in">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-2xl w-full max-w-sm text-center border border-white dark:border-slate-800">
+                <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-indigo-500">
+                    <UserPlus size={32} />
+                </div>
+                <h2 className="text-xl font-black dark:text-white mb-2">{title}</h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">{message}</p>
+                <div className="grid grid-cols-2 gap-3">
+                    <button 
+                        onClick={onClose} 
+                        className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={onConfirm} 
+                        className={`py-3 px-4 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95 ${PRIMARY_GRADIENT}`}
+                    >
+                        Join Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 // --- MAIN PAGE COMPONENT ---
 const GroupsPage = () => {
     const [allData, setAllData] = useState({ created: [], joined: [], public: [] });
@@ -205,7 +235,7 @@ const GroupsPage = () => {
     const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
     
-    // --- NEW STATES FOR JOIN CONFIRMATION ---
+    // --- STATES FOR JOIN CONFIRMATION ---
     const [showJoinConfirm, setShowJoinConfirm] = useState(false);
     const [pendingJoinGroupId, setPendingJoinGroupId] = useState(null);
 
@@ -213,7 +243,23 @@ const GroupsPage = () => {
     const dispatch = useDispatch();
     const { user } = useUser();
 
-    // Data fetching logic (unchanged)
+    // --- NEW: URL INVITE INTERCEPTOR ---
+    useEffect(() => {
+        // Checks if the user arrived via an invite link (e.g. ?invite=xyz123)
+        const params = new URLSearchParams(window.location.search);
+        const inviteId = params.get("invite");
+        
+        if (inviteId) {
+            setPendingJoinGroupId(inviteId);
+            setShowJoinConfirm(true);
+            
+            // Instantly clean the URL so it doesn't pop up again if they refresh the page
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+        }
+    }, []);
+
+    // Data fetching logic
     const fetchList = async () => {
         try {
             const res = await dispatch(FetchGroup()).unwrap();
@@ -254,29 +300,34 @@ const GroupsPage = () => {
 
     // Modified handleSelectGroup to check if they need to join first
     const handleSelectGroup = async (id) => {
-        // Check if the clicked group is a public group they haven't joined yet
         const isPublicGroup = allData.public.some(g => g.id === id);
         const isAlreadyJoined = allData.joined.some(g => g.id === id) || allData.created.some(g => g.id === id);
 
         if (isPublicGroup && !isAlreadyJoined) {
-            // Trigger the confirmation modal
             setPendingJoinGroupId(id);
             setShowJoinConfirm(true);
             return; 
         }
 
-        // Otherwise, open normally
         openGroupChat(id);
     };
 
-    // The function that runs when they click "Confirm" in the modal
+    // Executes when a user clicks "Join Now" in the modal (from list OR invite link)
     const confirmJoinGroup = async () => {
         if (pendingJoinGroupId) {
-            await openGroupChat(pendingJoinGroupId);
-            // Optionally refetch the lists so the group moves from 'Discover' to 'Joined'
-            await fetchList(); 
-            setShowJoinConfirm(false);
-            setPendingJoinGroupId(null);
+            try {
+                // If your backend requires a specific API call to join a private group, 
+                // dispatch it here before opening the chat. Example:
+                // await dispatch(JoinGroupAction(pendingJoinGroupId)).unwrap();
+
+                await openGroupChat(pendingJoinGroupId);
+                await fetchList(); 
+                setShowJoinConfirm(false);
+                setPendingJoinGroupId(null);
+            } catch (err) {
+                console.error("Failed to join via invite", err);
+                setShowJoinConfirm(false);
+            }
         }
     };
 
@@ -495,16 +546,16 @@ const GroupsPage = () => {
             <CreateGroupModal open={openCreateModal} onClose={() => setOpenCreateModal(false)} onSubmit={handleCreateGroup} />
             <ImagePreviewModal image={previewImage} onClose={() => setPreviewImage(null)} />
 
-            {/* --- NEW JOIN CONFIRMATION MODAL --- */}
-            <DeleteConfirmModal
+            {/* --- INLINE JOIN CONFIRMATION MODAL --- */}
+            <JoinConfirmModal
                 isOpen={showJoinConfirm}
                 onClose={() => {
                     setShowJoinConfirm(false);
                     setPendingJoinGroupId(null);
                 }}
                 onConfirm={confirmJoinGroup}
-                title="Join Community?"
-                message="Would you like to join this hub and start collaborating with others?"
+                title="You've Been Invited!"
+                message="Would you like to join this private hub and start collaborating?"
             />
 
             {/* Leave Confirmation Modal */}

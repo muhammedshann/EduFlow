@@ -461,22 +461,24 @@ class DeleteUser(APIView):
             status=status.HTTP_200_OK
         )
 
-        # 4. Clear the cookies with EXACT matching settings
+        # 4. Clear the cookies using fail-proof set_cookie to avoid kwargs 500 errors
         cookie_settings = {
             'domain': ".muhammedshan.info",
             'path': "/",
             'samesite': "None",
             'secure': True,
             'httponly': True,
+            'max_age': 0,
+            'expires': 'Thu, 01 Jan 1970 00:00:00 GMT',
         }
-        response.delete_cookie('access', **cookie_settings)
-        response.delete_cookie('refresh', **cookie_settings)
+        response.set_cookie('access', value='', **cookie_settings)
+        response.set_cookie('refresh', value='', **cookie_settings)
         
         # Clear rogue legacy cookies just in case the browser cached them previously
-        response.delete_cookie('access', path='/', samesite='Lax')
-        response.delete_cookie('refresh', path='/', samesite='Lax')
-        response.delete_cookie('access', path='/', samesite='None', secure=True)
-        response.delete_cookie('refresh', path='/', samesite='None', secure=True)
+        response.set_cookie('access', value='', path='/', samesite='Lax', max_age=0, expires='Thu, 01 Jan 1970 00:00:00 GMT')
+        response.set_cookie('refresh', value='', path='/', samesite='Lax', max_age=0, expires='Thu, 01 Jan 1970 00:00:00 GMT')
+        response.set_cookie('access', value='', path='/', samesite='None', secure=True, max_age=0, expires='Thu, 01 Jan 1970 00:00:00 GMT')
+        response.set_cookie('refresh', value='', path='/', samesite='None', secure=True, max_age=0, expires='Thu, 01 Jan 1970 00:00:00 GMT')
         
         return response
     
@@ -489,7 +491,7 @@ class ResetPassword(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         logout(request)
@@ -511,17 +513,19 @@ class LogoutView(APIView):
             'samesite': "None",
             'secure': True,
             'httponly': True,
+            'max_age': 0,
+            'expires': 'Thu, 01 Jan 1970 00:00:00 GMT',
         }
 
-        response.delete_cookie('access', **cookie_settings)
-        response.delete_cookie('refresh', **cookie_settings)
-        response.delete_cookie('sessionid', path='/') # For Django Admin sessions
+        response.set_cookie('access', value='', **cookie_settings)
+        response.set_cookie('refresh', value='', **cookie_settings)
+        response.set_cookie('sessionid', value='', path='/', max_age=0, expires='Thu, 01 Jan 1970 00:00:00 GMT') # For Django Admin sessions
 
         # Clear rogue legacy cookies just in case the browser cached them previously
-        response.delete_cookie('access', path='/', samesite='Lax')
-        response.delete_cookie('refresh', path='/', samesite='Lax')
-        response.delete_cookie('access', path='/', samesite='None', secure=True)
-        response.delete_cookie('refresh', path='/', samesite='None', secure=True)
+        response.set_cookie('access', value='', path='/', samesite='Lax', max_age=0, expires='Thu, 01 Jan 1970 00:00:00 GMT')
+        response.set_cookie('refresh', value='', path='/', samesite='Lax', max_age=0, expires='Thu, 01 Jan 1970 00:00:00 GMT')
+        response.set_cookie('access', value='', path='/', samesite='None', secure=True, max_age=0, expires='Thu, 01 Jan 1970 00:00:00 GMT')
+        response.set_cookie('refresh', value='', path='/', samesite='None', secure=True, max_age=0, expires='Thu, 01 Jan 1970 00:00:00 GMT')
 
         return response
 

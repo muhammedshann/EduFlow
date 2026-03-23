@@ -118,14 +118,14 @@ function LoginPage() {
             if (isLogin) {
                 const loginData = { username, password };
                 const result = await dispatch(Login(loginData)).unwrap();
-                dispatch(showNotification({ message: "Login successful", type: "success" }));
+                // Notification already handled by AuthSlice
                 setUser(result.user);
                 navigate('/dashboard/');
                 return;
             }
 
             const result = await dispatch(SignUp(formData)).unwrap();
-            dispatch(showNotification({ message: "Account created! Verification required.", type: "success" }));
+            // Notification already handled by AuthSlice
             navigate('/otp/', { 
                 state: { 
                     email: formData.email, 
@@ -134,10 +134,8 @@ function LoginPage() {
                 } 
             });
         } catch (err) {
-            dispatch(showNotification({ 
-                message: err?.message || "An error occurred during authentication", 
-                type: "error" 
-            }));
+            console.error("Authentication failed:", err);
+            // Notifications are already dispatched independently by the AuthSlice thunks
         } finally {
             setIsLoading(false);
         }

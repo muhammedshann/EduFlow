@@ -1,10 +1,11 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../Components/SideBar"; 
-import { Sparkles } from "lucide-react";
+import { Sparkles, Bot, Sparkle } from "lucide-react";
 import { useSelector } from "react-redux";
 
 export default function Layout() {
   const { userCredits } = useSelector((state) => state.subscriptions);
+  const navigate = useNavigate();
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300">
@@ -36,6 +37,17 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
+
+      {/* --- ChatGPT / Gemini Style Floating Chat Button --- */}
+      <button 
+        onClick={() => navigate('/chat-bot/')}
+        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 p-4 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white rounded-full shadow-[0_0_20px_rgba(99,102,241,0.5)] hover:shadow-[0_0_30px_rgba(99,102,241,0.8)] hover:scale-110 active:scale-95 transition-all duration-300 group flex items-center justify-center border border-white/20"
+        title="Open AI Chat"
+      >
+        <Bot className="w-6 h-6 group-hover:animate-pulse relative z-10" />
+        <Sparkle className="w-3 h-3 text-white absolute top-3 right-3 animate-ping" />
+      </button>
+
     </div>
   );
 }

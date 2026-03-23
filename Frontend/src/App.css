@@ -14,10 +14,9 @@ html, body {
   border: 2px solid #6366f1; /* Use your brand indigo for the pulse */
 }
 
-/* Reduced padding for a tighter fit on mobile */
+/* Mobile specific tweaks */
 @media (max-width: 1023px) {
   body {
-    padding-bottom: 90px; 
     background-color: var(--edu-bg-dark);
   }
 }

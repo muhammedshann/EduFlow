@@ -22,7 +22,6 @@ export default function Sidebar() {
     const navItems = [
         { label: "Home", icon: LayoutDashboard, path: '/dashboard' },
         { label: "Smart Notes", icon: FileAudio, path: '/smart-note/' },
-        { label: "AI Chat", icon: Bot, path: '/chat-bot/' },
         { label: "Pomodoro", icon: Timer, path: '/promodoro/' },
         { label: "Habits", icon: Calendar, path: '/habit-tracker/' },
         { label: "Groups", icon: Users, path: '/groups/' },
@@ -57,6 +56,27 @@ export default function Sidebar() {
         };
     }, []);
 
+    // --- NEW: Detect Scroll Direction to hide sidebar ---
+    const [isScrollingDown, setIsScrollingDown] = useState(false);
+
+    useEffect(() => {
+        let lastScrollY = window.scrollY;
+        
+        const handleScroll = () => {
+            if (window.scrollY > lastScrollY && window.scrollY > 50) {
+                // Scrolling down
+                setIsScrollingDown(true);
+            } else {
+                // Scrolling up
+                setIsScrollingDown(false);
+            }
+            lastScrollY = window.scrollY;
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     const handleNavClick = (path) => navigate(path);
 
     return (
@@ -67,8 +87,8 @@ export default function Sidebar() {
                     layout
                     initial={{ y: 0, opacity: 1 }}
                     animate={{ 
-                        y: isTyping ? 100 : 0, 
-                        opacity: isTyping ? 0 : 1 
+                        y: (isTyping || isScrollingDown) ? 100 : 0, 
+                        opacity: (isTyping || isScrollingDown) ? 0 : 1 
                     }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     className="pointer-events-auto flex items-center gap-1 p-2 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-800 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] rounded-[2.5rem] max-w-full overflow-x-auto no-scrollbar"
@@ -123,12 +143,6 @@ export default function Sidebar() {
                         );
                     })}
                     
-                    <button
-                        onClick={() => logout()}
-                        className="flex items-center justify-center p-3 ml-1 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
-                    >
-                        <LogOut size={20} />
-                    </button>
                 </motion.nav>
             </LayoutGroup>
         </div>

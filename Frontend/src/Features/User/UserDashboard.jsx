@@ -89,7 +89,7 @@ export default function UserDashboard() {
     }, [dispatch]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/40 text-slate-900 dark:text-white p-6 md:p-10 font-sans selection:bg-purple-500/30 pb-24 md:pb-10 transition-colors duration-300">
+        <div className="h-full w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/40 text-slate-900 dark:text-white p-6 md:p-10 font-sans selection:bg-purple-500/30 pb-10 transition-colors duration-300">
             
             {/* --- Top Header Section --- */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">

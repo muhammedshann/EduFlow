@@ -459,9 +459,16 @@ class DeleteUser(APIView):
             status=status.HTTP_200_OK
         )
 
-        # 4. Clear the cookies on the SAME response object being returned
-        response.delete_cookie('access')
-        response.delete_cookie('refresh')
+        # 4. Clear the cookies with EXACT matching settings
+        cookie_settings = {
+            'domain': ".muhammedshan.info",
+            'path': "/",
+            'samesite': "None",
+            'secure': True,
+            'httponly': True,
+        }
+        response.delete_cookie('access', **cookie_settings)
+        response.delete_cookie('refresh', **cookie_settings)
         
         return response
     
@@ -489,11 +496,13 @@ class LogoutView(APIView):
 
         response = Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
 
-        # FIXED: Must match the domain and path used in LoginView
+        # FIXED: Must match the domain, secure, httponly, and path used in LoginView
         cookie_settings = {
             'domain': ".muhammedshan.info",
             'path': "/",
             'samesite': "None",
+            'secure': True,
+            'httponly': True,
         }
 
         response.delete_cookie('access', **cookie_settings)

@@ -3,6 +3,7 @@ import api from "../api/axios";
 import { fetchWallet } from "../Redux/WalletSlice";
 import { useDispatch } from "react-redux";
 import { FetchCredit } from "../Redux/SubscriptionSlice";
+import { Logout } from "../Redux/AuthSlice";
 
 export const UserContext = createContext();
 
@@ -48,6 +49,7 @@ export const UserProvider = ({ children }) => {
             console.error("Logout API failed:", err);
         } finally {
             setUser(null); 
+            dispatch(Logout());
             // window.location.href = "/auth/"; 
         }
     };

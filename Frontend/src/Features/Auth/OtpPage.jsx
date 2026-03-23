@@ -23,6 +23,14 @@ function OtpVerifyPage() {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
+        if (!email) {
+            navigate("/auth", { replace: true }); 
+        }
+    }, [email, navigate]);
+
+    if (!email) return null;
+
+    useEffect(() => {
         if (!otpCreationTime) return;
         const OTP_DURATION = 300;
 

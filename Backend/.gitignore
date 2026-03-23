@@ -1,1 +1,18 @@
+# Database
+*.sqlite3
+
+# Django Media (User uploads)
+media/
+static/
+
+# Environment Secrets
 .env
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+
+# Virtual Environment
+venv/
+.venv/
+env/

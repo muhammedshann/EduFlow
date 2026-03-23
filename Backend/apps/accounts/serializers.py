@@ -15,6 +15,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from django.conf import settings
 from django.utils import timezone
+import re
 
 
 User = get_user_model()
@@ -59,41 +60,131 @@ class GoogleLoginSerializer(SocialLoginSerializer):
         except ValueError as e:
             logger.error(f"Token verification failed: {str(e)}")
             raise serializers.ValidationError(f"Invalid token: {str(e)}")
+        
+        
+
+# class TempRegisterSerializer(serializers.ModelSerializer):
+#     password = serializers.CharField(
+#         write_only=True,
+#         required=True,
+#         validators=[validate_password]
+#     )
+
+#     class Meta:
+#         model = TempUser
+#         fields = ['first_name', 'last_name', 'username', 'email', 'password']
+
+#     def validate(self, attrs):
+#         email = attrs['email']
+#         username = attrs['username']
+
+#         # Block only if TRUE user already exists
+#         if User.objects.filter(email=email).exists():
+#             raise serializers.ValidationError({'email': 'A user with this email already exists.'})
+
+#         if User.objects.filter(username=username).exists():
+#             raise serializers.ValidationError({'username': 'A user with this username already exists.'})
+
+#         return attrs
+
+#     def create(self, validated_data):
+#         email = validated_data['email']
+
+#         # Generate OTP
+#         otp = str(random.randint(100000, 999999))
+
+#         # Hash password
+#         validated_data['password'] = make_password(validated_data['password'])
+
+#         # Create OR update TempUser
+#         temp_user, created = TempUser.objects.update_or_create(
+#             email=email,
+#             defaults={
+#                 **validated_data,
+#                 'otp': otp,
+#                 'otp_created_at': timezone.now()
+#             }
+#         )
+
+#         # Send OTP
+#         sent_otp_email(temp_user.email, otp,'Verification for EduFlow registration')
+
+#         return temp_user
 
 class TempRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
-        required=True,
-        validators=[validate_password]
+        required=True
+        # Note: I removed validators=[validate_password] from here 
+        # so it uses our custom validate_password method below instead.
     )
 
     class Meta:
         model = TempUser
         fields = ['first_name', 'last_name', 'username', 'email', 'password']
 
+    # --- FIELD-LEVEL VALIDATIONS (Matches React Frontend) ---
+
+    def validate_first_name(self, value):
+        value = value.strip()
+        if len(value) < 2:
+            raise serializers.ValidationError("Min 2 characters")
+        if not re.match(r'^[A-Za-z]+$', value):
+            raise serializers.ValidationError("Only letters allowed")
+        return value
+
+    def validate_last_name(self, value):
+        value = value.strip()
+        if len(value) < 2:
+            raise serializers.ValidationError("Min 2 characters")
+        if not re.match(r'^[A-Za-z]+$', value):
+            raise serializers.ValidationError("Only letters allowed")
+        return value
+
+    def validate_username(self, value):
+        value = value.strip()
+        if not re.match(r'^[A-Za-z][A-Za-z0-9_]{2,19}$', value):
+            raise serializers.ValidationError("3-20 chars, start with letter, no symbols except _")
+        return value
+
+    def validate_email(self, value):
+        value = value.strip()
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', value):
+            raise serializers.ValidationError("Invalid email address")
+        return value
+
+    def validate_password(self, value):
+        value = value.strip()
+        if len(value) < 8:
+            raise serializers.ValidationError("Minimum 8 characters")
+        if not (re.search(r'[A-Za-z]', value) and re.search(r'\d', value)):
+            raise serializers.ValidationError("Must include both letters and numbers")
+        return value
+
+    # --- OBJECT-LEVEL VALIDATION ---
+
     def validate(self, attrs):
-        email = attrs['email']
-        username = attrs['username']
+        email = attrs.get('email')
+        username = attrs.get('username')
 
         # Block only if TRUE user already exists
-        if User.objects.filter(email=email).exists():
+        if email and User.objects.filter(email=email).exists():
             raise serializers.ValidationError({'email': 'A user with this email already exists.'})
 
-        if User.objects.filter(username=username).exists():
+        if username and User.objects.filter(username=username).exists():
             raise serializers.ValidationError({'username': 'A user with this username already exists.'})
 
         return attrs
 
+    # --- RECORD CREATION & OTP HANDLING ---
+
     def create(self, validated_data):
         email = validated_data['email']
 
-        # Generate OTP
         otp = str(random.randint(100000, 999999))
 
-        # Hash password
         validated_data['password'] = make_password(validated_data['password'])
 
-        # Create OR update TempUser
         temp_user, created = TempUser.objects.update_or_create(
             email=email,
             defaults={
@@ -104,7 +195,7 @@ class TempRegisterSerializer(serializers.ModelSerializer):
         )
 
         # Send OTP
-        sent_otp_email(temp_user.email, otp,'Verification for EduFlow registration')
+        sent_otp_email(temp_user.email, otp, 'Verification for EduFlow registration')
 
         return temp_user
 
@@ -197,7 +288,8 @@ class VerifyAccountSerializer(serializers.Serializer):
                 last_name=self.temp_user.last_name,
                 username=self.temp_user.username,
                 email=self.temp_user.email,
-                password=self.temp_user.password
+                password=self.temp_user.password,
+                is_active=True
             )
         self.temp_user.delete()
         return user 
@@ -316,6 +408,10 @@ class UpdatePasswordSerializer(serializers.Serializer):
     def validate_new_password(self, value):
         validate_password(value)
         return value
+
+class OrderAmountSerializer(serializers.Serializer):
+    # Validates that amount is provided, is a number, and is positive
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=1.00)
 
 class WalletHistorySerializer(serializers.ModelSerializer):
     class Meta:

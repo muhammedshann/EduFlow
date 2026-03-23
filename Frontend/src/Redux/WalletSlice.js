@@ -10,11 +10,12 @@ export const fetchWallet = createAsyncThunk(
             console.log(response);
             return response.data;
         } catch (err) {
+            const errorMsg = err.response?.data?.message || err.response?.data?.detail || err.response?.data?.error || err.message || "Failed to fetch wallet";
             dispatch(showNotification({
-                message: err,
+                message: errorMsg,
                 type: "error"
             }));
-            return rejectWithValue(err.response?.data?.message || err.message);
+            return rejectWithValue(errorMsg);
         }
     }
 );
@@ -31,11 +32,12 @@ export const WalletDeposit = createAsyncThunk(
             return response.data;
         } catch(err) {
             console.log(err);
+            const errorMsg = err.response?.data?.error || err.response?.data?.message || err.response?.data?.detail || err.message || "Deposit failed";
             dispatch(showNotification({
-                message: err.response?.data?.error || "deposite failed",
+                message: errorMsg,
                 type: "error"
             }));
-            return rejectWithValue(err.response?.data?.message || err.message);
+            return rejectWithValue(errorMsg);
         }
     }
 )

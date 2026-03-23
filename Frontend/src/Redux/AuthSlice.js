@@ -14,27 +14,27 @@ export const SignUp = createAsyncThunk(
             }));
             return response.data;
         } catch (err) {
-            let errorMessage = 'Something went wrong';
-            // Access the actual data returned by Django
-            const data = err.response?.data;
+            let errorMessage = 'Something went wrong. Please try again.';
+            
+            if (err.response?.data) {
+                const data = err.response.data;
+                const errorSource = data.errors || data;
 
-            // 1. Check if it's in your custom {"errors": {...}} format 
-            // 2. Or standard DRF format {...}
-            const errorSource = data?.errors || data;
-
-            if (errorSource && typeof errorSource === 'object') {
-                // This converts { email: ["exists"], username: ["short"] } 
-                // into "email: exists | username: short"
-                errorMessage = Object.entries(errorSource)
-                    .map(([field, messages]) => {
-                        const msg = Array.isArray(messages) ? messages.join(', ') : messages;
-                        return `${field}: ${msg}`;
-                    })
-                    .join(' | ');
-            } else if (typeof data === 'string') {
-                errorMessage = data;
+                if (typeof errorSource === 'object' && errorSource !== null) {
+                    // This takes { email: ["Already exists"] } 
+                    // and turns it into a flat array: ["Already exists"]
+                    const messages = Object.values(errorSource).flat();
+                    
+                    if (messages.length > 0) {
+                        // Grab only the first error message to keep the notification clean
+                        errorMessage = messages[0]; 
+                    }
+                } else if (typeof errorSource === 'string') {
+                    errorMessage = errorSource;
+                }
             } else if (err.message) {
-                errorMessage = err.message;
+                // Fallback for network issues (e.g., server down)
+                errorMessage = "Network error. Please check your connection.";
             }
 
             dispatch(showNotification({
@@ -53,18 +53,38 @@ export const Login = createAsyncThunk(
         try {
             const response = await api.post('accounts/login/', userData);
             dispatch(showNotification({
-                message: "Login successful!",
+                message: "Welcome back!",
                 type: "success"
             }));
             return response.data;
         } catch (err) {
             const data = err.response?.data;
-            
-            // Check for non_field_errors, then detail, then general message
-            const errorMsg = data?.errors?.non_field_errors?.[0] || 
-                             data?.detail || 
-                             data?.message || 
-                             "Login failed";
+            let errorMsg = "An error occurred during authentication";
+
+            // --- DEEP ERROR EXTRACTION ---
+            if (data) {
+                // 1. Check if it's nested in "errors" (your serializer.errors)
+                const source = data.errors || data;
+
+                if (typeof source === 'object' && source !== null) {
+                    // Flatten all values: e.g., { non_field_errors: ["Invalid..."], email: ["Req"] }
+                    // becomes ["Invalid...", "Req"]
+                    const messages = Object.values(source).flat();
+                    if (messages.length > 0) {
+                        errorMsg = messages[0];
+                    }
+                } 
+                // 2. Check for standard DRF "detail" (Authentication failed)
+                else if (data.detail) {
+                    errorMsg = data.detail;
+                }
+                // 3. Check for a direct string
+                else if (typeof data === 'string') {
+                    errorMsg = data;
+                }
+            } else if (err.message) {
+                errorMsg = err.message;
+            }
 
             dispatch(showNotification({
                 message: errorMsg,
@@ -138,21 +158,35 @@ export const generateOtpEmail = createAsyncThunk(
 
 export const verifyOtp = createAsyncThunk(
     'auth/verify_otp',
-    async ({ email, otp, register }, {dispatch, rejectWithValue }) => {
+    async ({ email, otp, register }, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.post('accounts/verify-otp/', { email, otp, register });
             dispatch(showNotification({
-                message: "OTP verified!",
+                message: response.data?.message || "OTP verified!",
                 type: "success"
             }));
             return response.data;
         } catch (err) {
-            // FIXED: Extracting string message instead of passing 'err'
-            const errorMsg = err.response?.data?.message || err.message || "OTP verification failed";
+            let errorMsg = "OTP verification failed";
+            
+            const data = err.response?.data;
+            // Handle both {"message": {"non_field_errors": [...]}} and standard DRF structures
+            const errorSource = data?.message || data?.errors || data;
+
+            if (errorSource && typeof errorSource === 'object') {
+                const messages = Object.values(errorSource).flat();
+                if (messages.length > 0) {
+                    errorMsg = messages[0];
+                }
+            } else if (typeof data === 'string') {
+                errorMsg = data;
+            }
+
             dispatch(showNotification({
                 message: errorMsg,
                 type: "error"
             }));
+            
             return rejectWithValue(errorMsg);
         }
     }
@@ -228,7 +262,11 @@ export const deleteUserAccount = createAsyncThunk(
             return response.data;
         } catch (err) {
             console.error("Delete API Error:", err.response); // Debug the actual response
-            const errorMessage = err.response?.data?.message || "Failed to delete account";
+            const errorMessage = err.response?.data?.message || err.response?.data?.detail || "Failed to delete account";
+            dispatch(showNotification({
+                message: errorMessage,
+                type: "error"
+            }));
             return rejectWithValue(errorMessage);
         }
     }

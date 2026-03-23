@@ -14,13 +14,12 @@ export const updateProfile = createAsyncThunk(
             }));
             return result.data
         } catch(err) {
+            const errorMsg = err.response?.data?.message || err.response?.data?.detail || Object.values(err.response?.data?.errors || err.response?.data || {}).flat()[0] || "Update failed";
             dispatch(showNotification({
-                message: typeof err === "string"
-                    ? err
-                    : JSON.stringify(err),
+                message: errorMsg,
                 type: "error"
             }));
-            return rejectWithValue(err.response.data.errors);
+            return rejectWithValue(errorMsg);
         }
     }
 )
@@ -38,15 +37,16 @@ export const updatePassword = createAsyncThunk(
         } catch(err) {
             const backendError =
                 err.response?.data?.error ||
+                err.response?.data?.message ||
                 err.response?.data?.detail ||
-                Object.values(err.response?.data || {})[0]?.[0] ||
+                Object.values(err.response?.data || {}).flat()[0] ||
                 "Update failed";
 
             dispatch(showNotification({
                 message: backendError,
                 type: "error"
             }));
-            return rejectWithValue(err.response?.data);
+            return rejectWithValue(backendError);
         }
     }
 )
@@ -65,11 +65,12 @@ export const updateProfileImage = createAsyncThunk(
             
         }catch(err){
             console.log(err);
+            const errorMsg = err.response?.data?.message || err.response?.data?.detail || Object.values(err.response?.data || {}).flat()[0] || "Upload failed";
             dispatch(showNotification({
-                message: err.response?.data?.message || "Upload failed",
+                message: errorMsg,
                 type: "error"
             }));
-            return rejectWithValue(err.response?.data);
+            return rejectWithValue(errorMsg);
         }
     }
 )
@@ -84,11 +85,12 @@ export const FetchUserSubscription = createAsyncThunk(
             
         }catch(err){
             console.log(err);
+            const errorMsg = err.response?.data?.message || err.response?.data?.detail || "Fetch subscription failed";
             dispatch(showNotification({
-                message: err.response?.data?.message || "Upload failed",
+                message: errorMsg,
                 type: "error"
             }));
-            return rejectWithValue(err.response?.data);
+            return rejectWithValue(errorMsg);
         }
     }
 )

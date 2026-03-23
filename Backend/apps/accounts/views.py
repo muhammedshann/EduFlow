@@ -3,7 +3,7 @@ from django.contrib.auth import logout
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
-from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, VerifyAccountSerializer, UpdateProfileSerializer, WalletSerializer,UpdatePasswordSerializer, SettingsSerializer, UpdateProfileImageSerializer, UserCreditsSerializer, UserNotificationSerializer, VerifyOtpEmailSerializer
+from .serializers import TempRegisterSerializer, LoginSerializer, GenerateOtpSerializer, ResetPasswordSerializer, VerifyAccountSerializer, UpdateProfileSerializer, WalletSerializer,UpdatePasswordSerializer, SettingsSerializer, UpdateProfileImageSerializer, UserCreditsSerializer, UserNotificationSerializer, VerifyOtpEmailSerializer, OrderAmountSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from .models import TempUser, Wallet, WalletHistory,Settings, UserCredits
 from apps.admin_panel.models import Notification
@@ -347,7 +347,7 @@ class VerifyOtp(APIView):
                 user = serializer.save()
                 return Response({"message": "User verified and registered successfully"}, status=status.HTTP_201_CREATED)
             return Response({"message": "User verified "}, status=status.HTTP_201_CREATED)
-        return Response({"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
 class VerifyOtpEmailView(APIView):
     def post(self, request):
@@ -670,28 +670,34 @@ class CreateRazorpayOrderView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        amount = request.data.get('amount')
-        if not amount:
-            return Response({"error": "Amount is required"}, status=400)
+        # 1. Pass the raw data to the serializer
+        serializer = OrderAmountSerializer(data=request.data)
         
-        amount_in_paise = int(Decimal(amount) * 100)
+        # 2. Let the serializer handle all the "is it there? is it a number?" logic
+        if serializer.is_valid():
+            # 3. Get the CLEANED value (guaranteed to be a valid Decimal)
+            amount = serializer.validated_data['amount']
+            
+            # Convert to paise safely
+            amount_in_paise = int(amount * 100)
 
-        data = {
-            "amount": amount_in_paise,
-            "currency": "INR",
-            "payment_capture": "1"
-        }
+            try:
+                order = client.order.create(data={
+                    "amount": amount_in_paise,
+                    "currency": "INR",
+                    "payment_capture": "1"
+                })
+                return Response({
+                    "order_id": order['id'],
+                    "amount": order['amount'],
+                    "currency": order['currency'],
+                    "key_id": settings.RZP_KEY_ID
+                }, status=200)
+            except Exception as e:
+                return Response({"error": "Razorpay service unavailable"}, status=503)
 
-        try:
-            order = client.order.create(data=data)
-            return Response({
-                "order_id": order['id'],
-                "amount": order['amount'],
-                "currency": order['currency'],
-                "key_id": settings.RZP_KEY_ID
-            }, status=200)
-        except Exception as e:
-            return Response({"error": str(e)}, status=500)
+        # 4. If validation fails, return the clean error (e.g., "Amount is required")
+        return Response({"errors": serializer.errors}, status=400)
 
 class VerifyRazorpayPaymentView(APIView):
     permission_classes = [IsAuthenticated]

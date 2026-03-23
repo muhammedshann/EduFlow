@@ -1,54 +1,78 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api/axios";
+import { showNotification } from "./NotificationSlice";
 
 // --- Async Thunks ---
 
 export const FetchCredit = createAsyncThunk(
     'subscriptions/FetchCredit',
-    async(_, { rejectWithValue }) => {
+    async(_, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.get('/subscriptions/credit/');
             return response.data;
         } catch(err) {
-            return rejectWithValue(err.response?.data || "Fetch credit failed");
+            const errorMsg = err.response?.data?.message || err.response?.data?.detail || err.response?.data?.error || err.message || "Fetch credit failed";
+            dispatch(showNotification({
+                message: errorMsg,
+                type: "error"
+            }));
+            return rejectWithValue(errorMsg);
         }
     }
 );
 
 export const RzpCreateOrder = createAsyncThunk(
     'subscriptions/RzpCreateOrder',
-    async(payload, { rejectWithValue }) => {
+    async(payload, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.post('/subscriptions/create-order/', payload);
             return response.data;
         } catch(err) {
-            return rejectWithValue(err.response?.data || "Order creation failed");
+            const errorMsg = err.response?.data?.message || err.response?.data?.detail || err.response?.data?.error || err.message || "Order creation failed";
+            dispatch(showNotification({
+                message: errorMsg,
+                type: "error"
+            }));
+            return rejectWithValue(errorMsg);
         }
     }
 );
 
 export const RzpVerifyOrder = createAsyncThunk(
     'subscriptions/RzpVerifyOrder',
-    async(payload, { rejectWithValue }) => {
+    async(payload, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.post('subscriptions/verify-payment/', payload);
             return response.data;
         } catch(err) {
-            return rejectWithValue(err.response?.data || "Verification failed");
+            const errorMsg = err.response?.data?.message || err.response?.data?.detail || err.response?.data?.error || err.message || "Verification failed";
+            dispatch(showNotification({
+                message: errorMsg,
+                type: "error"
+            }));
+            return rejectWithValue(errorMsg);
         }
     }
 );
 
 export const WalletPayment = createAsyncThunk(
     'subscriptions/WalletPayment',
-    async (payload, { rejectWithValue }) => {
+    async (payload, { dispatch, rejectWithValue }) => {
         try {
             // Use 'api' instead of 'axios'
             // Path should NOT start with /api/ because baseURL already has it
             const response = await api.post('subscriptions/wallet-payment/', payload);
+            dispatch(showNotification({
+                message: response.data?.message || "Wallet payment successful!",
+                type: "success"
+            }));
             return response.data;
         } catch (err) {
-            const message = err.response?.data?.error || "Wallet payment failed";
+            const message = err.response?.data?.error || err.response?.data?.message || err.response?.data?.detail || err.message || "Wallet payment failed";
+            dispatch(showNotification({
+                message: message,
+                type: "error"
+            }));
             return rejectWithValue(message);
         }
     }

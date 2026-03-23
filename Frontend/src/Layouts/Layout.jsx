@@ -41,11 +41,20 @@ export default function Layout() {
       {/* --- ChatGPT / Gemini Style Floating Chat Button --- */}
       <button 
         onClick={() => navigate('/chat-bot/')}
-        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 p-4 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white rounded-full shadow-[0_0_20px_rgba(99,102,241,0.5)] hover:shadow-[0_0_30px_rgba(99,102,241,0.8)] hover:scale-110 active:scale-95 transition-all duration-300 group flex items-center justify-center border border-white/20"
+        className="fixed bottom-24 right-6 md:bottom-10 md:right-10 z-50 p-2 hover:scale-110 active:scale-95 transition-transform duration-300 group flex items-center justify-center"
         title="Open AI Chat"
       >
-        <Bot className="w-6 h-6 group-hover:animate-pulse relative z-10" />
-        <Sparkle className="w-3 h-3 text-white absolute top-3 right-3 animate-ping" />
+        {/* Ambient glow behind the logo */}
+        <div className="absolute inset-0 bg-indigo-500/20 blur-xl scale-150 rounded-full group-hover:bg-purple-500/30 transition-colors duration-500 pointer-events-none"></div>
+        
+        <div className="relative flex items-center justify-center">
+            {/* Main Logo */}
+            <div className="text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
+                <Bot className="w-10 h-10 drop-shadow-xl" />
+            </div>
+            {/* Magical Sparkle Effect */}
+            <Sparkles className="w-5 h-5 text-purple-500 absolute -top-2 -right-3 animate-pulse drop-shadow-md" />
+        </div>
       </button>
 
     </div>

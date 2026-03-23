@@ -265,9 +265,11 @@ class RefreshView(TokenRefreshView):
             key='access',
             value=access_token,
             httponly=True,
-            secure=False,       # True in production
-            samesite='Lax',
-            max_age=15 * 60     # 15 min expiry
+            secure=True,
+            samesite='None',
+            domain='.muhammedshan.info',
+            path='/',
+            max_age=15 * 60
         )
 
         return response
@@ -470,6 +472,12 @@ class DeleteUser(APIView):
         response.delete_cookie('access', **cookie_settings)
         response.delete_cookie('refresh', **cookie_settings)
         
+        # Clear rogue legacy cookies just in case the browser cached them previously
+        response.delete_cookie('access', path='/', samesite='Lax')
+        response.delete_cookie('refresh', path='/', samesite='Lax')
+        response.delete_cookie('access', path='/', samesite='None', secure=True)
+        response.delete_cookie('refresh', path='/', samesite='None', secure=True)
+        
         return response
     
 class ResetPassword(APIView):
@@ -508,6 +516,12 @@ class LogoutView(APIView):
         response.delete_cookie('access', **cookie_settings)
         response.delete_cookie('refresh', **cookie_settings)
         response.delete_cookie('sessionid', path='/') # For Django Admin sessions
+
+        # Clear rogue legacy cookies just in case the browser cached them previously
+        response.delete_cookie('access', path='/', samesite='Lax')
+        response.delete_cookie('refresh', path='/', samesite='Lax')
+        response.delete_cookie('access', path='/', samesite='None', secure=True)
+        response.delete_cookie('refresh', path='/', samesite='None', secure=True)
 
         return response
 

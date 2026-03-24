@@ -4,7 +4,6 @@ import { useDispatch } from "react-redux";
 import {
     FetchDailyStats,
     FetchPomodoro,
-    FetchWeeklyStats,
     SavePomodoro,
     UpdatePomodoro,
     FetchStreak,
@@ -27,13 +26,13 @@ export default function Pomodoro() {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     const [daily, setDaily] = useState({});
-    const [weekly, setWeekly] = useState([]);
     const [streak, setStreak] = useState(0);
-    const [analyticsData, setAnalyticsData] = useState([]);
+    
+    // ANALYTICS STATES
     const [timeframe, setTimeframe] = useState('weekly');
+    const [analyticsData, setAnalyticsData] = useState([]);
 
     const intervalRef = useRef(null);
-
     const STORAGE_KEY = "pomodoro_state_v1";
 
     const refetchStats = async (mounted) => {
@@ -45,13 +44,6 @@ export default function Pomodoro() {
         }
 
         try {
-            const w = await dispatch(FetchWeeklyStats()).unwrap();
-            if (mounted) setWeekly(w.week || []);
-        } catch (err) {
-            console.log("FetchWeeklyStats error:", err);
-        }
-
-        try {
             const s = await dispatch(FetchStreak()).unwrap();
             if (mounted) setStreak(s.streak);
         } catch (err) {
@@ -59,6 +51,7 @@ export default function Pomodoro() {
         }
     };
 
+    // FETCH ANALYTICS INDEPENDENTLY
     useEffect(() => {
         let mounted = true;
         const fetchAnalytics = async () => {
@@ -73,6 +66,7 @@ export default function Pomodoro() {
         return () => { mounted = false; };
     }, [timeframe, dispatch]);
 
+
     useEffect(() => {
         let mounted = true;
 
@@ -85,7 +79,6 @@ export default function Pomodoro() {
                 setBreakMinutes(settings.break_minutes);
 
                 await refetchStats(mounted);
-
 
                 const savedRaw = localStorage.getItem(STORAGE_KEY);
                 if (!savedRaw) {
@@ -201,11 +194,17 @@ export default function Pomodoro() {
 
             localStorage.removeItem(STORAGE_KEY);
 
+            // Refetch analytics efficiently
+            try {
+                const refreshedAnalytics = await dispatch(FetchPomodoroAnalytics(timeframe)).unwrap();
+                if (mounted.current) setAnalyticsData(Array.isArray(refreshedAnalytics) ? refreshedAnalytics : []);
+            } catch(e) {}
+
             return () => { mounted.current = false; };
 
         })();
 
-    }, [timeLeft, isBreak, workMinutes, breakMinutes, dispatch, isActive]);
+    }, [timeLeft, isBreak, workMinutes, breakMinutes, dispatch, isActive, timeframe]);
 
 
     const toggleTimer = () => {
@@ -277,6 +276,23 @@ export default function Pomodoro() {
         const totalTime = isBreak ? breakMinutes * 60 : workMinutes * 60;
         if (totalTime <= 0 || timeLeft >= totalTime) return 0;
         return ((totalTime - timeLeft) / totalTime) * 100;
+    };
+
+    const CustomTooltip = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-3 rounded-lg shadow-lg">
+                    <p className="font-semibold text-gray-800 dark:text-slate-100 text-sm mb-1">{label}</p>
+                    <p className="text-indigo-600 dark:text-indigo-400 font-bold text-sm">
+                        Focus: {payload[0]?.value || 0} <span className="text-xs text-gray-500 font-normal">min</span>
+                    </p>
+                    <p className="text-emerald-500 dark:text-emerald-400 font-bold text-sm">
+                        Break: {payload[1]?.value || 0} <span className="text-xs text-gray-500 font-normal">min</span>
+                    </p>
+                </div>
+            );
+        }
+        return null;
     };
 
     return (
@@ -375,20 +391,20 @@ export default function Pomodoro() {
                     </div>
 
                     <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-xl border border-white/20 dark:border-slate-800 p-6 md:p-8 flex flex-col">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-3">
                             <div className="flex items-center space-x-3">
-                                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-pink-500" />
+                                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-indigo-500" />
                                 <h3 className="text-xl md:text-2xl font-semibold text-slate-800 dark:text-slate-100">Deep Analytics</h3>
                             </div>
-                            <div className="flex p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
-                                {['weekly', 'monthly', 'yearly'].map((tab) => (
+                            <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
+                                {['weekly', 'monthly', 'yearly'].map(tab => (
                                     <button 
                                         key={tab} 
                                         onClick={() => setTimeframe(tab)} 
-                                        className={`px-3 py-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all ${
+                                        className={`px-3 py-1.5 text-xs font-semibold capitalize rounded-md transition-all ${
                                             timeframe === tab 
-                                            ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-white" 
-                                            : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                                            ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400" 
+                                            : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
                                         }`}
                                     >
                                         {tab}
@@ -397,45 +413,27 @@ export default function Pomodoro() {
                             </div>
                         </div>
 
-                        <div className="flex-1 w-full min-h-[220px] relative">
-                            {/* Glassmorphic Chart Glow */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/5 to-pink-500/5 blur-xl pointer-events-none rounded-b-2xl"></div>
-                            
+                        <div className="flex-1 w-full min-h-[200px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={analyticsData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
                                     <XAxis 
                                         dataKey="date" 
                                         axisLine={false} 
                                         tickLine={false} 
-                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} 
+                                        tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
                                         dy={10}
                                     />
                                     <YAxis 
                                         axisLine={false} 
                                         tickLine={false} 
-                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} 
+                                        tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
                                         tickFormatter={(value) => `${value}m`}
                                     />
-                                    <Tooltip 
-                                        cursor={{ fill: '#6366f1', opacity: 0.1 }}
-                                        contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px', fontWeight: 'bold' }}
-                                        itemStyle={{ fontSize: '13px', fontWeight: 'bold' }}
-                                    />
-                                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: 600, paddingTop: '10px' }}/>
-                                    <Bar dataKey="focus_minutes" name="Focus Time" fill="url(#colorFocus)" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                                    <Bar dataKey="break_minutes" name="Break Time" fill="url(#colorBreak)" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                                        
-                                    <defs>
-                                        <linearGradient id="colorFocus" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#6366f1" />
-                                            <stop offset="100%" stopColor="#a855f7" />
-                                        </linearGradient>
-                                        <linearGradient id="colorBreak" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#10b981" />
-                                            <stop offset="100%" stopColor="#34d399" />
-                                        </linearGradient>
-                                    </defs>
+                                    <Tooltip content={<CustomTooltip />} cursor={{ fill: '#e0e7ff', opacity: 0.1 }} />
+                                    <Legend wrapperStyle={{ fontSize: '12px', fontWeight: 500, paddingTop: '10px' }} />
+                                    <Bar dataKey="focus_minutes" name="Focus Time" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                                    <Bar dataKey="break_minutes" name="Break Time" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={32} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

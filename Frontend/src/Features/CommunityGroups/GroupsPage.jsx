@@ -411,7 +411,7 @@ const GroupsPage = () => {
                         allData.joined.filter(filterFn);
 
     return (
-        <div className={`flex h-screen w-full ${SOFT_BG} font-sans overflow-hidden`}>
+        <div className={`flex h-full min-h-0 w-full ${SOFT_BG} font-sans overflow-hidden`}>
             
             {/* --- LEFT SIDEBAR (Compact UI) --- */}
             <aside className={`w-full lg:w-[320px] xl:w-[360px] flex flex-col h-full bg-white dark:bg-slate-900/50 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800 transition-all z-30 shrink-0 ${selectedGroupId ? 'hidden lg:flex' : 'flex'}`}>
@@ -453,7 +453,7 @@ const GroupsPage = () => {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-3 pb-28 space-y-0.5 scrollbar-hide">
+                <div className="flex-1 overflow-y-auto px-3 pb-[88px] lg:pb-6 space-y-0.5 scrollbar-hide">
                     {displayList.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center opacity-40">
                             <LayoutGrid size={36} strokeWidth={1} />
@@ -528,8 +528,8 @@ const GroupsPage = () => {
                             </div>
                         </div>
 
-                        {/* 3. FIXED INPUT AREA (With padding for bottom dock) */}
-                        <div className="shrink-0 px-4 pt-2 pb-28 md:pb-28 bg-gradient-to-t from-[#f8fafc] dark:from-slate-950 via-[#f8fafc]/90 dark:via-slate-950/90 to-transparent z-20">
+                        {/* 3. FIXED INPUT AREA (With padding for bottom dock on mobile) */}
+                        <div className="shrink-0 px-4 pt-2 pb-[88px] lg:pb-6 bg-gradient-to-t from-[#f8fafc] dark:from-slate-950 via-[#f8fafc]/90 dark:via-slate-950/90 to-transparent z-20">
                             <div className="max-w-4xl mx-auto relative group">
                                 <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-3xl opacity-10 group-focus-within:opacity-20 blur transition-opacity duration-500" />
                                 
@@ -565,7 +565,7 @@ const GroupsPage = () => {
                     </>
                 ) : (
                     // Empty State
-                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center pb-28">
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center pb-[88px] lg:pb-4">
                         <div className="relative mb-6 group">
                             <div className="absolute -inset-4 bg-indigo-500/10 blur-xl rounded-full group-hover:bg-indigo-500/20 transition-colors duration-700" />
                             <div className="w-20 h-20 bg-white dark:bg-slate-900 rounded-[2rem] flex items-center justify-center shadow-lg border border-slate-100 dark:border-slate-800 relative z-10">

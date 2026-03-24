@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Send, Loader2, Zap, X, Sparkles, Info, Trash2 } from "lucide-react";
+import { Send, Loader2, Zap, X, Sparkles, Info, Trash2, ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { FetchDetailNote } from "../../Redux/LiveTranscriptionSlice";
@@ -121,56 +121,59 @@ export default function ChatPage() {
     };
 
     return (
-        /* FIXED: Added pb-32. This container now handles the bottom spacing. */
-        <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden pb-32">
+        <div className="flex flex-col h-[100dvh] w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 overflow-hidden">
 
-            {/* Chat Body Container */}
-            <div className="flex-1 overflow-y-auto px-4 md:px-8 pt-6 scrollbar-hide">
-                <div className="w-full max-w-4xl mx-auto">
+            {/* --- Top Navbar --- */}
+            <div className="shrink-0 h-[68px] px-4 md:px-8 flex items-center justify-between bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border-b border-white/20 dark:border-slate-800/80 z-30 shadow-sm">
+                
+                <button 
+                    onClick={() => navigate(-1)} 
+                    className="flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-slate-800/80 hover:shadow-sm transition-all active:scale-95 group"
+                    title="Go Back"
+                >
+                    <ArrowLeft size={22} strokeWidth={2.5} className="group-hover:-translate-x-0.5 transition-transform" />
+                </button>
 
-                    {/* Top Floating Controls */}
-                    <div className="flex items-center justify-between mb-8 sticky top-0 z-20">
-                        {noteTitle ? (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-indigo-100 dark:border-slate-800 rounded-full text-[11px] font-bold text-indigo-600 dark:text-indigo-400 shadow-sm">
-                                <Info size={14} className="text-indigo-500" />
-                                <span className="max-w-[150px] md:max-w-[300px] truncate uppercase tracking-wider">Context: {noteTitle}</span>
-                                <button onClick={() => navigate('/chat-bot/')} className="ml-1 p-0.5 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-full transition-colors">
-                                    <X size={12} />
-                                </button>
-                            </div>
-                        ) : <div />}
-
-                        {messages.length > 0 && (
-                            <button
-                                onClick={() => setShowClearConfirm(true)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-full text-[10px] font-black text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all uppercase tracking-widest"
-                            >
-                                <Trash2 size={12} /> Clear
+                <div className="flex-1 flex justify-center">
+                    {noteTitle && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/90 dark:bg-slate-800/90 border border-indigo-100 dark:border-slate-700/80 rounded-full text-[11px] font-bold text-indigo-600 dark:text-indigo-400 shadow-sm animate-in zoom-in-95 duration-300">
+                            <Info size={14} className="text-indigo-500" />
+                            <span className="max-w-[150px] md:max-w-[400px] truncate uppercase tracking-wider">Context: {noteTitle}</span>
+                            <button onClick={() => navigate('/chat-bot/')} className="ml-1 p-0.5 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <X size={12} />
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
+                </div>
 
-                    {/* Messages */}
-                    <div className="space-y-6 md:space-y-8">
-                        {messages.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                <div className="w-16 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl flex items-center justify-center shadow-xl border border-white/20 dark:border-slate-800 mb-6">
-                                    <Zap className="text-indigo-600 dark:text-indigo-400 w-8 h-8" />
-                                </div>
-                                <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">How can I help you?</h2>
-                                <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto leading-relaxed font-medium">
-                                    Ask anything to assist your learning journey.
-                                </p>
+                {/* Empty div to balance flex-between */}
+                <div className="w-10"></div>
+            </div>
+
+            {/* Middle Scrolling Chat Area */}
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 pt-6 pb-2 scrollbar-hide scroll-smooth">
+                <div className="w-full max-w-3xl mx-auto flex flex-col min-h-full justify-end">
+
+                    {messages.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-700 my-auto">
+                            <div className="w-16 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2rem] flex items-center justify-center shadow-2xl border border-white/40 dark:border-slate-700/50 mb-6 group hover:scale-110 transition-transform">
+                                <Sparkles className="text-indigo-600 dark:text-indigo-400 w-8 h-8 group-hover:animate-pulse" />
                             </div>
-                        )}
+                            <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">How can I help you?</h2>
+                            <p className="text-slate-500 dark:text-slate-400 text-[13px] max-w-xs mx-auto leading-relaxed font-medium">
+                                Ask anything to assist your learning journey.
+                            </p>
+                        </div>
+                    )}
 
+                    <div className="space-y-6 md:space-y-8 mt-auto">
                         {messages.map((m, i) => (
-                            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} items-end gap-3`}>
-                                <div className={`px-5 md:px-6 py-3 md:py-4 rounded-3xl text-[15px] leading-relaxed shadow-sm border transition-all duration-300 ${m.role === "user"
-                                        ? "bg-indigo-600 text-white border-indigo-500 rounded-br-none shadow-lg shadow-indigo-500/10"
-                                        : "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl text-slate-700 dark:text-slate-200 border-white/20 dark:border-slate-800 rounded-bl-none"
-                                    } max-w-[90%] md:max-w-[80%] min-w-[50px]`}>
-                                    <div className={`prose prose-sm max-w-none ${m.role === "user" ? "prose-invert text-white" : "dark:text-slate-200 dark:prose-invert prose-indigo"}`}>
+                            <div key={i} className={`flex w-full ${m.role === "user" ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 duration-300`}>
+                                <div className={`relative px-5 md:px-6 py-3.5 md:py-4 rounded-3xl text-[14px] leading-relaxed shadow-sm transition-all duration-300 ${m.role === "user"
+                                        ? "bg-indigo-600 text-white rounded-br-sm shadow-md shadow-indigo-500/20 border border-indigo-500"
+                                        : "bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl text-slate-700 dark:text-slate-200 rounded-bl-sm border border-slate-200/60 dark:border-slate-700/50 shadow-sm"
+                                    } max-w-[85%] md:max-w-[75%]`}>
+                                    <div className={`prose prose-sm max-w-none ${m.role === "user" ? "prose-invert text-indigo-50" : "dark:text-slate-200 dark:prose-invert prose-indigo"}`}>
                                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                             {m.text}
                                         </ReactMarkdown>
@@ -180,41 +183,57 @@ export default function ChatPage() {
                         ))}
 
                         {isLoading && (
-                            <div className="flex justify-start animate-in fade-in duration-300">
-                                <div className="px-6 py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 rounded-3xl rounded-bl-none shadow-sm flex gap-1.5 items-center">
-                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></div>
-                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                            <div className="flex justify-start animate-in fade-in zoom-in-95 duration-300">
+                                <div className="px-5 py-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/50 rounded-3xl rounded-bl-sm shadow-sm flex gap-1.5 items-center">
+                                    <div className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce"></div>
+                                    <div className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                                    <div className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                                 </div>
                             </div>
                         )}
                     </div>
-                    <div ref={messagesEndRef} />
+                    <div ref={messagesEndRef} className="h-4" />
                 </div>
             </div>
 
-            {/* FIXED: Input Form is now RELATIVE and inside the padding zone */}
-            <div className="relative px-4 md:px-8 z-20 mt-4">
-                <form
-                    onSubmit={sendMessage}
-                    className="max-w-3xl mx-auto flex items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/20 dark:border-slate-800 rounded-[28px] p-2 shadow-2xl transition-all focus-within:border-indigo-400"
-                >
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder={noteTitle ? "Ask about this note..." : "Ask EduFlow anything..."}
-                        disabled={isLoading}
-                        className="flex-1 bg-transparent px-4 md:px-6 py-3 text-slate-800 dark:text-slate-100 text-[16px] md:text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium"
-                    />
-                    <button
-                        type="submit"
-                        disabled={isLoading || !input.trim()}
-                        className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center transition-all disabled:opacity-30 shadow-lg"
+            {/* Bottom Fixed Input Area */}
+            <div className="shrink-0 pb-6 md:pb-8 pt-2 px-4 md:px-8 bg-gradient-to-t from-slate-50 dark:from-slate-950 via-slate-50/80 dark:via-slate-950/80 to-transparent z-20">
+                <div className="max-w-3xl mx-auto flex flex-col gap-3">
+
+                    {/* Tool Bar: Clear Button pinned securely above input */}
+                    <div className="flex justify-end px-2 min-h-[24px]">
+                        {messages.length > 0 && (
+                            <button
+                                onClick={() => setShowClearConfirm(true)}
+                                className="flex items-center gap-1.5 px-3 py-1 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full text-[10px] font-black text-slate-500 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all uppercase tracking-widest shadow-sm animate-in fade-in slide-in-from-bottom-2"
+                            >
+                                <Trash2 size={12} /> Clear Chat
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Input Form */}
+                    <form
+                        onSubmit={sendMessage}
+                        className="relative flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] p-1.5 md:p-2 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all focus-within:border-indigo-400 dark:focus-within:border-indigo-500/50 focus-within:shadow-[0_8px_30px_rgba(99,102,241,0.15)] group"
                     >
-                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4 md:w-5 md:h-5" />}
-                    </button>
-                </form>
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder={noteTitle ? "Ask about this note..." : "Ask EduFlow anything..."}
+                            disabled={isLoading}
+                            className="flex-1 bg-transparent px-4 md:px-5 py-2 md:py-3 text-slate-800 dark:text-slate-100 text-[15px] outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium"
+                        />
+                        <button
+                            type="submit"
+                            disabled={isLoading || !input.trim()}
+                            className="w-10 h-10 md:w-11 md:h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex shrink-0 items-center justify-center transition-all disabled:opacity-30 disabled:hover:scale-100 hover:scale-105 active:scale-95 shadow-md shadow-indigo-500/20 dark:shadow-none"
+                        >
+                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4 md:w-5 md:h-5 ml-0.5" />}
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <DeleteConfirmModal

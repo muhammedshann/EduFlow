@@ -95,3 +95,15 @@ export const FetchStreak = createAsyncThunk(
         }
     }
 );
+
+export const FetchPomodoroAnalytics = createAsyncThunk(
+    'pomodoro/analytics',
+    async (range = 'weekly', {rejectWithValue}) => {
+        try {
+            const res = await api.get(`/pomodoro/stats/analytics/?range=${range}`);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || "Failed");
+        }
+    }
+);

@@ -523,8 +523,8 @@ const GroupsPage = () => {
                             </div>
                         </div>
 
-                        {/* 3. FIXED INPUT AREA (With padding for bottom dock on mobile) */}
-                        <div className="shrink-0 px-4 pt-2 pb-[88px] lg:pb-6 bg-gradient-to-t from-[#f8fafc] dark:from-slate-950 via-[#f8fafc]/90 dark:via-slate-950/90 to-transparent z-20">
+                        {/* 3. FIXED INPUT AREA (Dynamic padding on mobile: pb drops when focused) */}
+                        <div className="shrink-0 px-4 pt-2 pb-[88px] focus-within:pb-4 lg:pb-6 lg:focus-within:pb-6 bg-gradient-to-t from-[#f8fafc] dark:from-slate-950 via-[#f8fafc]/90 dark:via-slate-950/90 to-transparent z-20 transition-all duration-300">
                             <div className="max-w-4xl mx-auto relative group">
                                 <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-3xl opacity-10 group-focus-within:opacity-20 blur transition-opacity duration-500" />
 

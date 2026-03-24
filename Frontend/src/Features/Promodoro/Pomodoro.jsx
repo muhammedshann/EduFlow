@@ -7,8 +7,10 @@ import {
     FetchWeeklyStats,
     SavePomodoro,
     UpdatePomodoro,
-    FetchStreak
+    FetchStreak,
+    FetchPomodoroAnalytics
 } from "../../Redux/PomodoroSlice";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function Pomodoro() {
     const dispatch = useDispatch();
@@ -27,6 +29,8 @@ export default function Pomodoro() {
     const [daily, setDaily] = useState({});
     const [weekly, setWeekly] = useState([]);
     const [streak, setStreak] = useState(0);
+    const [analyticsData, setAnalyticsData] = useState([]);
+    const [timeframe, setTimeframe] = useState('weekly');
 
     const intervalRef = useRef(null);
 
@@ -54,6 +58,20 @@ export default function Pomodoro() {
             console.log("FetchStreak error:", err);
         }
     };
+
+    useEffect(() => {
+        let mounted = true;
+        const fetchAnalytics = async () => {
+            try {
+                const data = await dispatch(FetchPomodoroAnalytics(timeframe)).unwrap();
+                if (mounted) setAnalyticsData(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.log("Analytics error:", err);
+            }
+        };
+        fetchAnalytics();
+        return () => { mounted = false; };
+    }, [timeframe, dispatch]);
 
     useEffect(() => {
         let mounted = true;
@@ -356,21 +374,70 @@ export default function Pomodoro() {
                         </div>
                     </div>
 
-                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-xl border border-white/20 dark:border-slate-800 p-6 md:p-8">
-                        <div className="flex items-center space-x-3 mb-6"><TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-green-500" /><h3 className="text-xl md:text-2xl font-semibold text-slate-800 dark:text-slate-100">Weekly Overview</h3></div>
+                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-xl border border-white/20 dark:border-slate-800 p-6 md:p-8 flex flex-col">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <div className="flex items-center space-x-3">
+                                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-pink-500" />
+                                <h3 className="text-xl md:text-2xl font-semibold text-slate-800 dark:text-slate-100">Deep Analytics</h3>
+                            </div>
+                            <div className="flex p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+                                {['weekly', 'monthly', 'yearly'].map((tab) => (
+                                    <button 
+                                        key={tab} 
+                                        onClick={() => setTimeframe(tab)} 
+                                        className={`px-3 py-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all ${
+                                            timeframe === tab 
+                                            ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-white" 
+                                            : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                                        }`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
-                        <div className="space-y-4 md:space-y-3">
-                            {Array.isArray(weekly) && weekly.map(item => (
-                                <div key={item.date} className="flex items-center justify-between">
-                                    <span className="text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 w-8 md:w-10">{item.date}</span>
-                                    <div className="flex items-center space-x-2 w-full max-w-xs">
-                                        <div className="bg-slate-200 dark:bg-slate-800 h-1.5 md:h-2 rounded-full flex-grow overflow-hidden">
-                                            <div className="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-700" style={{ width: `${Math.min(item.focus_minutes * 5, 100)}%` }}></div>
-                                        </div>
-                                        <span className="text-[10px] md:text-xs text-slate-600 dark:text-slate-400 w-8 text-right">{Math.floor(item.focus_minutes)}m</span>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="flex-1 w-full min-h-[220px] relative">
+                            {/* Glassmorphic Chart Glow */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/5 to-pink-500/5 blur-xl pointer-events-none rounded-b-2xl"></div>
+                            
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={analyticsData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
+                                    <XAxis 
+                                        dataKey="date" 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} 
+                                        dy={10}
+                                    />
+                                    <YAxis 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} 
+                                        tickFormatter={(value) => `${value}m`}
+                                    />
+                                    <Tooltip 
+                                        cursor={{ fill: '#6366f1', opacity: 0.1 }}
+                                        contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px', fontWeight: 'bold' }}
+                                        itemStyle={{ fontSize: '13px', fontWeight: 'bold' }}
+                                    />
+                                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: 600, paddingTop: '10px' }}/>
+                                    <Bar dataKey="focus_minutes" name="Focus Time" fill="url(#colorFocus)" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                                    <Bar dataKey="break_minutes" name="Break Time" fill="url(#colorBreak)" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                                        
+                                    <defs>
+                                        <linearGradient id="colorFocus" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#6366f1" />
+                                            <stop offset="100%" stopColor="#a855f7" />
+                                        </linearGradient>
+                                        <linearGradient id="colorBreak" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#10b981" />
+                                            <stop offset="100%" stopColor="#34d399" />
+                                        </linearGradient>
+                                    </defs>
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
                 </div>

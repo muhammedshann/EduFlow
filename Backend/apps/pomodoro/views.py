@@ -124,3 +124,77 @@ class PomodoroStreak(APIView):
             day -= timezone.timedelta(days=1)
 
         return Response({"streak": streak})
+
+class PomodoroAnalyticsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        timeframe = request.query_params.get("range", "weekly")
+        today = timezone.now().date()
+        results = []
+
+        if timeframe == "weekly":
+            week_start = today - timezone.timedelta(days=today.weekday())
+            summaries = PomodoroDailySummary.objects.filter(
+                user=request.user,
+                date__gte=week_start,
+                date__lte=today
+            )
+            for i in range(7):
+                d = week_start + timezone.timedelta(days=i)
+                day_summary = summaries.filter(date=d).first()
+                results.append({
+                    "date": d.strftime("%a"),
+                    "focus_minutes": (day_summary.focus_seconds // 60) if day_summary else 0,
+                    "break_minutes": (day_summary.break_seconds // 60) if day_summary else 0,
+                })
+
+        elif timeframe == "monthly":
+            first_day = today.replace(day=1)
+            if first_day.month == 12:
+                last_day = today.replace(year=today.year+1, month=1, day=1) - timezone.timedelta(days=1)
+            else:
+                last_day = today.replace(month=first_day.month+1, day=1) - timezone.timedelta(days=1)
+            
+            summaries = PomodoroDailySummary.objects.filter(
+                user=request.user,
+                date__range=[first_day, last_day]
+            )
+            
+            week_stats = {w: {"focus": 0, "break": 0} for w in range(1, 6)}
+            for s in summaries:
+                week_num = min(((s.date.day - 1) // 7) + 1, 5)
+                week_stats[week_num]["focus"] += s.focus_seconds
+                week_stats[week_num]["break"] += s.break_seconds
+                
+            for w in range(1, 6):
+                results.append({
+                    "date": f"Week {w}",
+                    "focus_minutes": week_stats[w]["focus"] // 60,
+                    "break_minutes": week_stats[w]["break"] // 60,
+                })
+
+        elif timeframe == "yearly":
+            jan_1 = today.replace(month=1, day=1)
+            dec_31 = today.replace(month=12, day=31)
+            
+            summaries = PomodoroDailySummary.objects.filter(
+                user=request.user,
+                date__range=[jan_1, dec_31]
+            )
+            
+            months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+            month_stats = {m: {"focus": 0, "break": 0} for m in range(1, 13)}
+            
+            for s in summaries:
+                month_stats[s.date.month]["focus"] += s.focus_seconds
+                month_stats[s.date.month]["break"] += s.break_seconds
+                
+            for m in range(1, 13):
+                results.append({
+                    "date": months[m-1],
+                    "focus_minutes": (month_stats[m]["focus"] // 60),
+                    "break_minutes": (month_stats[m]["break"] // 60),
+                })
+                
+        return Response(results)

@@ -156,3 +156,91 @@ class StreakView(APIView):
                 break
 
         return Response({"streak": streak})
+
+import calendar
+
+class HabitAnalyticsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        timeframe = request.query_params.get("range", "weekly")
+        today = now().date()
+        
+        habits = Habit.objects.filter(user=user)
+        total_habits = habits.count()
+
+        results = []
+
+        if timeframe == "weekly":
+            week_start = today - timedelta(days=today.weekday())
+            days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            
+            if total_habits == 0:
+                results = [{"date": day, "completion_percent": 0} for day in days]
+            else:
+                logs = HabitLog.objects.filter(
+                    habit__user=user,
+                    date__range=[week_start, week_start + timedelta(days=6)],
+                    completed=True
+                ).values("date")
+
+                completion_map = {}
+                for log in logs:
+                    completion_map[log["date"]] = completion_map.get(log["date"], 0) + 1
+
+                for i in range(7):
+                    day_date = week_start + timedelta(days=i)
+                    completed = completion_map.get(day_date, 0)
+                    percent = round((completed / total_habits) * 100)
+                    results.append({"date": days[i], "completion_percent": percent})
+                    
+        elif timeframe == "monthly":
+            first_day = today.replace(day=1)
+            if first_day.month == 12:
+                last_day = today.replace(year=today.year+1, month=1, day=1) - timedelta(days=1)
+            else:
+                last_day = today.replace(month=first_day.month + 1, day=1) - timedelta(days=1)
+            
+            if total_habits == 0:
+                results = [{"date": f"Week {i}", "completion_percent": 0} for i in range(1, 6)]
+            else:
+                logs = HabitLog.objects.filter(
+                    habit__user=user,
+                    date__range=[first_day, last_day],
+                    completed=True
+                ).values("date")
+                
+                week_counts = {1:0, 2:0, 3:0, 4:0, 5:0}
+                for log in logs:
+                    week_num = min(((log["date"].day - 1) // 7) + 1, 5)
+                    week_counts[week_num] += 1
+                
+                for week in range(1, 6):
+                    avg_weekly = 0 if total_habits == 0 else round((week_counts[week] / (total_habits * 7)) * 100)
+                    results.append({"date": f"Week {week}", "completion_percent": min(avg_weekly, 100)})
+
+        elif timeframe == "yearly":
+            jan_1 = today.replace(month=1, day=1)
+            dec_31 = today.replace(month=12, day=31)
+            months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+            
+            if total_habits == 0:
+                results = [{"date": m, "completion_percent": 0} for m in months]
+            else:
+                logs = HabitLog.objects.filter(
+                    habit__user=user,
+                    date__range=[jan_1, dec_31],
+                    completed=True
+                ).values("date")
+                
+                month_counts = {m: 0 for m in range(1, 13)}
+                for log in logs:
+                    month_counts[log["date"].month] += 1
+                    
+                for m in range(1, 13):
+                    days_in_m = calendar.monthrange(today.year, m)[1]
+                    avg_monthly = 0 if total_habits == 0 else round((month_counts[m] / (total_habits * days_in_m)) * 100)
+                    results.append({"date": months[m-1], "completion_percent": min(avg_monthly, 100)})
+
+        return Response(results)

@@ -101,3 +101,16 @@ export const DeleteHabit = createAsyncThunk(
         }
     }
 )
+
+export const FetchHabitAnalytics = createAsyncThunk(
+    'habit/FetchHabitAnalytics',
+    async (range = 'weekly', {rejectWithValue}) => {
+        try {
+            const response = await api.get(`/habit/stats/analytics/?range=${range}`);
+            return response.data;
+        } catch(err) {
+            console.log(err);
+            return rejectWithValue(err.response?.data || "fetch habit analytics failed");
+        }
+    }
+)

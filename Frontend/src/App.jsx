@@ -72,6 +72,23 @@ function App() {
             }
           />
 
+          <Route
+            path='/chat-bot/'
+            element={
+              <ProtectedRoute>
+                <ChatBotPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/chat-bot/:noteId'
+            element={
+              <ProtectedRoute>
+                <ChatBotPage />
+              </ProtectedRoute>
+            }
+          />
+
           {/* 📂 Protected routes WITH sidebar */}
           <Route element={<Layout />}>
             <Route
@@ -139,23 +156,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <NotesPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path='/chat-bot/'
-              element={
-                <ProtectedRoute>
-                  <ChatBotPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path='/chat-bot/:noteId'
-              element={
-                <ProtectedRoute>
-                  <ChatBotPage />
                 </ProtectedRoute>
               }
             />

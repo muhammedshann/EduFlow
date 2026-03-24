@@ -123,36 +123,40 @@ export default function ChatPage() {
     return (
         <div className="flex flex-col h-[100dvh] w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 transition-colors duration-300 overflow-hidden">
 
-            {/* --- Top Navbar --- */}
-            <div className="shrink-0 h-[68px] px-4 md:px-8 flex items-center justify-between bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border-b border-white/20 dark:border-slate-800/80 z-30 shadow-sm">
-                
-                <button 
-                    onClick={() => navigate(-1)} 
-                    className="flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-slate-800/80 hover:shadow-sm transition-all active:scale-95 group"
-                    title="Go Back"
-                >
-                    <ArrowLeft size={22} strokeWidth={2.5} className="group-hover:-translate-x-0.5 transition-transform" />
-                </button>
-
-                <div className="flex-1 flex justify-center">
-                    {noteTitle && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/90 dark:bg-slate-800/90 border border-indigo-100 dark:border-slate-700/80 rounded-full text-[11px] font-bold text-indigo-600 dark:text-indigo-400 shadow-sm animate-in zoom-in-95 duration-300">
-                            <Info size={14} className="text-indigo-500" />
-                            <span className="max-w-[150px] md:max-w-[400px] truncate uppercase tracking-wider">Context: {noteTitle}</span>
-                            <button onClick={() => navigate('/chat-bot/')} className="ml-1 p-0.5 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                                <X size={12} />
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {/* Empty div to balance flex-between */}
-                <div className="w-10"></div>
-            </div>
-
             {/* Middle Scrolling Chat Area */}
-            <div className="flex-1 overflow-y-auto px-4 md:px-8 pt-6 pb-2 scrollbar-hide scroll-smooth">
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 pt-6 pb-2 scrollbar-hide scroll-smooth relative">
                 <div className="w-full max-w-3xl mx-auto flex flex-col min-h-full justify-end">
+                    
+                    {/* Floating Controls */}
+                    <div className="flex items-center justify-between mb-8 sticky top-0 z-20 pt-2">
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => navigate(-1)} 
+                                className="flex items-center justify-center w-9 h-9 md:w-10 md:h-10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 hover:bg-white/90 dark:hover:bg-slate-800/90 shadow-sm transition-all active:scale-95 group"
+                                title="Go Back"
+                            >
+                                <ArrowLeft size={18} strokeWidth={2.5} className="group-hover:-translate-x-0.5 transition-transform" />
+                            </button>
+                            {noteTitle && (
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-indigo-100 dark:border-slate-800 rounded-full text-[11px] font-bold text-indigo-600 dark:text-indigo-400 shadow-sm">
+                                    <Info size={14} className="text-indigo-500" />
+                                    <span className="max-w-[150px] md:max-w-[250px] truncate uppercase tracking-wider">Context: {noteTitle}</span>
+                                    <button onClick={() => navigate('/chat-bot/')} className="ml-1 p-0.5 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-full transition-colors">
+                                        <X size={12} />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {messages.length > 0 && (
+                            <button
+                                onClick={() => setShowClearConfirm(true)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-full text-[10px] font-black text-slate-500 hover:text-rose-500 hover:border-rose-100 dark:hover:bg-rose-900/20 transition-all uppercase tracking-widest shadow-sm"
+                            >
+                                <Trash2 size={12} /> Clear
+                            </button>
+                        )}
+                    </div>
 
                     {messages.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-700 my-auto">
@@ -199,18 +203,6 @@ export default function ChatPage() {
             {/* Bottom Fixed Input Area */}
             <div className="shrink-0 pb-6 md:pb-8 pt-2 px-4 md:px-8 bg-gradient-to-t from-slate-50 dark:from-slate-950 via-slate-50/80 dark:via-slate-950/80 to-transparent z-20">
                 <div className="max-w-3xl mx-auto flex flex-col gap-3">
-
-                    {/* Tool Bar: Clear Button pinned securely above input */}
-                    <div className="flex justify-end px-2 min-h-[24px]">
-                        {messages.length > 0 && (
-                            <button
-                                onClick={() => setShowClearConfirm(true)}
-                                className="flex items-center gap-1.5 px-3 py-1 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full text-[10px] font-black text-slate-500 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all uppercase tracking-widest shadow-sm animate-in fade-in slide-in-from-bottom-2"
-                            >
-                                <Trash2 size={12} /> Clear Chat
-                            </button>
-                        )}
-                    </div>
 
                     {/* Input Form */}
                     <form

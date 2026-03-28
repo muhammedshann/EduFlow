@@ -7,11 +7,11 @@ import {
     SavePomodoro,
     UpdatePomodoro,
     FetchStreak,
-    FetchPomodoroAnalytics
+    FetchPomodoroAnalytics,
+    FetchPomodoroLeaderboard
 } from "../../Redux/PomodoroSlice";
 import { useUser } from "../../Context/UserContext";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { AdminPomodoro } from "../../Redux/AdminRedux/AdminPomodoroSlice";
 
 export default function Pomodoro() {
     const dispatch = useDispatch();
@@ -278,7 +278,7 @@ export default function Pomodoro() {
         setIsLeaderboardOpen(true);
         setIsLoadingLeaderboard(true);
         try {
-            const data = await dispatch(AdminPomodoro()).unwrap();
+            const data = await dispatch(FetchPomodoroLeaderboard()).unwrap();
             let usersList = data?.users || [];
 
             // Sort users by highest focus entirely
@@ -396,8 +396,9 @@ export default function Pomodoro() {
                                 <Settings className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                             </button>
 
-                            <button onClick={handleOpenLeaderboard} className="p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-indigo-200 dark:border-indigo-900/50 bg-indigo-50 dark:bg-indigo-900/20 hover:border-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all duration-300 transform hover:scale-105 active:scale-95 text-indigo-600 dark:text-indigo-400 group">
-                                <Trophy className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                            <button onClick={handleOpenLeaderboard} className="relative overflow-hidden p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-amber-300 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20 hover:border-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all duration-300 transform hover:scale-105 active:scale-95 text-amber-500 dark:text-amber-400 group shadow-[0_0_15px_rgba(251,191,36,0.2)] dark:shadow-[0_0_15px_rgba(251,191,36,0.1)]">
+                                <div className="absolute inset-0 bg-gradient-to-tr from-amber-300/20 to-yellow-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <Trophy className="w-5 h-5 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300 relative z-10" />
                             </button>
                         </div>
 
@@ -439,8 +440,8 @@ export default function Pomodoro() {
                                         key={tab}
                                         onClick={() => setTimeframe(tab)}
                                         className={`px-3 py-1.5 text-xs font-semibold capitalize rounded-md transition-all ${timeframe === tab
-                                                ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400"
-                                                : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+                                            ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400"
+                                            : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
                                             }`}
                                     >
                                         {tab}
@@ -469,7 +470,6 @@ export default function Pomodoro() {
                                     <Tooltip content={<CustomTooltip />} cursor={{ fill: '#e0e7ff', opacity: 0.1 }} />
                                     <Legend wrapperStyle={{ fontSize: '12px', fontWeight: 500, paddingTop: '10px' }} />
                                     <Bar dataKey="focus_minutes" name="Focus Time" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={32} />
-                                    <Bar dataKey="break_minutes" name="Break Time" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={32} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -480,23 +480,23 @@ export default function Pomodoro() {
 
             {/* LEADERBOARD MODAL (Futuristic & Minimalist) */}
             {isLeaderboardOpen && (
-                <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center z-[100] p-4 sm:p-6 animate-in fade-in duration-300">
-                    <div className="bg-slate-900 border border-slate-700/50 shadow-2xl rounded-[2rem] max-w-lg w-full overflow-hidden flex flex-col relative">
+                <div className="fixed inset-0 bg-slate-900/40 dark:bg-slate-950/80 backdrop-blur-xl flex items-center justify-center z-[100] p-4 sm:p-6 animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 shadow-2xl rounded-[2rem] max-w-lg w-full overflow-hidden flex flex-col relative">
                         {/* Glowing Background Accent */}
-                        <div className="absolute top-0 left-1/4 right-1/4 h-1/2 bg-indigo-500/20 blur-[80px] rounded-full pointer-events-none"></div>
+                        <div className="absolute top-0 left-1/4 right-1/4 h-1/2 bg-amber-500/10 dark:bg-indigo-500/20 blur-[80px] rounded-full pointer-events-none"></div>
 
                         {/* Modal Header */}
-                        <div className="flex justify-between items-center p-6 border-b border-slate-800/80 relative z-10">
+                        <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800/80 relative z-10">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
-                                    <Trophy className="w-6 h-6 text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                                <div className="p-2.5 bg-amber-100 dark:bg-indigo-500/10 rounded-xl border border-amber-200 dark:border-indigo-500/20">
+                                    <Trophy className="w-6 h-6 text-amber-500 dark:text-indigo-400 drop-shadow-sm dark:drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-white tracking-wide">Top Focusers</h3>
-                                    <p className="text-slate-400 text-xs mt-0.5">Global deep work rankings</p>
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-white tracking-wide">Daily Top Focusers</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">Today's deep work rankings</p>
                                 </div>
                             </div>
-                            <button onClick={() => setIsLeaderboardOpen(false)} className="p-2 text-slate-500 hover:text-white bg-slate-800/50 hover:bg-slate-700/50 rounded-full transition-colors">
+                            <button onClick={() => setIsLeaderboardOpen(false)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-full transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -513,20 +513,20 @@ export default function Pomodoro() {
                                     const isCurrentUser = user && lbUser.username === user.username;
 
                                     // Visual stylings for Top 3
-                                    let rankColor = "text-slate-500";
-                                    let rankBg = "bg-slate-800/50";
+                                    let rankColor = "text-slate-500 dark:text-slate-400";
+                                    let rankBg = "bg-slate-100 dark:bg-slate-800/50 border border-transparent";
                                     let Icon = null;
 
-                                    if (index === 0) { rankColor = "text-yellow-400"; rankBg = "bg-yellow-400/10 border border-yellow-400/20"; Icon = Crown; }
-                                    else if (index === 1) { rankColor = "text-slate-300"; rankBg = "bg-white/5 border border-white/10"; Icon = Medal; }
-                                    else if (index === 2) { rankColor = "text-amber-600"; rankBg = "bg-amber-600/10 border border-amber-600/20"; Icon = Medal; }
+                                    if (index === 0) { rankColor = "text-yellow-600 dark:text-yellow-400"; rankBg = "bg-yellow-50 dark:bg-yellow-400/10 border border-yellow-200 dark:border-yellow-400/20 shadow-sm"; Icon = Crown; }
+                                    else if (index === 1) { rankColor = "text-slate-600 dark:text-slate-300"; rankBg = "bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm"; Icon = Medal; }
+                                    else if (index === 2) { rankColor = "text-amber-700 dark:text-amber-600"; rankBg = "bg-amber-50 dark:bg-amber-600/10 border border-amber-200 dark:border-amber-600/20 shadow-sm"; Icon = Medal; }
 
                                     return (
                                         <div
                                             key={lbUser.user_id}
                                             className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${isCurrentUser
-                                                    ? "bg-indigo-500/10 border border-indigo-500/30 scale-[1.02]"
-                                                    : "bg-slate-800/30 border border-transparent hover:bg-slate-800/50"
+                                                ? "bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 scale-[1.02] shadow-sm"
+                                                : "bg-gray-50/50 dark:bg-slate-800/30 border border-transparent hover:bg-gray-100 dark:hover:bg-slate-800/50"
                                                 }`}
                                         >
                                             <div className="flex items-center gap-4">
@@ -534,15 +534,15 @@ export default function Pomodoro() {
                                                     {Icon ? <Icon className="w-5 h-5 drop-shadow-md" /> : `#${index + 1}`}
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className={`font-semibold tracking-wide ${isCurrentUser ? "text-indigo-300" : "text-slate-200"}`}>
-                                                        {lbUser.username} {isCurrentUser && <span className="text-[10px] ml-2 px-2 py-0.5 bg-indigo-500/20 text-indigo-300 rounded-full border border-indigo-500/20">You</span>}
+                                                    <span className={`font-semibold tracking-wide ${isCurrentUser ? "text-indigo-600 dark:text-indigo-300" : "text-slate-700 dark:text-slate-200"}`}>
+                                                        {lbUser.username} {isCurrentUser && <span className="text-[10px] ml-2 px-2 py-0.5 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded-full border border-indigo-200 dark:border-indigo-500/20">You</span>}
                                                     </span>
-                                                    <span className="text-xs text-slate-500">{lbUser.sessions_completed} sessions</span>
+                                                    <span className="text-xs text-slate-500 dark:text-slate-400">{lbUser.sessions_completed} sessions</span>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <span className="block font-bold text-white text-lg tracking-tight">
-                                                    {lbUser.focus_minutes}<span className="text-xs text-slate-500 ml-1 font-medium">min</span>
+                                                <span className="block font-bold text-slate-800 dark:text-white text-lg tracking-tight">
+                                                    {lbUser.focus_minutes}<span className="text-xs text-slate-500 dark:text-slate-400 ml-1 font-medium">min</span>
                                                 </span>
                                             </div>
                                         </div>
@@ -555,23 +555,23 @@ export default function Pomodoro() {
 
                         {/* Modal Footer: Current User Pinned Row */}
                         {!isLoadingLeaderboard && currentUserRank && currentUserRank.rank > 10 && (
-                            <div className="p-4 sm:p-6 border-t border-slate-800 bg-slate-900/90 relative z-10">
-                                <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3">Your Global Standing</p>
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-indigo-900/40 to-indigo-800/20 border border-indigo-500/30 drop-shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+                            <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 relative z-10">
+                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest font-semibold mb-3">Your Standing Today</p>
+                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-900/40 dark:to-indigo-800/20 border border-indigo-100 dark:border-indigo-500/30 shadow-md dark:drop-shadow-[0_0_15px_rgba(99,102,241,0.15)]">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                                             #{currentUserRank.rank}
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="font-semibold text-indigo-300 tracking-wide">
+                                            <span className="font-semibold text-indigo-700 dark:text-indigo-300 tracking-wide">
                                                 {currentUserRank.username}
                                             </span>
-                                            <span className="text-xs text-slate-500">{currentUserRank.sessions_completed} sessions</span>
+                                            <span className="text-xs text-slate-500 dark:text-slate-400">{currentUserRank.sessions_completed} sessions</span>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <span className="block font-bold text-white text-lg tracking-tight">
-                                            {currentUserRank.focus_minutes}<span className="text-xs text-indigo-300 ml-1 font-normal">min</span>
+                                        <span className="block font-bold text-slate-800 dark:text-white text-lg tracking-tight">
+                                            {currentUserRank.focus_minutes}<span className="text-xs text-indigo-500 dark:text-indigo-300 ml-1 font-normal">min</span>
                                         </span>
                                     </div>
                                 </div>

@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import PomodoroSettingsSerializer, PomodoroSessionSerializer
 from .models import PomodoroSettings, PomodoroSession, PomodoroDailySummary
 from django.utils import timezone
-
+from apps.accounts.models import User
+from django.db.models import Sum
 
 # Create your views here.
 class PomodoroView(APIView):
@@ -198,3 +199,28 @@ class PomodoroAnalyticsView(APIView):
                 })
                 
         return Response(results)
+
+class PomodoroLeaderboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = User.objects.all()
+        data = []
+        today = timezone.now().date()
+
+        for user in users:
+            summary = PomodoroDailySummary.objects.filter(user=user, date=today).aggregate(
+                total_focus=Sum("focus_seconds"),
+                total_break=Sum("break_seconds"),
+                sessions=Sum("sessions_completed")
+            )
+
+            data.append({
+                "user_id": user.id,
+                "username": user.username,
+                "focus_minutes": (summary["total_focus"] or 0) // 60,
+                "break_minutes": (summary["total_break"] or 0) // 60,
+                "sessions_completed": summary["sessions"] or 0
+            })
+
+        return Response({"users": data}, status=200)

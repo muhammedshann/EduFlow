@@ -1,5 +1,5 @@
 from django.urls import path
-from.views import PomodoroView, SavePomodoroSession, PomodoroDailyStats, PomodoroWeeklyStats, PomodoroStreak, PomodoroAnalyticsView
+from .views import PomodoroView, SavePomodoroSession, PomodoroDailyStats, PomodoroWeeklyStats, PomodoroStreak, PomodoroAnalyticsView, PomodoroLeaderboardView
 
 urlpatterns = [
     path('',PomodoroView.as_view(),name='PomodoroView'),
@@ -8,4 +8,5 @@ urlpatterns = [
     path('stats/weekly/', PomodoroWeeklyStats.as_view()),
     path('stats/streak/', PomodoroStreak.as_view()),
     path('stats/analytics/', PomodoroAnalyticsView.as_view()),
+    path('leaderboard/', PomodoroLeaderboardView.as_view()),
 ]

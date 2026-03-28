@@ -4,12 +4,12 @@ import { showNotification } from "./NotificationSlice";
 
 export const FetchPomodoro = createAsyncThunk(
     'promodoro/FetchPromodoro',
-    async(_,{rejectWithValue}) => {
+    async (_, { rejectWithValue }) => {
         try {
             const response = await api.get('/pomodoro/');
             console.log(response.data);
             return response.data
-        } catch(err) {
+        } catch (err) {
             console.log(err);
             return rejectWithValue(err.response?.data || "Fetch pomodoro failed")
         }
@@ -18,7 +18,7 @@ export const FetchPomodoro = createAsyncThunk(
 
 export const UpdatePomodoro = createAsyncThunk(
     'promodoro/UpdatePromodoro',
-    async(formData,{dispatch, rejectWithValue}) => {
+    async (formData, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.post('/pomodoro/', formData);
             console.log(response.data);
@@ -27,7 +27,7 @@ export const UpdatePomodoro = createAsyncThunk(
                 type: "success"
             }));
             return response.data.data
-        } catch(err) {
+        } catch (err) {
             console.log(err);
             dispatch(showNotification({
                 message: err.response.data.error || "Update failed",
@@ -40,7 +40,7 @@ export const UpdatePomodoro = createAsyncThunk(
 
 export const SavePomodoro = createAsyncThunk(
     'promodoro/SavePromodoro',
-    async(Data,{dispatch,rejectWithValue}) => {
+    async (Data, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.post('/pomodoro/save/', Data);
             console.log(response.data);
@@ -49,7 +49,7 @@ export const SavePomodoro = createAsyncThunk(
                 type: "success"
             }));
             return response.data
-        } catch(err) {
+        } catch (err) {
             console.log(err);
             dispatch(showNotification({
                 message: err.response.data.error,
@@ -62,7 +62,7 @@ export const SavePomodoro = createAsyncThunk(
 
 export const FetchDailyStats = createAsyncThunk(
     "pomodoro/daily",
-    async(_, {rejectWithValue}) => {
+    async (_, { rejectWithValue }) => {
         try {
             const res = await api.get("/pomodoro/stats/daily/");
             return res.data;
@@ -74,7 +74,7 @@ export const FetchDailyStats = createAsyncThunk(
 
 export const FetchWeeklyStats = createAsyncThunk(
     "pomodoro/weekly",
-    async(_, {rejectWithValue}) => {
+    async (_, { rejectWithValue }) => {
         try {
             const res = await api.get("/pomodoro/stats/weekly/");
             return res.data;
@@ -86,7 +86,7 @@ export const FetchWeeklyStats = createAsyncThunk(
 
 export const FetchStreak = createAsyncThunk(
     "pomodoro/streak",
-    async(_, {rejectWithValue}) => {
+    async (_, { rejectWithValue }) => {
         try {
             const res = await api.get("/pomodoro/stats/streak/");
             return res.data;
@@ -98,7 +98,7 @@ export const FetchStreak = createAsyncThunk(
 
 export const FetchPomodoroAnalytics = createAsyncThunk(
     'pomodoro/analytics',
-    async (range = 'weekly', {rejectWithValue}) => {
+    async (range = 'weekly', { rejectWithValue }) => {
         try {
             const res = await api.get(`/pomodoro/stats/analytics/?range=${range}`);
             return res.data;
@@ -112,7 +112,7 @@ export const FetchPomodoroLeaderboard = createAsyncThunk(
     'pomodoro/leaderboard',
     async (_, {rejectWithValue}) => {
         try {
-            const res = await api.get('/admin/pomodoro/');
+            const res = await api.get('/pomodoro/leaderboard/');
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response?.data || "Failed to fetch leaderboard");

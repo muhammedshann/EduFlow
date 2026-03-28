@@ -107,3 +107,15 @@ export const FetchPomodoroAnalytics = createAsyncThunk(
         }
     }
 );
+
+export const FetchPomodoroLeaderboard = createAsyncThunk(
+    'pomodoro/leaderboard',
+    async (_, {rejectWithValue}) => {
+        try {
+            const res = await api.get('/admin/pomodoro/');
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || "Failed to fetch leaderboard");
+        }
+    }
+);

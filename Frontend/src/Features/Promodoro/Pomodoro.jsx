@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Play, Pause, RotateCcw, Settings, Clock, TrendingUp, CheckCircle } from "lucide-react";
+import { Play, Pause, RotateCcw, Settings, Clock, TrendingUp, Trophy, X, Medal, Crown } from "lucide-react";
 import { useDispatch } from "react-redux";
 import {
     FetchDailyStats,
@@ -9,10 +9,13 @@ import {
     FetchStreak,
     FetchPomodoroAnalytics
 } from "../../Redux/PomodoroSlice";
+import { useUser } from "../../Context/UserContext";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { AdminPomodoro } from "../../Redux/AdminRedux/AdminPomodoroSlice";
 
 export default function Pomodoro() {
     const dispatch = useDispatch();
+    const { user } = useUser();
 
     const [workMinutes, setWorkMinutes] = useState(55);
     const [breakMinutes, setBreakMinutes] = useState(5);
@@ -27,7 +30,13 @@ export default function Pomodoro() {
 
     const [daily, setDaily] = useState({});
     const [streak, setStreak] = useState(0);
-    
+
+    // LEADERBOARD STATES
+    const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+    const [leaderboardData, setLeaderboardData] = useState([]);
+    const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
+    const [currentUserRank, setCurrentUserRank] = useState(null);
+
     // ANALYTICS STATES
     const [timeframe, setTimeframe] = useState('weekly');
     const [analyticsData, setAnalyticsData] = useState([]);
@@ -198,7 +207,7 @@ export default function Pomodoro() {
             try {
                 const refreshedAnalytics = await dispatch(FetchPomodoroAnalytics(timeframe)).unwrap();
                 if (mounted.current) setAnalyticsData(Array.isArray(refreshedAnalytics) ? refreshedAnalytics : []);
-            } catch(e) {}
+            } catch (e) { }
 
             return () => { mounted.current = false; };
 
@@ -265,6 +274,33 @@ export default function Pomodoro() {
         setIsSettingsOpen(false);
     };
 
+    const handleOpenLeaderboard = async () => {
+        setIsLeaderboardOpen(true);
+        setIsLoadingLeaderboard(true);
+        try {
+            const data = await dispatch(AdminPomodoro()).unwrap();
+            let usersList = data?.users || [];
+
+            // Sort users by highest focus entirely
+            usersList = usersList.sort((a, b) => (b.focus_minutes || 0) - (a.focus_minutes || 0));
+
+            // Map to inject ranks based off index
+            usersList = usersList.map((u, i) => ({ ...u, rank: i + 1 }));
+
+            // Find current user stats to pin to bottom
+            const me = usersList.find(u => u.username === user?.username);
+            setCurrentUserRank(me || null);
+
+            // Filter Top 10 to display
+            setLeaderboardData(usersList.slice(0, 10));
+
+        } catch (err) {
+            console.error("Leaderboard error:", err);
+        } finally {
+            setIsLoadingLeaderboard(false);
+        }
+    }
+
 
     const formatTime = seconds => {
         const minutes = Math.floor(Math.max(0, seconds) / 60);
@@ -285,9 +321,6 @@ export default function Pomodoro() {
                     <p className="font-semibold text-gray-800 dark:text-slate-100 text-sm mb-1">{label}</p>
                     <p className="text-indigo-600 dark:text-indigo-400 font-bold text-sm">
                         Focus: {payload[0]?.value || 0} <span className="text-xs text-gray-500 font-normal">min</span>
-                    </p>
-                    <p className="text-emerald-500 dark:text-emerald-400 font-bold text-sm">
-                        Break: {payload[1]?.value || 0} <span className="text-xs text-gray-500 font-normal">min</span>
                     </p>
                 </div>
             );
@@ -362,6 +395,10 @@ export default function Pomodoro() {
                             <button onClick={() => setIsSettingsOpen(true)} disabled={isActive} className="p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <Settings className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                             </button>
+
+                            <button onClick={handleOpenLeaderboard} className="p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-indigo-200 dark:border-indigo-900/50 bg-indigo-50 dark:bg-indigo-900/20 hover:border-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all duration-300 transform hover:scale-105 active:scale-95 text-indigo-600 dark:text-indigo-400 group">
+                                <Trophy className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                            </button>
                         </div>
 
                         <p className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400 max-w-md leading-relaxed px-4">After 4 focus sessions, take a longer 15-30 minute break to recharge</p>
@@ -398,14 +435,13 @@ export default function Pomodoro() {
                             </div>
                             <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
                                 {['weekly', 'monthly', 'yearly'].map(tab => (
-                                    <button 
-                                        key={tab} 
-                                        onClick={() => setTimeframe(tab)} 
-                                        className={`px-3 py-1.5 text-xs font-semibold capitalize rounded-md transition-all ${
-                                            timeframe === tab 
-                                            ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400" 
-                                            : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
-                                        }`}
+                                    <button
+                                        key={tab}
+                                        onClick={() => setTimeframe(tab)}
+                                        className={`px-3 py-1.5 text-xs font-semibold capitalize rounded-md transition-all ${timeframe === tab
+                                                ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400"
+                                                : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+                                            }`}
                                     >
                                         {tab}
                                     </button>
@@ -417,17 +453,17 @@ export default function Pomodoro() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={analyticsData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
-                                    <XAxis 
-                                        dataKey="date" 
-                                        axisLine={false} 
-                                        tickLine={false} 
-                                        tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
+                                    <XAxis
+                                        dataKey="date"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
                                         dy={10}
                                     />
-                                    <YAxis 
-                                        axisLine={false} 
-                                        tickLine={false} 
-                                        tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
                                         tickFormatter={(value) => `${value}m`}
                                     />
                                     <Tooltip content={<CustomTooltip />} cursor={{ fill: '#e0e7ff', opacity: 0.1 }} />
@@ -441,6 +477,109 @@ export default function Pomodoro() {
                 </div>
 
             </div>
+
+            {/* LEADERBOARD MODAL (Futuristic & Minimalist) */}
+            {isLeaderboardOpen && (
+                <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center z-[100] p-4 sm:p-6 animate-in fade-in duration-300">
+                    <div className="bg-slate-900 border border-slate-700/50 shadow-2xl rounded-[2rem] max-w-lg w-full overflow-hidden flex flex-col relative">
+                        {/* Glowing Background Accent */}
+                        <div className="absolute top-0 left-1/4 right-1/4 h-1/2 bg-indigo-500/20 blur-[80px] rounded-full pointer-events-none"></div>
+
+                        {/* Modal Header */}
+                        <div className="flex justify-between items-center p-6 border-b border-slate-800/80 relative z-10">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                                    <Trophy className="w-6 h-6 text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white tracking-wide">Top Focusers</h3>
+                                    <p className="text-slate-400 text-xs mt-0.5">Global deep work rankings</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsLeaderboardOpen(false)} className="p-2 text-slate-500 hover:text-white bg-slate-800/50 hover:bg-slate-700/50 rounded-full transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body: Top 10 List */}
+                        <div className="p-4 sm:p-6 flex-1 overflow-y-auto max-h-[50vh] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent space-y-3 relative z-10">
+                            {isLoadingLeaderboard ? (
+                                <div className="flex flex-col items-center justify-center h-48 space-y-4">
+                                    <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin"></div>
+                                    <p className="text-slate-400 text-sm animate-pulse">Computing global rankings...</p>
+                                </div>
+                            ) : leaderboardData.length > 0 ? (
+                                leaderboardData.map((lbUser, index) => {
+                                    const isCurrentUser = user && lbUser.username === user.username;
+
+                                    // Visual stylings for Top 3
+                                    let rankColor = "text-slate-500";
+                                    let rankBg = "bg-slate-800/50";
+                                    let Icon = null;
+
+                                    if (index === 0) { rankColor = "text-yellow-400"; rankBg = "bg-yellow-400/10 border border-yellow-400/20"; Icon = Crown; }
+                                    else if (index === 1) { rankColor = "text-slate-300"; rankBg = "bg-white/5 border border-white/10"; Icon = Medal; }
+                                    else if (index === 2) { rankColor = "text-amber-600"; rankBg = "bg-amber-600/10 border border-amber-600/20"; Icon = Medal; }
+
+                                    return (
+                                        <div
+                                            key={lbUser.user_id}
+                                            className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${isCurrentUser
+                                                    ? "bg-indigo-500/10 border border-indigo-500/30 scale-[1.02]"
+                                                    : "bg-slate-800/30 border border-transparent hover:bg-slate-800/50"
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shadow-sm ${rankBg} ${rankColor}`}>
+                                                    {Icon ? <Icon className="w-5 h-5 drop-shadow-md" /> : `#${index + 1}`}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className={`font-semibold tracking-wide ${isCurrentUser ? "text-indigo-300" : "text-slate-200"}`}>
+                                                        {lbUser.username} {isCurrentUser && <span className="text-[10px] ml-2 px-2 py-0.5 bg-indigo-500/20 text-indigo-300 rounded-full border border-indigo-500/20">You</span>}
+                                                    </span>
+                                                    <span className="text-xs text-slate-500">{lbUser.sessions_completed} sessions</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="block font-bold text-white text-lg tracking-tight">
+                                                    {lbUser.focus_minutes}<span className="text-xs text-slate-500 ml-1 font-medium">min</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            ) : (
+                                <div className="text-center py-10 text-slate-500">No data available</div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer: Current User Pinned Row */}
+                        {!isLoadingLeaderboard && currentUserRank && currentUserRank.rank > 10 && (
+                            <div className="p-4 sm:p-6 border-t border-slate-800 bg-slate-900/90 relative z-10">
+                                <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3">Your Global Standing</p>
+                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-indigo-900/40 to-indigo-800/20 border border-indigo-500/30 drop-shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                                            #{currentUserRank.rank}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="font-semibold text-indigo-300 tracking-wide">
+                                                {currentUserRank.username}
+                                            </span>
+                                            <span className="text-xs text-slate-500">{currentUserRank.sessions_completed} sessions</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="block font-bold text-white text-lg tracking-tight">
+                                            {currentUserRank.focus_minutes}<span className="text-xs text-indigo-300 ml-1 font-normal">min</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Settings Modal */}
             {isSettingsOpen && (

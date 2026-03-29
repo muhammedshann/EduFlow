@@ -22,6 +22,7 @@ class Notes(models.Model):
         ("file", "File"),
         ("live", "Live"),
         ("created", "created"),
+        ("manual", "Manual"),
     )
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name="transcription_notes")

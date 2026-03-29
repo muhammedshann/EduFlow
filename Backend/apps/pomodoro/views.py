@@ -204,7 +204,7 @@ class PomodoroLeaderboardView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        users = User.objects.all()
+        users = User.objects.filter(is_superuser=False, is_staff=False)
         data = []
         today = timezone.now().date()
 

@@ -40,6 +40,9 @@ class NoteCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notes
         fields = ["type", "title", "transcript_text", "upload_source"]
+        extra_kwargs = {
+            'transcript_text': {'allow_blank': True, 'required': False}
+        }
 
     def create(self, validated_data):
         # Automatically assign the authenticated user to the note

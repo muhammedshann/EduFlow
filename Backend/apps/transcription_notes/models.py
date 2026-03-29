@@ -34,7 +34,7 @@ class Notes(models.Model):
         related_name="note_entry"
     )
     title = models.CharField(max_length=225, default="Untitled Note")
-    transcript_text = models.TextField()
+    transcript_text = models.TextField(blank=True, null=True)
     credits_used = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 

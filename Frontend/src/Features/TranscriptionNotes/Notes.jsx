@@ -45,7 +45,7 @@ export default function NotesPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const [notes, setNotes] = useState([]); 
+    const [notes, setNotes] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [showDeleteConfirm, setshowDeleteConfirm] = useState(false);
@@ -100,11 +100,11 @@ export default function NotesPage() {
             const payload = {
                 type: "manual",
                 title: noteTitle.trim(),
-                transcript_text: "",
+                transcript_text: " ",
             };
             const response = await dispatch(SaveLiveNote(payload));
             if (SaveLiveNote.fulfilled.match(response)) {
-                if(response.payload?.id) {
+                if (response.payload?.id) {
                     navigate(`/notes/${response.payload.id}`);
                 } else {
                     fetchNotes();
@@ -112,7 +112,7 @@ export default function NotesPage() {
             } else {
                 alert(response.payload?.error || "Failed to create note");
             }
-        } catch(err) {
+        } catch (err) {
             console.error("Create failed:", err);
         } finally {
             setShowCreateModal(false);

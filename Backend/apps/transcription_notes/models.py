@@ -21,7 +21,6 @@ class Notes(models.Model):
     TRANSCRIPTION_TYPE_CHOICES = (
         ("file", "File"),
         ("live", "Live"),
-        ("created", "created"),
         ("manual", "Manual"),
     )
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)

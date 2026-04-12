@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from rest_framework.parsers import MultiPartParser, FormParser
 from .tasks import transcribe_media
+from apps.chat_bot.gemini_service import call_gemini
 
 from .models import Notes,LiveTranscription, UploadTranscription
 from .serializers import TranscriptionCreateSerializer, NotesSerializer, MediaUploadSerializer, NoteCreateSerializer
@@ -118,3 +119,21 @@ class MediaDetailView(APIView):
     def get(self, request, pk):
         media = UploadTranscription.objects.get(pk=pk)
         return Response(MediaUploadSerializer(media).data)
+
+
+from asgiref.sync import async_to_sync
+
+class EnhanceNoteView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self,request):
+        transcript_content = request.data.get('transcript')
+        if not transcript_content:
+            return Response({"error": "No transcript provided"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        prompt = f"Enhance this transcribed data. Fix the grammatical errors, keep the same context, but highly correct it and format it cleanly:\n\n{transcript_content}"
+        
+        response = async_to_sync(call_gemini)(prompt)
+        return Response(
+            {"reply": response},
+            status=status.HTTP_200_OK
+        )

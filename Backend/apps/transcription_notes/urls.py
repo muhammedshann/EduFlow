@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import LiveTranscriptionView, NoteCreateView, NotesView, NoteDetailView, NoteUpdateView, MediaUploadView, MediaDetailView
+from .views import LiveTranscriptionView, NoteCreateView, NotesView, NoteDetailView, NoteUpdateView, MediaUploadView, MediaDetailView, EnhanceNoteView
 
 urlpatterns = [
     path("start/", LiveTranscriptionView.as_view()),
@@ -9,4 +9,5 @@ urlpatterns = [
     path("notes/<uuid:pk>/", NoteDetailView.as_view()),
     path("upload/", MediaUploadView.as_view()),
     path("media/<int:pk>/", MediaDetailView.as_view()),
+    path("enhance/", EnhanceNoteView.as_view()),
 ]

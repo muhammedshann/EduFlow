@@ -4,12 +4,12 @@ import { showNotification } from "./NotificationSlice";
 
 export const StartLiveTranscription = createAsyncThunk(
     'liveTranscription/StartLiveTranscription',
-    async( _,{dispatch,rejectWithValue}) => {
+    async (_, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.post('/transcription-notes/start/');
             console.log(response.data);
             return response.data
-        } catch(err) {
+        } catch (err) {
             const errorMessage =
                 err.response?.data?.error ||
                 err.response?.data ||
@@ -28,7 +28,7 @@ export const StartLiveTranscription = createAsyncThunk(
 
 export const SaveLiveNote = createAsyncThunk(
     'liveTranscription/SaveLiveNote',
-    async( note,{dispatch,rejectWithValue}) => {
+    async (note, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.post('/transcription-notes/', note);
             console.log(response.data);
@@ -37,7 +37,7 @@ export const SaveLiveNote = createAsyncThunk(
                 type: "success"
             }));
             return response.data
-        } catch(err) {
+        } catch (err) {
             const errorMessage =
                 err.response?.data?.error ||
                 err.response?.data ||
@@ -56,12 +56,12 @@ export const SaveLiveNote = createAsyncThunk(
 
 export const FetchNotes = createAsyncThunk(
     'liveTranscription/FetchNotes',
-    async( _,{dispatch, rejectWithValue}) => {
+    async (_, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.get('/transcription-notes/notes/');
             console.log(response.data);
             return response.data
-        } catch(err) {
+        } catch (err) {
             const errorMessage =
                 err.response?.data?.error ||
                 err.response?.data ||
@@ -80,12 +80,12 @@ export const FetchNotes = createAsyncThunk(
 
 export const FetchDetailNote = createAsyncThunk(
     'liveTranscription/FetchDetailNote',
-    async( id,{dispatch, rejectWithValue}) => {
+    async (id, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.get(`/transcription-notes/notes/${id}/`);
             console.log(response.data);
             return response.data
-        } catch(err) {
+        } catch (err) {
             const errorMessage =
                 err.response?.data?.error ||
                 err.response?.data ||
@@ -135,7 +135,7 @@ export const UpdateNote = createAsyncThunk(
 
 export const DeleteNote = createAsyncThunk(
     'liveTranscription/DeleteNote',
-    async( id,{dispatch, rejectWithValue}) => {
+    async (id, { dispatch, rejectWithValue }) => {
         try {
             const response = await api.delete(
                 '/transcription-notes/notes/',
@@ -149,7 +149,7 @@ export const DeleteNote = createAsyncThunk(
                 type: 'success',
             }));
             return response.data
-        } catch(err) {
+        } catch (err) {
             const errorMessage =
                 err.response?.data?.error ||
                 err.response?.data ||
@@ -177,6 +177,35 @@ export const UploadTranscription = createAsyncThunk(
             );
             dispatch(showNotification({
                 message: 'uploaded please wait...',
+                type: 'success',
+            }));
+            return response.data;
+        } catch (err) {
+            const errorMessage =
+                err.response?.data?.error ||
+                err.response?.data ||
+                err.message ||
+                ' upload failed';
+
+            dispatch(showNotification({
+                message: errorMessage,
+                type: 'error',
+            }));
+
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+export const EnhanceNote = createAsyncThunk(
+    "liveTranscription/EnhanceNote",
+    async (data, { dispatch, rejectWithValue }) => {
+        try {
+            const response = await api.post(
+                '/transcription-notes/enhance/',
+                data
+            );
+            dispatch(showNotification({
+                message: 'enhanced successfully',
                 type: 'success',
             }));
             return response.data;

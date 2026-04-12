@@ -11,10 +11,11 @@ import {
     X,
     Upload,
     FileAudio,
-    Type
+    Type,
+    Sparkles
 } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { SaveLiveNote, StartLiveTranscription, UploadTranscription } from "../../Redux/LiveTranscriptionSlice";
+import { SaveLiveNote, StartLiveTranscription, UploadTranscription, EnhanceNote } from "../../Redux/LiveTranscriptionSlice";
 import api from "../../api/axios";
 import { useTheme } from "../../Context/ThemeContext";
 
@@ -43,6 +44,7 @@ export default function LiveTranscriptionPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [editedTranscript, setEditedTranscript] = useState("");
     const [selectedFileId, SetSelectedFileId] = useState(null);
+    const [isEnhancing, setIsEnhancing] = useState(false);
 
     const socketRef = useRef(null);
     const mediaRecorderRef = useRef(null);
@@ -186,6 +188,25 @@ export default function LiveTranscriptionPage() {
             setNoteSaved(true);
         } else {
             alert(response.payload?.error || "Failed to save note");
+        }
+    };
+
+    const handleEnhanceNote = async () => {
+        if (!transcript.trim()) return;
+        setIsEnhancing(true);
+        try {
+            const action = await dispatch(EnhanceNote({ transcript }));
+            if (EnhanceNote.fulfilled.match(action)) {
+                if (action.payload.enhanced_text) {
+                    setTranscript(action.payload.enhanced_text);
+                } else if (action.payload.reply) {
+                    setTranscript(action.payload.reply); // Fallback in case API returns 'reply'
+                }
+            }
+        } catch (err) {
+            console.error("Enhancement failed", err);
+        } finally {
+            setIsEnhancing(false);
         }
     };
 
@@ -342,12 +363,22 @@ export default function LiveTranscriptionPage() {
                                 </p>
                             )}
                         </div>
-                        <div className="flex justify-center gap-4">
+                        <div className="flex justify-center gap-4 flex-wrap">
                             {!isEditing ? (
                                 <>
                                     {noteSaved && (
                                         <button onClick={handleChat} className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
                                             <MessageSquare size={18} /> Chat
+                                        </button>
+                                    )}
+                                    {transcript.trim() && (
+                                        <button 
+                                            onClick={handleEnhanceNote}
+                                            disabled={isEnhancing}
+                                            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg hover:scale-105 shadow-md shadow-indigo-500/20 transition disabled:opacity-50 disabled:hover:scale-100"
+                                        >
+                                            <Sparkles size={18} className={isEnhancing ? "animate-pulse" : ""} /> 
+                                            {isEnhancing ? "Enhancing..." : "Enhance Note"}
                                         </button>
                                     )}
                                     <button onClick={() => { setEditedTranscript(transcript); setIsEditing(true); }} className="inline-flex items-center gap-2 border border-gray-200 dark:border-slate-600 px-6 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 transition">

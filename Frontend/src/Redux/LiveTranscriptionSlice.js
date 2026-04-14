@@ -196,6 +196,7 @@ export const UploadTranscription = createAsyncThunk(
         }
     }
 );
+
 export const EnhanceNote = createAsyncThunk(
     "liveTranscription/EnhanceNote",
     async (data, { dispatch, rejectWithValue }) => {
@@ -208,13 +209,13 @@ export const EnhanceNote = createAsyncThunk(
                 message: 'enhanced successfully',
                 type: 'success',
             }));
-            return response.data;
+            return response.data.reply;
         } catch (err) {
             const errorMessage =
                 err.response?.data?.error ||
                 err.response?.data ||
                 err.message ||
-                ' upload failed';
+                'Enhancement failed';
 
             dispatch(showNotification({
                 message: errorMessage,

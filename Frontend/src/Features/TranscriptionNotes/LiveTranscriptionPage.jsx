@@ -20,12 +20,12 @@ import api from "../../api/axios";
 import { useTheme } from "../../Context/ThemeContext";
 
 export default function LiveTranscriptionPage() {
-    const { isDarkMode } = useTheme(); 
+    const { isDarkMode } = useTheme();
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     // UI State
-    const [activeTab, setActiveTab] = useState("live"); 
+    const [activeTab, setActiveTab] = useState("live");
     const [isRecording, setIsRecording] = useState(false);
     const [isListening, setIsListening] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -71,8 +71,8 @@ export default function LiveTranscriptionPage() {
         const types = [
             "audio/webm;codecs=opus",
             "audio/webm",
-            "audio/mp4", 
-            "audio/aac", 
+            "audio/mp4",
+            "audio/aac",
             "audio/ogg;codecs=opus",
         ];
         return types.find((t) => MediaRecorder.isTypeSupported(t)) || null;
@@ -116,7 +116,7 @@ export default function LiveTranscriptionPage() {
         const file = e.target.files[0];
         if (file) {
             setSelectedFile(file);
-            setNoteTitle(file.name.split('.')[0]); 
+            setNoteTitle(file.name.split('.')[0]);
         }
     };
 
@@ -372,12 +372,12 @@ export default function LiveTranscriptionPage() {
                                         </button>
                                     )}
                                     {transcript.trim() && (
-                                        <button 
+                                        <button
                                             onClick={handleEnhanceNote}
                                             disabled={isEnhancing}
                                             className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg hover:scale-105 shadow-md shadow-indigo-500/20 transition disabled:opacity-50 disabled:hover:scale-100"
                                         >
-                                            <Sparkles size={18} className={isEnhancing ? "animate-pulse" : ""} /> 
+                                            <Sparkles size={18} className={isEnhancing ? "animate-pulse" : ""} />
                                             {isEnhancing ? "Enhancing..." : "Enhance Note"}
                                         </button>
                                     )}

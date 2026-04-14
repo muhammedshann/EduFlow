@@ -168,6 +168,7 @@ export default function Settings() {
     const [loading, setLoading] = useState(true);
     const [plan, setPlan] = useState(null);
     const { balance } = useSelector(state => state.wallet);
+    const [showPassword, setShowPassword] = useState(false);
 
     // -- Form States --
     const [formData, setFormData] = useState({

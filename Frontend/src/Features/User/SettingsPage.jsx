@@ -370,37 +370,6 @@ export default function Settings() {
 
     return (
         <div className="min-h-screen bg-[#F5F6FA] dark:bg-[#0F1117] font-sans transition-colors duration-250 pb-[60px]">
-            {/* Top bar */}
-            <div className="bg-white dark:bg-[#1A1D27] border-b border-[#E8EAF0] dark:border-[#262B3A] px-6 md:px-12 flex items-center justify-between h-[60px] sticky top-0 z-50 transition-colors duration-250">
-                <div className="flex items-center gap-2.5">
-                    <div className="w-[30px] h-[30px] rounded-lg bg-[#6C63FF] dark:bg-[#7C75FF] flex items-center justify-center">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="white">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" fill="none" strokeWidth="2" />
-                        </svg>
-                    </div>
-                    <span className="text-[15px] font-bold text-[#161B2E] dark:text-[#EEF0F8] tracking-[-0.01em]">
-                        EduFlow
-                    </span>
-                </div>
-
-                <div className="flex items-center gap-3.5">
-                    <span className="hidden md:block text-[13px] text-[#A0A6BE] dark:text-[#4D5470] cursor-pointer hover:text-[#161B2E] dark:hover:text-[#EEF0F8]" onClick={() => navigate('/wallet/')}>
-                        Wallet: ${balance || 0}
-                    </span>
-                    <div className="flex items-center gap-2 bg-[#F0F1F7] dark:bg-[#1F2438] rounded-full px-3 py-1.5 border border-[#E8EAF0] dark:border-[#262B3A]">
-                        <Moon className="w-3.5 h-3.5 text-[#5A6080] dark:text-[#8891B0]" />
-                        <Toggle on={isDarkMode} onToggle={toggleTheme} />
-                    </div>
-                    <div className="w-[34px] h-[34px] rounded-full bg-[#EEEDFE] dark:bg-[#1C1C3D] text-[#4B44CC] dark:text-[#A09AFF] flex items-center justify-center text-[13px] font-bold border-2 border-[#6C63FF] dark:border-[#7C75FF] cursor-pointer" onClick={() => ProfileInputRef.current?.click()}>
-                         {user?.profilePic ? (
-                             <img src={user.profilePic} alt="Profile" className="w-full h-full rounded-full object-cover" />
-                         ) : (
-                             user?.firstname?.[0]?.toUpperCase() || "U"
-                         )}
-                    </div>
-                </div>
-            </div>
-
             {/* Page header */}
             <div className="max-w-[1060px] mx-auto px-4 md:px-8 pt-10">
                 <div className="mb-8">

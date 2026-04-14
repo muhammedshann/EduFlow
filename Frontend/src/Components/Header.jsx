@@ -58,13 +58,25 @@ function Header() {
 
             {/* Auth Buttons */}
             {user ? (
-                <button
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 font-medium transition-colors"
-                onClick={() => logout()}
-                >
-                <LogOut className="w-4 h-4" />
-                Logout
-                </button>
+                <div className="flex items-center gap-3">
+                    <div 
+                        className="w-[34px] h-[34px] rounded-full bg-[#EEEDFE] dark:bg-[#1C1C3D] text-[#4B44CC] dark:text-[#A09AFF] flex items-center justify-center text-[13px] font-bold border-2 border-[#6C63FF] dark:border-[#7C75FF] cursor-pointer hover:scale-105 transition-transform" 
+                        onClick={() => navigate('/settings/')}
+                    >
+                         {user?.profilePic ? (
+                             <img src={user.profilePic} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                         ) : (
+                             user?.firstname?.[0]?.toUpperCase() || "U"
+                         )}
+                    </div>
+                    <button
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 font-medium transition-colors"
+                        onClick={() => logout()}
+                    >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                    </button>
+                </div>
             ) : (
                 <button 
                     className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-5 py-2 rounded-lg font-bold text-sm hover:shadow-lg transform hover:-translate-y-0.5 transition-all" 
@@ -111,13 +123,25 @@ function Header() {
           <hr className="w-10 border-gray-200 dark:border-slate-700" />
 
           {user ? (
-             <button
-                className="flex items-center gap-2 text-red-600 dark:text-red-400 font-medium"
-                onClick={() => { logout(); setIsOpen(false); }}
-             >
-                <LogOut className="w-5 h-5" />
-                Logout
-             </button>
+             <div className="flex flex-col items-center gap-4">
+                 <div 
+                    className="w-[45px] h-[45px] rounded-full bg-[#EEEDFE] dark:bg-[#1C1C3D] text-[#4B44CC] dark:text-[#A09AFF] flex items-center justify-center text-[18px] font-bold border-2 border-[#6C63FF] dark:border-[#7C75FF]" 
+                    onClick={() => { navigate('/settings/'); setIsOpen(false); }}
+                 >
+                     {user?.profilePic ? (
+                         <img src={user.profilePic} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                     ) : (
+                         user?.firstname?.[0]?.toUpperCase() || "U"
+                     )}
+                 </div>
+                 <button
+                    className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400 font-medium w-full p-2"
+                    onClick={() => { logout(); setIsOpen(false); }}
+                 >
+                    <LogOut className="w-5 h-5" />
+                    Logout
+                 </button>
+             </div>
           ) : (
               <button 
                 className="w-3/4 bg-purple-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-purple-500/20" 

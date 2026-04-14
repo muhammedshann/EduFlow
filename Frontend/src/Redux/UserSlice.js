@@ -55,7 +55,7 @@ export const updateProfileImage = createAsyncThunk(
     'user/changeProfile',
     async(formData,{dispatch,rejectWithValue}) => {
         try {
-            const response = await api.put('/accounts/update-profile-image/',formData);
+            const response = await api.put('accounts/update-profile-image/',formData);
             console.log(response.data);
             dispatch(showNotification({
                 message: response.data.message,
@@ -79,7 +79,7 @@ export const FetchUserSubscription = createAsyncThunk(
     'user/FetchUserSubscription',
     async(formData,{dispatch,rejectWithValue}) => {
         try {
-            const response = await api.get('/accounts/subscription-plans/',formData);
+            const response = await api.get('accounts/subscription-plans/',formData);
             console.log(response.data);
             return response.data
             

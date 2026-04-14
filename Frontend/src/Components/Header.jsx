@@ -1,16 +1,25 @@
-import { useState } from "react";
-import { Bot, Menu, X, LogOut, Moon, Sun } from "lucide-react";
-import { useDispatch } from "react-redux";
+import { useState, useEffect } from "react";
+import { Bot, Menu, X, LogOut, Moon, Sun, Wallet } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 // import { Logout } from "../Redux/AuthSlice"; // Assuming this is handled by useUser now
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../Context/UserContext";
 import { useTheme } from "../Context/ThemeContext"; // Import Theme Context
+import { fetchWallet } from "../Redux/WalletSlice";
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useUser();
   const { isDarkMode, toggleTheme } = useTheme(); // Use Theme Hook
+  const { balance } = useSelector(state => state.wallet);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchWallet());
+    }
+  }, [user, dispatch]);
 
   return (
     <header className="fixed w-full top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-gray-200/50 dark:border-slate-800 transition-colors duration-300">
@@ -46,6 +55,19 @@ function Header() {
 
         {/* --- Right Actions --- */}
         <div className="hidden md:flex items-center gap-4">
+            
+            {/* Wallet Balance */}
+            {user && (
+                <div 
+                    onClick={() => navigate('/wallet/')}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors group"
+                >
+                    <Wallet className="w-4 h-4 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                        ${balance || 0}
+                    </span>
+                </div>
+            )}
             
             {/* Theme Toggle */}
             <button 
@@ -123,9 +145,22 @@ function Header() {
           <hr className="w-10 border-gray-200 dark:border-slate-700" />
 
           {user ? (
-             <div className="flex flex-col items-center gap-4">
+             <div className="flex flex-col items-center gap-4 w-full px-8">
                  <div 
-                    className="w-[45px] h-[45px] rounded-full bg-[#EEEDFE] dark:bg-[#1C1C3D] text-[#4B44CC] dark:text-[#A09AFF] flex items-center justify-center text-[18px] font-bold border-2 border-[#6C63FF] dark:border-[#7C75FF]" 
+                    className="flex items-center gap-3 w-full p-4 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 cursor-pointer shadow-sm"
+                    onClick={() => { navigate('/wallet/'); setIsOpen(false); }}
+                 >
+                    <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                        <Wallet className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                        <div className="text-xs text-gray-500 dark:text-slate-400">Wallet Balance</div>
+                        <div className="text-lg font-bold text-gray-900 dark:text-white">${balance || 0}</div>
+                    </div>
+                 </div>
+
+                 <div 
+                    className="w-[50px] h-[50px] rounded-full bg-[#EEEDFE] dark:bg-[#1C1C3D] text-[#4B44CC] dark:text-[#A09AFF] flex items-center justify-center text-[20px] font-bold border-2 border-[#6C63FF] dark:border-[#7C75FF]" 
                     onClick={() => { navigate('/settings/'); setIsOpen(false); }}
                  >
                      {user?.profilePic ? (
@@ -135,7 +170,7 @@ function Header() {
                      )}
                  </div>
                  <button
-                    className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400 font-medium w-full p-2"
+                    className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400 font-medium w-full p-2 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors"
                     onClick={() => { logout(); setIsOpen(false); }}
                  >
                     <LogOut className="w-5 h-5" />

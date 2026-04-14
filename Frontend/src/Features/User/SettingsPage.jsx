@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
     User, Bell, Shield, CreditCard, Moon, Globe, Download,
     Trash2, Crown, Eye, EyeOff, PlusCircle, ShieldCheck,
-    Key, Timer, X, Edit3, Check, Calendar, AlertTriangle
+    Key, Timer, X, Edit3, Check, Calendar, AlertTriangle, Wallet
 } from "lucide-react";
 import { useUser } from "../../Context/UserContext";
 import { useDispatch, useSelector } from "react-redux";
@@ -169,6 +169,8 @@ export default function Settings() {
     const [plan, setPlan] = useState(null);
     const { balance } = useSelector(state => state.wallet);
     const [showPassword, setShowPassword] = useState(false);
+    const [emailNotif, setEmailNotif] = useState(true);
+    const [autoEnhance, setAutoEnhance] = useState(false);
 
     // -- Form States --
     const [formData, setFormData] = useState({
@@ -234,7 +236,13 @@ export default function Settings() {
     const finalizeUpdate = async () => {
         try {
             await dispatch(updateProfile(formData)).unwrap();
-            setUser(prev => ({ ...prev, ...formData }));
+            // Map formData keys (with underscores) to user context keys (without underscores)
+            setUser({ 
+                firstname: formData.first_name, 
+                lastname: formData.last_name, 
+                username: formData.username, 
+                email: formData.email 
+            });
             dispatch(showNotification({ message: "Profile updated successfully", type: "success" }));
             return true;
         } catch (err) {
@@ -308,6 +316,9 @@ export default function Settings() {
     const handleProfileImage = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        
+        // Reset input value so same file can be selected again
+        e.target.value = null;
 
         const localPreview = URL.createObjectURL(file);
         setUser({ profilePic: localPreview });
@@ -372,13 +383,28 @@ export default function Settings() {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 text-slate-900 dark:text-white transition-colors duration-300 font-sans pb-[60px]">
             {/* Page header */}
             <div className="max-w-7xl mx-auto px-4 md:px-8 pt-10">
-                <div className="mb-8">
-                    <h1 className="text-[26px] font-bold text-[#161B2E] dark:text-[#EEF0F8] m-0 tracking-[-0.02em]">
-                        My Profile
-                    </h1>
-                    <p className="text-[14px] text-[#5A6080] dark:text-[#8891B0] mt-1">
-                        Manage your account, subscription, and preferences
-                    </p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-[26px] font-bold text-[#161B2E] dark:text-[#EEF0F8] m-0 tracking-[-0.02em]">
+                            My Profile
+                        </h1>
+                        <p className="text-[14px] text-[#5A6080] dark:text-[#8891B0] mt-1">
+                            Manage your account, subscription, and preferences
+                        </p>
+                    </div>
+
+                    <div 
+                        onClick={() => navigate('/wallet/')}
+                        className="flex items-center gap-4 bg-white dark:bg-[#1A1D27] border border-[#E8EAF0] dark:border-[#262B3A] rounded-2xl p-[14px_20px] cursor-pointer hover:shadow-md transition-all group shrink-0"
+                    >
+                        <div className="w-10 h-10 rounded-full bg-[#EEEDFE] dark:bg-[#1C1C3D] flex items-center justify-center text-[#4B44CC] dark:text-[#A09AFF] group-hover:scale-110 transition-transform">
+                            <Wallet size={20} strokeWidth={2} />
+                        </div>
+                        <div>
+                            <div className="text-[11px] font-bold text-[#A0A6BE] dark:text-[#4D5470] uppercase tracking-wider mb-0.5">Wallet Balance</div>
+                            <div className="text-[18px] font-bold text-[#161B2E] dark:text-[#EEF0F8]">${balance || 0}</div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Row 1: Profile + Subscription */}
@@ -587,6 +613,8 @@ export default function Settings() {
 
                         {[
                             { label: "Dark mode", sub: "Switch interface theme", on: isDarkMode, toggle: toggleTheme },
+                            { label: "Email notifications", sub: "Receive weekly progress reports", on: emailNotif, toggle: () => setEmailNotif(!emailNotif) },
+                            { label: "Auto-enhance Transcripts", sub: "Trigger AI logic instantly after recording", on: autoEnhance, toggle: () => setAutoEnhance(!autoEnhance) },
                         ].map(({ label, sub, on, toggle }) => (
                             <div key={label} className="flex items-center justify-between py-3.5 border-b border-[#E8EAF0] dark:border-[#262B3A] last:border-0">
                                 <div>
@@ -596,18 +624,6 @@ export default function Settings() {
                                 <Toggle on={on} onToggle={toggle} />
                             </div>
                         ))}
-
-                        <div className="mt-5 bg-[#F0F1F7] dark:bg-[#1F2438] rounded-[10px] p-[12px_14px] border border-[#E8EAF0] dark:border-[#262B3A]">
-                            <div className="text-[12px] text-[#A0A6BE] dark:text-[#4D5470] mb-1">Language</div>
-                            <div className="flex items-center gap-2">
-                                <Globe size={14} className="text-[#4D5470] dark:text-[#A0A6BE]" />
-                                <select className="w-full bg-transparent border-none text-[#161B2E] dark:text-[#EEF0F8] text-[13px] font-medium outline-none cursor-pointer">
-                                    <option>English (US)</option>
-                                    <option>Hindi</option>
-                                    <option>Malayalam</option>
-                                </select>
-                            </div>
-                        </div>
                     </Card>
 
                     {/* Danger Zone */}

@@ -354,7 +354,7 @@ export default function Settings() {
 
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F5F6FA] dark:bg-[#0F1117] text-[#161B2E] dark:text-[#EEF0F8] transition-colors duration-250">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 text-slate-900 dark:text-white transition-colors duration-300">
             <div className="w-8 h-8 border-4 border-[#6C63FF] border-t-transparent rounded-full animate-spin"></div>
         </div>
     );
@@ -369,9 +369,9 @@ export default function Settings() {
     const divider = <div className="h-[1px] bg-[#E8EAF0] dark:bg-[#262B3A] my-4" />;
 
     return (
-        <div className="min-h-screen bg-[#F5F6FA] dark:bg-[#0F1117] font-sans transition-colors duration-250 pb-[60px]">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 text-slate-900 dark:text-white transition-colors duration-300 font-sans pb-[60px]">
             {/* Page header */}
-            <div className="max-w-[1060px] mx-auto px-4 md:px-8 pt-10">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 pt-10">
                 <div className="mb-8">
                     <h1 className="text-[26px] font-bold text-[#161B2E] dark:text-[#EEF0F8] m-0 tracking-[-0.02em]">
                         My Profile
